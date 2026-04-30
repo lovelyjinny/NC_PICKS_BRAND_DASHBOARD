@@ -260,17 +260,17 @@
       </div>
       
       <div class="nav-section">관리</div>
-      <div class="nav-item disabled" data-page="sga">
+      <div class="nav-item" data-page="sga">
         <span class="icon"></span><span>판관비 입력</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
-      <div class="nav-item disabled" data-page="verify">
+      <div class="nav-item" data-page="verify">
         <span class="icon"></span><span>데이터 검증</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
-      <div class="nav-item disabled" data-page="rollback">
+      <div class="nav-item" data-page="rollback">
         <span class="icon"></span><span>삭제/롤백</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
     </nav>
     
@@ -533,10 +533,161 @@
           <button class="btn btn-danger" id="po-stop" onclick="stopUpload('po')">긴급 중단</button>
         </div>
       </div>
+      <div class="card">
+        <div class="card-title">📊 차트 캐시 새로고침</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;margin-bottom:12px;">
+          ⓘ 발주/입고 데이터를 업로드/수정한 후, 메인 대시보드 차트가 새 데이터를 반영하려면 캐시를 갱신해야 합니다.<br>
+          ⓘ <b style="color:#f2e8d9;">기본은 자동으로 빠르게 작동</b>하지만, 새 시즌 데이터 추가 후엔 한 번 눌러주세요.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="refreshBrandSummary()" id="btn-refresh-mv">캐시 갱신</button>
+          <span id="refresh-status" style="font-size:12px;color:#6cd9b8;margin-left:10px;align-self:center;"></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 판관비 입력 페이지 -->
+    <div id="page-sga" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">판관비 입력</div>
+          <div class="main-subtitle">월별 판관비율을 입력합니다 (매출 대비 비율)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">새 판관비 등록</div>
+        <div style="display:grid; grid-template-columns: 200px 200px 1fr auto; gap:12px; align-items:end;">
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">년월 (YYYY-MM)</label>
+            <input type="month" id="sga-month" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">판관비율 (%)</label>
+            <input type="number" id="sga-rate" placeholder="예: 30" min="0" max="100" step="0.1" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">메모 (선택)</label>
+            <input type="text" id="sga-note" placeholder="예: 광고비 증가 반영" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+          </div>
+          <button class="btn btn-primary" onclick="saveSga()">저장</button>
+        </div>
+        <div id="sga-msg" style="font-size:12px; margin-top:12px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">등록된 판관비 (최근순)</div>
+        <div class="preview-table-wrap">
+          <table class="preview" id="sga-table">
+            <thead>
+              <tr>
+                <th>년월</th>
+                <th class="r">판관비율</th>
+                <th>메모</th>
+                <th style="width:80px;">작업</th>
+              </tr>
+            </thead>
+            <tbody id="sga-tbody">
+              <tr><td colspan="4" style="text-align:center; color:#6b5d4f; padding:24px;">로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 데이터 검증 페이지 -->
+    <div id="page-verify" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">데이터 검증</div>
+          <div class="main-subtitle">테이블별 데이터 신선도 및 정합성 점검</div>
+        </div>
+        <button class="btn" onclick="reloadVerify()">🔄 새로고침</button>
+      </div>
+      <div class="card">
+        <div class="card-title">시즌별 데이터 현황</div>
+        <div class="preview-table-wrap">
+          <table class="preview">
+            <thead>
+              <tr>
+                <th>시즌</th>
+                <th>테이블</th>
+                <th class="r">행 수</th>
+                <th class="r">브랜드</th>
+                <th>날짜 범위</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody id="verify-tbody">
+              <tr><td colspan="6" style="text-align:center; color:#6b5d4f; padding:24px;">로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ 데이터 신선도 알림</div>
+        <div id="verify-alerts" style="font-size:13px; line-height:1.8; color:#a89884;">
+          확인 중...
+        </div>
+      </div>
+    </div>
+    
+    <!-- 삭제/롤백 페이지 -->
+    <div id="page-rollback" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">삭제/롤백</div>
+          <div class="main-subtitle">⚠️ 위험 작업 - 되돌릴 수 없습니다</div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#5c3a3a; background:rgba(90,40,40,0.15);">
+        <div class="card-title" style="color:#e89090;">⚠️ 시즌별 데이터 삭제</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;margin-bottom:14px;">
+          선택한 시즌의 데이터를 영구적으로 삭제합니다. 이 작업은 <b style="color:#e89090;">되돌릴 수 없습니다.</b><br>
+          삭제 전 반드시 데이터를 백업해두세요.
+        </div>
+        <div style="display:grid; grid-template-columns: 150px 120px 1fr auto; gap:12px; align-items:end;">
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">시즌</label>
+            <select id="del-year" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">계절</label>
+            <select id="del-season" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+              <option value="SS">S/S</option>
+              <option value="FW">F/W</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; color:#a89884; letter-spacing:0.04em; margin-bottom:6px;">테이블</label>
+            <select id="del-table" style="width:100%; background:#1a1410; border:1px solid #3f332a; color:#f2e8d9; padding:9px 12px; border-radius:6px; font-size:13px; font-family:inherit;">
+              <option value="sales_daily">매출 (sales_daily)</option>
+              <option value="inventory_monthly">재고 (inventory_monthly)</option>
+              <option value="sellthrough_daily">정판율 (sellthrough_daily)</option>
+              <option value="purchase_orders">발주/입고 (purchase_orders)</option>
+              <option value="ALL">전체 테이블</option>
+            </select>
+          </div>
+          <button class="btn btn-danger" onclick="deleteSeasonData()">삭제 실행</button>
+        </div>
+        <div id="del-msg" style="font-size:12px; margin-top:14px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">전체 판관비 삭제</div>
+        <div style="font-size:13px; color:#a89884; line-height:1.7; margin-bottom:14px;">
+          판관비 데이터를 특정 월만 삭제하려면 "판관비 입력" 페이지에서 직접 삭제하세요.<br>
+          여기서는 <b style="color:#e89090;">전체 판관비 데이터</b>를 한 번에 비울 수 있습니다.
+        </div>
+        <button class="btn btn-danger" onclick="clearAllSga()">전체 판관비 삭제</button>
+        <div id="clear-sga-msg" style="font-size:12px; margin-top:12px;"></div>
+      </div>
     </div>
     
     <div class="footer">
-      Phase 5-4 · 매출/재고/정판율/발주입고 업로드 · v0.5
+      Phase 9 · 관리 메뉴 4종 + 캐시 갱신 · v0.6
     </div>
   </main>
 
@@ -599,6 +750,12 @@
       document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'))
       const target = document.getElementById('page-' + page)
       if (target) target.classList.add('active')
+      
+      // 페이지 진입 시 데이터 자동 로드
+      if (page === 'sga') loadSgaList()
+      else if (page === 'verify') reloadVerify()
+      // welcome 페이지에선 stats 새로고침
+      else if (page === 'welcome') loadStats()
     })
   })
   
@@ -1062,6 +1219,267 @@
     document.getElementById('app').style.display = 'flex'
     loadStats()
   })()
+  
+  // ============= 캐시 갱신 =============
+  window.refreshBrandSummary = async function() {
+    const btn = document.getElementById('btn-refresh-mv')
+    const status = document.getElementById('refresh-status')
+    btn.disabled = true
+    btn.textContent = '갱신 중...'
+    status.textContent = ''
+    status.style.color = '#6cd9b8'
+    
+    try {
+      const { data, error } = await supabase.rpc('refresh_brand_summary_rpc')
+      if (error) throw error
+      status.textContent = '✓ 캐시가 갱신되었습니다 (' + new Date().toLocaleTimeString('ko-KR') + ')'
+    } catch (err) {
+      status.textContent = '✗ 갱신 실패: ' + err.message
+      status.style.color = '#d97878'
+    } finally {
+      btn.disabled = false
+      btn.textContent = '캐시 갱신'
+    }
+  }
+  
+  // ============= 판관비 입력 =============
+  window.saveSga = async function() {
+    const month = document.getElementById('sga-month').value  // YYYY-MM
+    const rateStr = document.getElementById('sga-rate').value
+    const note = document.getElementById('sga-note').value
+    const msg = document.getElementById('sga-msg')
+    
+    if (!month || !rateStr) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 년월과 판관비율을 입력해주세요.'
+      return
+    }
+    const rate = parseFloat(rateStr)
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 판관비율은 0~100 사이의 숫자여야 합니다.'
+      return
+    }
+    
+    msg.style.color = '#a89884'
+    msg.textContent = '저장 중...'
+    
+    // upsert: 같은 년월이면 덮어쓰기
+    const { error } = await supabase
+      .from('monthly_sga')
+      .upsert({
+        year_month: month,
+        sga_rate: rate / 100,  // % → 0.XX
+        note: note || null
+      }, { onConflict: 'year_month' })
+    
+    if (error) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 저장 실패: ' + error.message
+      return
+    }
+    msg.style.color = '#6cd9b8'
+    msg.textContent = '✓ 저장되었습니다.'
+    document.getElementById('sga-rate').value = ''
+    document.getElementById('sga-note').value = ''
+    loadSgaList()
+    loadStats()
+    setTimeout(() => { msg.textContent = '' }, 3000)
+  }
+  
+  async function loadSgaList() {
+    const tbody = document.getElementById('sga-tbody')
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#6b5d4f; padding:24px;">로딩 중...</td></tr>'
+    
+    const { data, error } = await supabase
+      .from('monthly_sga')
+      .select('*')
+      .order('year_month', { ascending: false })
+    
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#d97878; padding:24px;">로드 실패: ' + error.message + '</td></tr>'
+      return
+    }
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#6b5d4f; padding:24px;">등록된 판관비가 없습니다.</td></tr>'
+      return
+    }
+    
+    tbody.innerHTML = ''
+    data.forEach(row => {
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td style="font-weight:600;">${row.year_month}</td>
+        <td class="r" style="color:#f0a93a; font-weight:700;">${(Number(row.sga_rate) * 100).toFixed(1)}%</td>
+        <td>${row.note || '<span style="color:#6b5d4f;">-</span>'}</td>
+        <td><button class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="deleteSga('${row.year_month}')">삭제</button></td>
+      `
+      tbody.appendChild(tr)
+    })
+  }
+  
+  window.deleteSga = async function(yearMonth) {
+    if (!confirm(`${yearMonth} 판관비를 삭제하시겠습니까?`)) return
+    const { error } = await supabase
+      .from('monthly_sga')
+      .delete()
+      .eq('year_month', yearMonth)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    loadSgaList()
+    loadStats()
+  }
+  
+  // ============= 데이터 검증 =============
+  window.reloadVerify = async function() {
+    const tbody = document.getElementById('verify-tbody')
+    const alerts = document.getElementById('verify-alerts')
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b5d4f; padding:24px;">로딩 중...</td></tr>'
+    alerts.textContent = '확인 중...'
+    
+    try {
+      const { data, error } = await supabase
+        .from('data_health_summary')
+        .select('*')
+        .order('season_year', { ascending: false })
+        .order('season_type', { ascending: true })
+        .order('table_name', { ascending: true })
+      
+      if (error) throw error
+      
+      tbody.innerHTML = ''
+      const today = new Date()
+      const alertsList = []
+      
+      // 시즌별로 묶기 (2026SS, 2026FW, 2025SS...)
+      const seasonMap = {}
+      for (const r of data) {
+        const key = r.season_year + '-' + r.season_type
+        if (!seasonMap[key]) seasonMap[key] = []
+        seasonMap[key].push(r)
+      }
+      
+      const sortedKeys = Object.keys(seasonMap).sort().reverse()
+      for (const key of sortedKeys) {
+        const rows = seasonMap[key]
+        rows.forEach((r, idx) => {
+          const tr = document.createElement('tr')
+          
+          // 신선도 체크 (최신 시즌 데이터가 며칠 이내인지)
+          let statusHtml = '<span style="color:#6cd9b8;">정상</span>'
+          if (r.date_max && r.date_max.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const lastDate = new Date(r.date_max)
+            const daysAgo = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24))
+            // 현재 시즌만 신선도 체크 (지난 시즌은 당연히 오래됨)
+            const isCurrentSeason = (r.season_year === 2026 && r.season_type === 'SS')
+            if (isCurrentSeason && daysAgo > 14) {
+              statusHtml = `<span style="color:#d97878;">⚠ ${daysAgo}일 전</span>`
+              alertsList.push(`<b style="color:#e89090;">⚠ ${r.label}</b> 데이터가 ${daysAgo}일 전이 마지막입니다 (마지막: ${r.date_max})`)
+            } else if (isCurrentSeason && daysAgo > 7) {
+              statusHtml = `<span style="color:#f0a93a;">${daysAgo}일 전</span>`
+            } else if (isCurrentSeason) {
+              statusHtml = `<span style="color:#6cd9b8;">${daysAgo}일 전</span>`
+            }
+          }
+          
+          tr.innerHTML = `
+            ${idx === 0 ? `<td rowspan="${rows.length}" style="font-weight:700; color:#c9a17a; vertical-align:top;">${r.season_year} ${r.season_type}</td>` : ''}
+            <td>${r.label}</td>
+            <td class="r">${(r.row_count || 0).toLocaleString()}</td>
+            <td class="r">${r.brands || 0}</td>
+            <td style="color:#a89884;">${r.date_min ? `${r.date_min} ~ ${r.date_max}` : '-'}</td>
+            <td>${statusHtml}</td>
+          `
+          tbody.appendChild(tr)
+        })
+      }
+      
+      // 알림 영역
+      if (alertsList.length > 0) {
+        alerts.innerHTML = alertsList.join('<br>')
+      } else {
+        alerts.innerHTML = '<span style="color:#6cd9b8;">✓ 모든 테이블의 데이터가 정상 범위입니다.</span>'
+      }
+      
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#d97878; padding:24px;">로드 실패: ' + err.message + '</td></tr>'
+      alerts.textContent = '확인 실패'
+    }
+  }
+  
+  // ============= 삭제/롤백 =============
+  window.deleteSeasonData = async function() {
+    const year = parseInt(document.getElementById('del-year').value, 10)
+    const season = document.getElementById('del-season').value
+    const table = document.getElementById('del-table').value
+    const msg = document.getElementById('del-msg')
+    
+    const tableLabel = {
+      'sales_daily': '매출',
+      'inventory_monthly': '재고',
+      'sellthrough_daily': '정판율',
+      'purchase_orders': '발주/입고',
+      'ALL': '전체 (4개 테이블)'
+    }[table] || table
+    
+    const confirmText = `${year} ${season} ${tableLabel} 데이터를 영구 삭제합니다.\n\n이 작업은 되돌릴 수 없습니다. 정말 진행하시겠습니까?`
+    if (!confirm(confirmText)) return
+    
+    // 더블 컨펌
+    if (!confirm(`마지막 확인: ${year} ${season} ${tableLabel} 삭제를 진행합니다.`)) return
+    
+    msg.style.color = '#a89884'
+    msg.textContent = '삭제 중...'
+    
+    try {
+      const tables = table === 'ALL' 
+        ? ['sales_daily', 'inventory_monthly', 'sellthrough_daily', 'purchase_orders']
+        : [table]
+      
+      let totalDeleted = 0
+      for (const t of tables) {
+        const { error, count } = await supabase
+          .from(t)
+          .delete({ count: 'exact' })
+          .eq('season_year', year)
+          .eq('season_type', season)
+        if (error) throw error
+        totalDeleted += count || 0
+      }
+      
+      msg.style.color = '#6cd9b8'
+      msg.textContent = `✓ ${totalDeleted.toLocaleString()}건 삭제 완료. 캐시도 갱신해주세요.`
+      loadStats()
+    } catch (err) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 삭제 실패: ' + err.message
+    }
+  }
+  
+  window.clearAllSga = async function() {
+    if (!confirm('전체 판관비 데이터를 삭제합니다. 진행하시겠습니까?')) return
+    if (!confirm('마지막 확인: 모든 월별 판관비가 삭제됩니다.')) return
+    
+    const msg = document.getElementById('clear-sga-msg')
+    msg.style.color = '#a89884'
+    msg.textContent = '삭제 중...'
+    
+    try {
+      const { error, count } = await supabase
+        .from('monthly_sga')
+        .delete({ count: 'exact' })
+        .gte('year_month', '0000-00')  // 모든 행 매칭
+      if (error) throw error
+      msg.style.color = '#6cd9b8'
+      msg.textContent = `✓ ${count || 0}건 삭제 완료.`
+      loadStats()
+    } catch (err) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 삭제 실패: ' + err.message
+    }
+  }
 </script>
 
 </body>
