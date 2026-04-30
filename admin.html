@@ -9,9 +9,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-    background: #1a1410;
-    color: #f2e8d9;
-    min-height: 100vh;
+    background: #1a1410; color: #f2e8d9; min-height: 100vh;
     background-image: 
       radial-gradient(ellipse at 10% 0%, rgba(201,161,122,0.06) 0%, transparent 50%),
       radial-gradient(ellipse at 90% 100%, rgba(232,134,74,0.04) 0%, transparent 50%);
@@ -23,7 +21,6 @@
   }
   .loading-screen.hide { display: none; }
   .loading-text { font-size: 13px; color: #c9a17a; letter-spacing: 0.16em; text-transform: uppercase; }
-  
   .app { display: flex; min-height: 100vh; }
   
   .sidebar {
@@ -38,16 +35,15 @@
     padding: 3px 8px; border-radius: 4px; display: inline-block;
     margin-top: 8px; font-weight: 600; letter-spacing: 0.04em;
   }
-  
   .sidebar-nav { flex: 1; padding: 8px 12px; }
   .nav-section {
     font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
     color: #6b5d4f; font-weight: 600; padding: 12px 8px 8px 8px;
   }
   .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 6px; cursor: pointer;
-    color: #a89884; font-size: 13px; transition: all 0.15s; margin-bottom: 2px;
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 6px; cursor: pointer; color: #a89884;
+    font-size: 13px; transition: all 0.15s; margin-bottom: 2px;
   }
   .nav-item:hover { background: rgba(201,161,122,0.06); color: #f2e8d9; }
   .nav-item.active { background: rgba(201,161,122,0.12); color: #c9a17a; font-weight: 600; }
@@ -64,7 +60,6 @@
     color: #6cd9b8; padding: 2px 6px; border-radius: 3px;
     letter-spacing: 0.04em; font-weight: 600;
   }
-  
   .sidebar-footer { padding: 12px 20px; border-top: 1px solid #3f332a; }
   .user-info { font-size: 11px; color: #6b5d4f; margin-bottom: 8px; word-break: break-all; }
   .btn-logout {
@@ -152,10 +147,7 @@
     margin-bottom: 12px; letter-spacing: 0.04em;
   }
   
-  .validation-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px 0; font-size: 13px;
-  }
+  .validation-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
   .validation-icon {
     width: 18px; height: 18px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -168,9 +160,7 @@
   .preview-table-wrap {
     overflow-x: auto; background: #1a1410; border-radius: 6px; margin-top: 8px;
   }
-  table.preview {
-    width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px;
-  }
+  table.preview { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; }
   .preview thead th {
     padding: 8px 10px; background: #352a21; text-align: left;
     font-weight: 600; color: #c9a17a; border-bottom: 1px solid #3f332a;
@@ -212,9 +202,7 @@
     background: #b88f68; border-color: #b88f68; color: #1a1410;
   }
   .btn-danger { border-color: #d97878; color: #d97878; }
-  .btn-danger:hover:not(:disabled) {
-    background: rgba(217,120,120,0.08); color: #e89090;
-  }
+  .btn-danger:hover:not(:disabled) { background: rgba(217,120,120,0.08); color: #e89090; }
   
   .upload-log {
     background: #1a1410; border: 1px solid #3f332a; border-radius: 6px;
@@ -231,7 +219,6 @@
     margin-top: 40px; padding-top: 16px; border-top: 1px solid #3f332a;
     text-align: center; font-size: 11px; color: #6b5d4f;
   }
-  
   .hidden-input { display: none; }
 </style>
 </head>
@@ -259,13 +246,13 @@
         <span class="icon"></span><span>매출 데이터</span>
         <span class="badge-ready">활성</span>
       </div>
-      <div class="nav-item disabled" data-page="inventory">
+      <div class="nav-item" data-page="inventory">
         <span class="icon"></span><span>재고 데이터</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
-      <div class="nav-item disabled" data-page="sellthrough">
+      <div class="nav-item" data-page="sellthrough">
         <span class="icon"></span><span>정판율 데이터</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
       <div class="nav-item disabled" data-page="inbound">
         <span class="icon"></span><span>발주/입고 데이터</span>
@@ -296,6 +283,7 @@
 
   <main class="main">
     
+    <!-- 홈 페이지 -->
     <div id="page-welcome" class="page-content active">
       <div class="main-header">
         <div>
@@ -303,16 +291,14 @@
           <div class="main-subtitle">5종 파일 업로드 및 누적 관리</div>
         </div>
       </div>
-      
       <div class="welcome-card">
         <div class="welcome-icon">📊</div>
         <div class="welcome-title">관리자 모드</div>
         <div class="welcome-text">
           좌측 메뉴에서 업로드할 데이터 종류를 선택하세요.<br>
-          매출 데이터부터 시작하시면 됩니다.
+          매출 / 재고 / 정판율 데이터 업로드가 활성화되었습니다.
         </div>
       </div>
-      
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">매출 데이터</div>
@@ -337,6 +323,7 @@
       </div>
     </div>
     
+    <!-- 매출 페이지 -->
     <div id="page-sales" class="page-content">
       <div class="main-header">
         <div>
@@ -344,62 +331,155 @@
           <div class="main-subtitle">매출_master.csv (브랜드×매장×일별 raw)</div>
         </div>
       </div>
-      
       <div class="card">
         <div class="card-title">1. 파일 선택</div>
         <input type="file" id="sales-file" class="hidden-input" accept=".csv">
-        <div id="sales-upload-zone" class="upload-zone">
+        <div id="sales-zone" class="upload-zone">
           <div class="upload-icon">📁</div>
           <div class="upload-title">매출_master.csv 파일을 선택하세요</div>
           <div class="upload-hint">클릭하거나 파일을 끌어다 놓으세요 · CSV 파일만 지원</div>
-          <div id="sales-file-info" class="upload-file-info" style="display:none;"></div>
+          <div id="sales-info" class="upload-file-info" style="display:none;"></div>
         </div>
       </div>
-      
       <div id="sales-validation" class="card" style="display:none;">
         <div class="card-title">2. 검증 결과</div>
         <div id="sales-validation-list"></div>
       </div>
-      
       <div id="sales-preview" class="card" style="display:none;">
         <div class="card-title">3. 미리보기 (처음 5행)</div>
-        <div class="preview-table-wrap">
-          <table class="preview" id="sales-preview-table"></table>
-        </div>
+        <div class="preview-table-wrap"><table class="preview" id="sales-preview-table"></table></div>
       </div>
-      
       <div id="sales-options" class="card" style="display:none;">
         <div class="card-title">4. 업로드 옵션</div>
         <div style="font-size:13px;color:#a89884;line-height:1.7;">
-          ⓘ <b style="color:#f2e8d9;">중복 허용:</b> 같은 데이터가 여러 번 들어가지 않도록 같은 날짜의 데이터는 먼저 삭제 후 재업로드하세요.<br>
+          ⓘ <b style="color:#f2e8d9;">중복 주의:</b> 같은 데이터를 두 번 업로드하면 중복됩니다.<br>
           ⓘ <b style="color:#f2e8d9;">비표준 코드:</b> 계절코드 '#' 데이터는 자동 제외됩니다.<br>
           ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 70만 행 기준 5~15분 소요. 도중에 브라우저를 닫지 마세요.
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" id="sales-start-btn" onclick="startSalesUpload()">업로드 시작</button>
-          <button class="btn" onclick="resetSalesUpload()">취소</button>
+          <button class="btn btn-primary" onclick="startUpload('sales')">업로드 시작</button>
+          <button class="btn" onclick="resetUpload('sales')">취소</button>
         </div>
       </div>
-      
       <div id="sales-progress" class="card" style="display:none;">
         <div class="card-title">5. 업로드 진행 중</div>
-        <div class="progress-wrap">
-          <div class="progress-bar" id="sales-progress-bar"></div>
-        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="sales-bar"></div></div>
         <div class="progress-text">
-          <span id="sales-progress-pct">0%</span>
-          <span id="sales-progress-cnt">0 / 0 행</span>
+          <span id="sales-pct">0%</span>
+          <span id="sales-cnt">0 / 0 행</span>
         </div>
         <div class="upload-log" id="sales-log"></div>
         <div class="btn-group">
-          <button class="btn btn-danger" id="sales-stop-btn" onclick="stopSalesUpload()">긴급 중단</button>
+          <button class="btn btn-danger" id="sales-stop" onclick="stopUpload('sales')">긴급 중단</button>
         </div>
       </div>
-      
+    </div>
+    
+    <!-- 재고 페이지 -->
+    <div id="page-inventory" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">재고 데이터 업로드</div>
+          <div class="main-subtitle">재고_master.csv (브랜드×매장×월별 스냅샷)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">1. 파일 선택</div>
+        <input type="file" id="inv-file" class="hidden-input" accept=".csv">
+        <div id="inv-zone" class="upload-zone">
+          <div class="upload-icon">📦</div>
+          <div class="upload-title">재고_master.csv 파일을 선택하세요</div>
+          <div class="upload-hint">클릭하거나 파일을 끌어다 놓으세요 · CSV 파일만 지원</div>
+          <div id="inv-info" class="upload-file-info" style="display:none;"></div>
+        </div>
+      </div>
+      <div id="inv-validation" class="card" style="display:none;">
+        <div class="card-title">2. 검증 결과</div>
+        <div id="inv-validation-list"></div>
+      </div>
+      <div id="inv-preview" class="card" style="display:none;">
+        <div class="card-title">3. 미리보기 (처음 5행)</div>
+        <div class="preview-table-wrap"><table class="preview" id="inv-preview-table"></table></div>
+      </div>
+      <div id="inv-options" class="card" style="display:none;">
+        <div class="card-title">4. 업로드 옵션</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;">
+          ⓘ <b style="color:#f2e8d9;">월말 재고 스냅샷</b>이 inventory_monthly 테이블에 저장됩니다.<br>
+          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 40만 행 기준 3~10분 소요.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="startUpload('inv')">업로드 시작</button>
+          <button class="btn" onclick="resetUpload('inv')">취소</button>
+        </div>
+      </div>
+      <div id="inv-progress" class="card" style="display:none;">
+        <div class="card-title">5. 업로드 진행 중</div>
+        <div class="progress-wrap"><div class="progress-bar" id="inv-bar"></div></div>
+        <div class="progress-text">
+          <span id="inv-pct">0%</span>
+          <span id="inv-cnt">0 / 0 행</span>
+        </div>
+        <div class="upload-log" id="inv-log"></div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="inv-stop" onclick="stopUpload('inv')">긴급 중단</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 정판율 페이지 -->
+    <div id="page-sellthrough" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">정판율 데이터 업로드</div>
+          <div class="main-subtitle">정판율_master.csv (입고/판매 일별 raw)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">1. 파일 선택</div>
+        <input type="file" id="st-file" class="hidden-input" accept=".csv">
+        <div id="st-zone" class="upload-zone">
+          <div class="upload-icon">🏷️</div>
+          <div class="upload-title">정판율_master.csv 파일을 선택하세요</div>
+          <div class="upload-hint">클릭하거나 파일을 끌어다 놓으세요 · CSV 파일만 지원</div>
+          <div id="st-info" class="upload-file-info" style="display:none;"></div>
+        </div>
+      </div>
+      <div id="st-validation" class="card" style="display:none;">
+        <div class="card-title">2. 검증 결과</div>
+        <div id="st-validation-list"></div>
+      </div>
+      <div id="st-preview" class="card" style="display:none;">
+        <div class="card-title">3. 미리보기 (처음 5행)</div>
+        <div class="preview-table-wrap"><table class="preview" id="st-preview-table"></table></div>
+      </div>
+      <div id="st-options" class="card" style="display:none;">
+        <div class="card-title">4. 업로드 옵션</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;">
+          ⓘ <b style="color:#f2e8d9;">정상판매액 / 입고액</b>이 sellthrough_daily 테이블에 저장됩니다.<br>
+          ⓘ <b style="color:#f2e8d9;">비표준 코드:</b> 계절코드 '#' 데이터는 자동 제외됩니다.<br>
+          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 66만 행 기준 5~12분 소요.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="startUpload('st')">업로드 시작</button>
+          <button class="btn" onclick="resetUpload('st')">취소</button>
+        </div>
+      </div>
+      <div id="st-progress" class="card" style="display:none;">
+        <div class="card-title">5. 업로드 진행 중</div>
+        <div class="progress-wrap"><div class="progress-bar" id="st-bar"></div></div>
+        <div class="progress-text">
+          <span id="st-pct">0%</span>
+          <span id="st-cnt">0 / 0 행</span>
+        </div>
+        <div class="upload-log" id="st-log"></div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="st-stop" onclick="stopUpload('st')">긴급 중단</button>
+        </div>
+      </div>
     </div>
     
     <div class="footer">
-      Phase 5-2 · 매출 데이터 업로드 · v0.3
+      Phase 5-3 · 매출/재고/정판율 업로드 · v0.4
     </div>
   </main>
 
@@ -416,6 +496,7 @@
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   window.supabase = supabase
   
+  // ============= 인증 가드 =============
   async function authGuard() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
@@ -426,6 +507,7 @@
     return session
   }
   
+  // ============= 통계 =============
   async function loadStats() {
     try {
       const [sales, invm, st, sga] = await Promise.all([
@@ -438,17 +520,17 @@
       document.getElementById('cnt-invm').textContent = (invm.count || 0).toLocaleString()
       document.getElementById('cnt-st').textContent = (st.count || 0).toLocaleString()
       document.getElementById('cnt-sga').textContent = (sga.count || 0).toLocaleString()
-    } catch (err) {
-      console.error('통계 조회 실패:', err)
-    }
+    } catch (err) { console.error(err) }
   }
   window.loadStats = loadStats
   
+  // ============= 로그아웃 =============
   window.doLogout = async function() {
     await supabase.auth.signOut()
     window.location.href = 'index.html'
   }
   
+  // ============= 사이드바 =============
   document.querySelectorAll('.nav-item:not(.disabled)').forEach(item => {
     item.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'))
@@ -460,12 +542,7 @@
     })
   })
   
-  let salesFile = null
-  let salesData = null
-  let salesValidRows = 0
-  let salesUploading = false
-  let salesShouldStop = false
-  
+  // ============= 공통 헬퍼 =============
   function parseSeason(code) {
     if (!code || code === '#' || code === 'null') return { year: null, type: null }
     const str = String(code).trim()
@@ -487,8 +564,9 @@
     return isNaN(n) ? null : n
   }
   
-  function salesLog(text, type = '') {
-    const log = document.getElementById('sales-log')
+  function logTo(prefix, text, type = '') {
+    const log = document.getElementById(prefix + '-log')
+    if (!log) return
     const div = document.createElement('div')
     div.className = 'log-line ' + type
     const time = new Date().toLocaleTimeString('ko-KR')
@@ -497,8 +575,9 @@
     log.scrollTop = log.scrollHeight
   }
   
-  function addValidation(text, type) {
-    const list = document.getElementById('sales-validation-list')
+  function addValidation(prefix, text, type) {
+    const list = document.getElementById(prefix + '-validation-list')
+    if (!list) return
     const row = document.createElement('div')
     row.className = 'validation-row'
     let icon = '✓'
@@ -508,123 +587,231 @@
     list.appendChild(row)
   }
   
-  const uploadZone = document.getElementById('sales-upload-zone')
-  const fileInput = document.getElementById('sales-file')
+  // ============= 업로더 설정 =============
+  const UPLOADERS = {
+    sales: {
+      table: 'sales_daily',
+      requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
+                     '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
+                     '총매출액','실매출액','총매출원가','판매수량','환입액'],
+      previewCols: ['날짜','브랜드코드','브랜드명','지점명','계절코드','실매출액','총매출원가','판매수량'],
+      filterInvalidSeason: true,
+      dateField: '날짜',
+      transformRow: (row) => {
+        const season = parseSeason(row['계절코드'])
+        if (!season.type) return null
+        return {
+          sale_date: row['날짜'] || null,
+          brand_code: row['브랜드코드'] || '',
+          brand_name: row['브랜드명'] || null,
+          store_code: row['지점코드'] || null,
+          store_name: row['지점명'] || null,
+          buy_group_code: row['구매그룹코드'] || null,
+          buy_group_name: row['구매그룹명'] || null,
+          mc_code: row['MC코드'] || null,
+          mc_name: row['MC명'] || null,
+          season_code: row['계절코드'] || null,
+          season_year: season.year,
+          season_type: season.type,
+          gross_sales: toNum(row['총매출액']),
+          net_sales: toNum(row['실매출액']),
+          cost_of_goods: toNum(row['총매출원가']),
+          qty_sold: toNum(row['판매수량']),
+          return_amount: toNum(row['환입액'])
+        }
+      }
+    },
+    inv: {
+      table: 'inventory_monthly',
+      requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
+                     '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','년월',
+                     '재고량','재고액_원가','재고액_최초판매가','재고액_현판가'],
+      previewCols: ['년월','브랜드코드','브랜드명','지점명','계절코드','재고량','재고액_원가','재고액_현판가'],
+      filterInvalidSeason: false,  // 재고는 모든 계절코드 보존
+      dateField: '년월',
+      transformRow: (row) => {
+        const season = parseSeason(row['계절코드'])
+        return {
+          year_month: row['년월'] || null,
+          brand_code: row['브랜드코드'] || '',
+          brand_name: row['브랜드명'] || null,
+          store_code: row['지점코드'] || null,
+          store_name: row['지점명'] || null,
+          buy_group_code: row['구매그룹코드'] || null,
+          buy_group_name: row['구매그룹명'] || null,
+          mc_code: row['MC코드'] || null,
+          mc_name: row['MC명'] || null,
+          season_code: row['계절코드'] || null,
+          season_year: season.year,
+          season_type: season.type,
+          qty_stock: toNum(row['재고량']),
+          stock_value_cost: toNum(row['재고액_원가']),
+          stock_value_initial_price: toNum(row['재고액_최초판매가']),
+          stock_value_current_price: toNum(row['재고액_현판가'])
+        }
+      }
+    },
+    st: {
+      table: 'sellthrough_daily',
+      requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
+                     '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
+                     '벤더입고액_부가세','총판매량','총입고액_정상가','총판매액_정상가','정상판매액'],
+      previewCols: ['날짜','브랜드코드','브랜드명','지점명','계절코드','벤더입고액_부가세','총판매액_정상가','정상판매액'],
+      filterInvalidSeason: true,
+      dateField: '날짜',
+      transformRow: (row) => {
+        const season = parseSeason(row['계절코드'])
+        if (!season.type) return null
+        return {
+          trans_date: row['날짜'] || null,
+          brand_code: row['브랜드코드'] || '',
+          brand_name: row['브랜드명'] || null,
+          store_code: row['지점코드'] || null,
+          store_name: row['지점명'] || null,
+          buy_group_code: row['구매그룹코드'] || null,
+          season_code: row['계절코드'] || null,
+          season_year: season.year,
+          season_type: season.type,
+          vendor_inbound_with_vat: toNum(row['벤더입고액_부가세']),
+          qty_sold_total: toNum(row['총판매량']),
+          inbound_at_normal_price: toNum(row['총입고액_정상가']),
+          sales_at_normal_price: toNum(row['총판매액_정상가']),
+          normal_sales_amount: toNum(row['정상판매액'])
+        }
+      }
+    }
+  }
   
-  uploadZone.addEventListener('click', () => fileInput.click())
-  uploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault()
-    uploadZone.classList.add('dragover')
-  })
-  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'))
-  uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault()
-    uploadZone.classList.remove('dragover')
-    if (e.dataTransfer.files[0]) handleSalesFile(e.dataTransfer.files[0])
-  })
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) handleSalesFile(e.target.files[0])
-  })
+  // 업로더별 상태
+  const STATE = {
+    sales: { file: null, data: null, validRows: 0, uploading: false, shouldStop: false },
+    inv:   { file: null, data: null, validRows: 0, uploading: false, shouldStop: false },
+    st:    { file: null, data: null, validRows: 0, uploading: false, shouldStop: false }
+  }
   
-  async function handleSalesFile(file) {
+  // ============= 파일 선택 (드래그&드롭) =============
+  function setupZone(prefix) {
+    const zone = document.getElementById(prefix + '-zone')
+    const input = document.getElementById(prefix + '-file')
+    
+    zone.addEventListener('click', () => input.click())
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover') })
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'))
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault()
+      zone.classList.remove('dragover')
+      if (e.dataTransfer.files[0]) handleFile(prefix, e.dataTransfer.files[0])
+    })
+    input.addEventListener('change', (e) => {
+      if (e.target.files[0]) handleFile(prefix, e.target.files[0])
+    })
+  }
+  setupZone('sales')
+  setupZone('inv')
+  setupZone('st')
+  
+  function handleFile(prefix, file) {
     if (!file.name.toLowerCase().endsWith('.csv')) {
       alert('CSV 파일만 업로드 가능합니다.')
       return
     }
     
-    salesFile = file
+    STATE[prefix].file = file
     
     const sizeMB = (file.size / 1024 / 1024).toFixed(1)
-    document.getElementById('sales-file-info').style.display = 'block'
-    document.getElementById('sales-file-info').textContent = `📄 ${file.name} (${sizeMB} MB)`
-    uploadZone.classList.add('has-file')
+    document.getElementById(prefix + '-info').style.display = 'block'
+    document.getElementById(prefix + '-info').textContent = `📄 ${file.name} (${sizeMB} MB)`
+    document.getElementById(prefix + '-zone').classList.add('has-file')
     
-    document.getElementById('sales-validation').style.display = 'block'
-    document.getElementById('sales-validation-list').innerHTML = ''
-    addValidation('파일 파싱 중... (큰 파일은 시간이 걸립니다)', 'warn')
+    document.getElementById(prefix + '-validation').style.display = 'block'
+    document.getElementById(prefix + '-validation-list').innerHTML = ''
+    addValidation(prefix, '파일 파싱 중... (큰 파일은 시간이 걸립니다)', 'warn')
     
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       worker: false,
       complete: (result) => {
-        salesData = result.data
-        validateSalesData()
+        STATE[prefix].data = result.data
+        validateData(prefix)
       },
       error: (err) => {
-        document.getElementById('sales-validation-list').innerHTML = ''
-        addValidation('파일 파싱 실패: ' + err.message, 'err')
+        document.getElementById(prefix + '-validation-list').innerHTML = ''
+        addValidation(prefix, '파일 파싱 실패: ' + err.message, 'err')
       }
     })
   }
   
-  function validateSalesData() {
-    const list = document.getElementById('sales-validation-list')
+  function validateData(prefix) {
+    const config = UPLOADERS[prefix]
+    const data = STATE[prefix].data
+    const list = document.getElementById(prefix + '-validation-list')
     list.innerHTML = ''
     
-    if (!salesData || salesData.length === 0) {
-      addValidation('데이터가 비어있습니다', 'err')
+    if (!data || data.length === 0) {
+      addValidation(prefix, '데이터가 비어있습니다', 'err')
       return
     }
     
-    addValidation(`전체 행 수: ${salesData.length.toLocaleString()}건`, 'ok')
+    addValidation(prefix, `전체 행 수: ${data.length.toLocaleString()}건`, 'ok')
     
-    const required = ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
-                      '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
-                      '총매출액','실매출액','총매출원가','판매수량','환입액']
-    const actualCols = Object.keys(salesData[0])
-    const missing = required.filter(r => !actualCols.includes(r))
+    const actualCols = Object.keys(data[0])
+    const missing = config.requiredCols.filter(r => !actualCols.includes(r))
     if (missing.length > 0) {
-      addValidation(`필수 컬럼 누락: ${missing.join(', ')}`, 'err')
+      addValidation(prefix, `필수 컬럼 누락: ${missing.join(', ')}`, 'err')
       return
     }
-    addValidation(`컬럼 17개 모두 존재`, 'ok')
+    addValidation(prefix, `컬럼 ${config.requiredCols.length}개 모두 존재`, 'ok')
     
-    let invalidSeasonCnt = 0
+    let invalidCnt = 0
     let validCnt = 0
     let dateMin = null, dateMax = null
     const brandSet = new Set()
     
-    for (const row of salesData) {
-      const season = parseSeason(row['계절코드'])
-      if (!season.type) {
-        invalidSeasonCnt++
-        continue
+    for (const row of data) {
+      if (config.filterInvalidSeason) {
+        const season = parseSeason(row['계절코드'])
+        if (!season.type) {
+          invalidCnt++
+          continue
+        }
       }
       validCnt++
       brandSet.add(row['브랜드코드'])
-      const d = row['날짜']
+      const d = row[config.dateField]
       if (d) {
         if (!dateMin || d < dateMin) dateMin = d
         if (!dateMax || d > dateMax) dateMax = d
       }
     }
-    salesValidRows = validCnt
+    STATE[prefix].validRows = validCnt
     
-    addValidation(`날짜 범위: ${dateMin} ~ ${dateMax}`, 'ok')
-    addValidation(`고유 브랜드: ${brandSet.size}개`, 'ok')
-    addValidation(`유효 행: ${validCnt.toLocaleString()}건`, 'ok')
-    if (invalidSeasonCnt > 0) {
-      addValidation(`비표준 계절코드 자동 제외: ${invalidSeasonCnt.toLocaleString()}건`, 'warn')
+    addValidation(prefix, `${config.dateField} 범위: ${dateMin} ~ ${dateMax}`, 'ok')
+    addValidation(prefix, `고유 브랜드: ${brandSet.size}개`, 'ok')
+    addValidation(prefix, `유효 행: ${validCnt.toLocaleString()}건`, 'ok')
+    if (invalidCnt > 0) {
+      addValidation(prefix, `비표준 계절코드 자동 제외: ${invalidCnt.toLocaleString()}건`, 'warn')
     }
     
-    showSalesPreview()
-    document.getElementById('sales-options').style.display = 'block'
+    showPreview(prefix)
+    document.getElementById(prefix + '-options').style.display = 'block'
   }
   
-  function showSalesPreview() {
-    const cols = ['날짜','브랜드코드','브랜드명','지점명','계절코드','실매출액','총매출원가','판매수량']
-    const previewData = salesData.slice(0, 5)
+  function showPreview(prefix) {
+    const config = UPLOADERS[prefix]
+    const data = STATE[prefix].data.slice(0, 5)
+    const cols = config.previewCols
     
     let html = '<thead><tr>'
     cols.forEach(c => html += `<th>${c}</th>`)
     html += '</tr></thead><tbody>'
     
-    previewData.forEach(row => {
+    data.forEach(row => {
       html += '<tr>'
       cols.forEach(c => {
         let val = row[c] || ''
-        if (c.includes('액') || c.includes('원가') || c === '판매수량') {
+        if (c.includes('액') || c.includes('원가') || c === '판매수량' || 
+            c === '재고량' || c === '총판매량' || c.includes('재고액')) {
           const n = toNum(val)
           val = n !== null ? n.toLocaleString() : val
         }
@@ -634,53 +821,38 @@
     })
     html += '</tbody>'
     
-    document.getElementById('sales-preview-table').innerHTML = html
-    document.getElementById('sales-preview').style.display = 'block'
+    document.getElementById(prefix + '-preview-table').innerHTML = html
+    document.getElementById(prefix + '-preview').style.display = 'block'
   }
   
-  window.startSalesUpload = async function() {
-    if (!salesData) return
-    if (!confirm(`${salesValidRows.toLocaleString()}건을 업로드합니다. 진행하시겠어요?\n\n중간에 브라우저를 닫지 마세요.`)) return
+  // ============= 업로드 =============
+  window.startUpload = async function(prefix) {
+    const config = UPLOADERS[prefix]
+    const state = STATE[prefix]
+    if (!state.data) return
     
-    document.getElementById('sales-options').style.display = 'none'
-    document.getElementById('sales-progress').style.display = 'block'
-    document.getElementById('sales-log').innerHTML = ''
-    document.getElementById('sales-stop-btn').disabled = false
-    document.getElementById('sales-stop-btn').textContent = '긴급 중단'
+    const labelMap = { sales: '매출', inv: '재고', st: '정판율' }
+    if (!confirm(`${state.validRows.toLocaleString()}건을 ${labelMap[prefix]} 테이블에 업로드합니다.\n진행하시겠어요?\n\n중간에 브라우저를 닫지 마세요.`)) return
     
-    salesUploading = true
-    salesShouldStop = false
+    document.getElementById(prefix + '-options').style.display = 'none'
+    document.getElementById(prefix + '-progress').style.display = 'block'
+    document.getElementById(prefix + '-log').innerHTML = ''
+    document.getElementById(prefix + '-stop').disabled = false
+    document.getElementById(prefix + '-stop').textContent = '긴급 중단'
     
-    salesLog('업로드 준비 중...', 'info')
+    state.uploading = true
+    state.shouldStop = false
+    
+    logTo(prefix, '업로드 준비 중...', 'info')
     
     const rows = []
-    for (const row of salesData) {
-      const season = parseSeason(row['계절코드'])
-      if (!season.type) continue
-      
-      rows.push({
-        sale_date: row['날짜'] || null,
-        brand_code: row['브랜드코드'] || '',
-        brand_name: row['브랜드명'] || null,
-        store_code: row['지점코드'] || null,
-        store_name: row['지점명'] || null,
-        buy_group_code: row['구매그룹코드'] || null,
-        buy_group_name: row['구매그룹명'] || null,
-        mc_code: row['MC코드'] || null,
-        mc_name: row['MC명'] || null,
-        season_code: row['계절코드'] || null,
-        season_year: season.year,
-        season_type: season.type,
-        gross_sales: toNum(row['총매출액']),
-        net_sales: toNum(row['실매출액']),
-        cost_of_goods: toNum(row['총매출원가']),
-        qty_sold: toNum(row['판매수량']),
-        return_amount: toNum(row['환입액'])
-      })
+    for (const row of state.data) {
+      const transformed = config.transformRow(row)
+      if (transformed !== null) rows.push(transformed)
     }
     
-    salesLog(`변환 완료: ${rows.length.toLocaleString()}건`, 'ok')
-    salesLog(`Supabase로 전송 시작...`, 'info')
+    logTo(prefix, `변환 완료: ${rows.length.toLocaleString()}건`, 'ok')
+    logTo(prefix, `Supabase로 전송 시작...`, 'info')
     
     const BATCH_SIZE = 1000
     const total = rows.length
@@ -689,8 +861,8 @@
     let retries = 0
     
     for (let i = 0; i < total; i += BATCH_SIZE) {
-      if (salesShouldStop) {
-        salesLog(`사용자 요청으로 중단됨 (${success}건 업로드 완료)`, 'warn')
+      if (state.shouldStop) {
+        logTo(prefix, `사용자 요청으로 중단됨 (${success}건 업로드 완료)`, 'warn')
         break
       }
       
@@ -701,76 +873,74 @@
       while (attempt < 3 && !ok) {
         attempt++
         try {
-          const { error } = await supabase.from('sales_daily').insert(batch)
+          const { error } = await supabase.from(config.table).insert(batch)
           if (error) throw error
           ok = true
           success += batch.length
         } catch (err) {
           if (attempt < 3) {
             retries++
-            salesLog(`배치 ${i+1}~${i+batch.length} 재시도 (${attempt}/3): ${err.message}`, 'warn')
+            logTo(prefix, `배치 ${i+1}~${i+batch.length} 재시도 (${attempt}/3): ${err.message}`, 'warn')
             await new Promise(r => setTimeout(r, 1000))
           } else {
             failed += batch.length
-            salesLog(`배치 ${i+1}~${i+batch.length} 실패: ${err.message}`, 'err')
+            logTo(prefix, `배치 ${i+1}~${i+batch.length} 실패: ${err.message}`, 'err')
           }
         }
       }
       
       const pct = Math.floor(((i + batch.length) / total) * 100)
-      document.getElementById('sales-progress-bar').style.width = pct + '%'
-      document.getElementById('sales-progress-pct').textContent = pct + '%'
-      document.getElementById('sales-progress-cnt').textContent = 
+      document.getElementById(prefix + '-bar').style.width = pct + '%'
+      document.getElementById(prefix + '-pct').textContent = pct + '%'
+      document.getElementById(prefix + '-cnt').textContent = 
         `${(i + batch.length).toLocaleString()} / ${total.toLocaleString()} 행`
       
       if ((i + batch.length) % 10000 === 0 || (i + batch.length) >= total) {
-        salesLog(`진행: ${(i + batch.length).toLocaleString()} / ${total.toLocaleString()} (${pct}%)`, '')
+        logTo(prefix, `진행: ${(i + batch.length).toLocaleString()} / ${total.toLocaleString()} (${pct}%)`, '')
       }
     }
     
-    salesUploading = false
-    document.getElementById('sales-stop-btn').disabled = true
-    document.getElementById('sales-stop-btn').textContent = salesShouldStop ? '중단됨' : '완료'
+    state.uploading = false
+    document.getElementById(prefix + '-stop').disabled = true
+    document.getElementById(prefix + '-stop').textContent = state.shouldStop ? '중단됨' : '완료'
     
-    if (failed === 0 && !salesShouldStop) {
-      salesLog(`✓ 업로드 완료! 총 ${success.toLocaleString()}건 (재시도 ${retries}회)`, 'ok')
+    if (failed === 0 && !state.shouldStop) {
+      logTo(prefix, `✓ 업로드 완료! 총 ${success.toLocaleString()}건 (재시도 ${retries}회)`, 'ok')
       alert(`업로드 완료!\n\n성공: ${success.toLocaleString()}건\n재시도: ${retries}회`)
     } else {
-      salesLog(`업로드 종료. 성공 ${success.toLocaleString()} / 실패 ${failed.toLocaleString()}`, 'warn')
+      logTo(prefix, `업로드 종료. 성공 ${success.toLocaleString()} / 실패 ${failed.toLocaleString()}`, 'warn')
       alert(`업로드 종료\n\n성공: ${success.toLocaleString()}건\n실패: ${failed.toLocaleString()}건`)
     }
     
     loadStats()
   }
   
-  window.stopSalesUpload = function() {
-    if (!salesUploading) return
+  window.stopUpload = function(prefix) {
+    const state = STATE[prefix]
+    if (!state.uploading) return
     if (confirm('업로드를 중단하시겠어요? 이미 업로드된 데이터는 그대로 유지됩니다.')) {
-      salesShouldStop = true
-      salesLog('중단 요청됨...', 'warn')
+      state.shouldStop = true
+      logTo(prefix, '중단 요청됨...', 'warn')
     }
   }
   
-  window.resetSalesUpload = function() {
-    salesFile = null
-    salesData = null
-    salesValidRows = 0
-    document.getElementById('sales-file').value = ''
-    document.getElementById('sales-file-info').style.display = 'none'
-    document.getElementById('sales-upload-zone').classList.remove('has-file')
-    document.getElementById('sales-validation').style.display = 'none'
-    document.getElementById('sales-preview').style.display = 'none'
-    document.getElementById('sales-options').style.display = 'none'
+  window.resetUpload = function(prefix) {
+    STATE[prefix] = { file: null, data: null, validRows: 0, uploading: false, shouldStop: false }
+    document.getElementById(prefix + '-file').value = ''
+    document.getElementById(prefix + '-info').style.display = 'none'
+    document.getElementById(prefix + '-zone').classList.remove('has-file')
+    document.getElementById(prefix + '-validation').style.display = 'none'
+    document.getElementById(prefix + '-preview').style.display = 'none'
+    document.getElementById(prefix + '-options').style.display = 'none'
   }
   
+  // ============= 시작 =============
   ;(async () => {
     const session = await authGuard()
     if (!session) return
-    
     document.getElementById('user-info').textContent = session.user.email
     document.getElementById('loading').classList.add('hide')
     document.getElementById('app').style.display = 'flex'
-    
     loadStats()
   })()
 </script>
