@@ -1401,10 +1401,14 @@
     // 트리거 진단
     renderBrandTriggers(b, period, remainingDays, progress)
     
-    // 시뮬레이터 초기 (0% 할인)
-    document.getElementById('bd-sim').value = 0
-    document.getElementById('bd-sim-val').textContent = '0'
-    runSimulator(0)
+    // 시뮬레이터: 현재 슬라이더 값 유지하면서 재계산
+    // (메인 슬라이더 변경 시 모달 갱신 때문에 0으로 리셋되면 안 됨)
+    const simEl = document.getElementById('bd-sim')
+    const currentSimVal = simEl ? parseInt(simEl.value, 10) : 0
+    if (simEl) {
+      document.getElementById('bd-sim-val').textContent = currentSimVal
+    }
+    runSimulator(currentSimVal)
   }
   
   function renderBrandModalChart(brand, period) {
@@ -1575,41 +1579,55 @@
     opDeltaEl.className = 'delta ' + (Math.abs(opDelta) < 0.1 ? 'flat' : (opDelta < 0 ? 'down' : 'up'))
   }
   
-  // 시뮬레이터 슬라이더 이벤트
-  document.getElementById('bd-sim').addEventListener('input', (e) => {
-    const v = parseInt(e.target.value, 10)
-    document.getElementById('bd-sim-val').textContent = v
-    runSimulator(v)
-  })
-  
-  // 모달 외부 클릭 / ESC 닫기
-  document.getElementById('bd-modal').addEventListener('click', () => closeBrandModal())
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('bd-modal').classList.contains('show')) {
-      closeBrandModal()
+  // 시뮬레이터 슬라이더 이벤트 - 안전하게
+  try {
+    const simEl = document.getElementById('bd-sim')
+    if (simEl) {
+      simEl.addEventListener('input', (e) => {
+        const v = parseInt(e.target.value, 10)
+        document.getElementById('bd-sim-val').textContent = v
+        runSimulator(v)
+      })
     }
-  })
+  } catch (err) { console.error('시뮬 리스너 등록 실패:', err) }
   
-  // 슬라이더 변경 시 모달도 갱신 (열려있을 때)
-  ['sl-days','sl-sell','sl-op','sl-sga'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => {
-      if (bdCurrentBrand && document.getElementById('bd-modal').classList.contains('show')) {
-        // 판관비 업데이트
-        bdCurrentSga = parseInt(document.getElementById('sl-sga').value, 10) / 100
-        // 모달 다시 그리기 (계산은 부모쪽에서 하므로 약간 후 다시 호출)
-        setTimeout(() => {
-          if (bdCurrentBrand) {
-            // currentBrands에서 최신 brand 객체 다시 찾기 (재계산 후)
-            const refreshed = currentBrands.find(b => b.brand_code === bdCurrentBrand.brand_code)
-            if (refreshed) {
-              bdCurrentBrand = refreshed
-              renderBrandModal()
-            }
-          }
-        }, 50)
+  // 모달 외부 클릭 / ESC 닫기 - 안전하게
+  try {
+    const modalEl = document.getElementById('bd-modal')
+    if (modalEl) {
+      modalEl.addEventListener('click', () => closeBrandModal())
+    }
+    document.addEventListener('keydown', (e) => {
+      const m = document.getElementById('bd-modal')
+      if (e.key === 'Escape' && m && m.classList.contains('show')) {
+        closeBrandModal()
       }
     })
-  })
+  } catch (err) { console.error('모달 리스너 등록 실패:', err) }
+  
+  // 슬라이더 변경 시 모달도 갱신 (열려있을 때) - 안전하게 try
+  try {
+    ;['sl-days','sl-sell','sl-op','sl-sga'].forEach(id => {
+      const el = document.getElementById(id)
+      if (!el) return
+      el.addEventListener('input', () => {
+        if (bdCurrentBrand && document.getElementById('bd-modal').classList.contains('show')) {
+          bdCurrentSga = parseInt(document.getElementById('sl-sga').value, 10) / 100
+          setTimeout(() => {
+            if (bdCurrentBrand) {
+              const refreshed = currentBrands.find(b => b.brand_code === bdCurrentBrand.brand_code)
+              if (refreshed) {
+                bdCurrentBrand = refreshed
+                renderBrandModal()
+              }
+            }
+          }, 50)
+        }
+      })
+    })
+  } catch (err) {
+    console.error('모달 슬라이더 리스너 등록 실패:', err)
+  }
   
   window.openBrandModalByCode = openBrandModal  // 카드/리스트에서 호출용
   
