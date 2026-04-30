@@ -127,7 +127,7 @@
   .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
   .k {
     background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
-    padding: 14px 16px 14px 20px; position: relative; overflow: hidden;
+    padding: 18px 20px 18px 24px; position: relative; overflow: hidden;
     cursor: pointer; transition: transform 0.15s, border-color 0.15s;
   }
   .k:hover { transform: translateY(-2px); border-color: #5c4a3a; }
@@ -145,15 +145,16 @@
   .k.k4::before { background: #d97878; }
   .k.k4::after { background: radial-gradient(circle, rgba(217,120,120,0.18) 0%, transparent 70%); }
   .kl {
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: #a89884; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a89884; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    font-weight: 600;
   }
   .kl::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
   .k.k1 .kl::before { background: #b08bd9; }
   .k.k2 .kl::before { background: #6cd9b8; }
   .k.k3 .kl::before { background: #f0a93a; }
   .k.k4 .kl::before { background: #d97878; }
-  .kv { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .kv { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .k.k1 .kv { color: #b08bd9; }
   .k.k2 .kv { color: #6cd9b8; }
   .k.k3 .kv { color: #f0a93a; }
@@ -170,13 +171,32 @@
   
   /* TOP 카드 */
   .cards-grid {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px; margin-bottom: 22px;
   }
   .bcard {
     background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
-    padding: 14px 16px; position: relative; overflow: hidden;
+    padding: 16px 18px; position: relative; overflow: hidden;
     cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+  }
+  
+  /* 미니 매출 추이 차트 */
+  .mini-chart-wrap {
+    margin: 10px 0;
+    padding: 8px 0;
+    border-top: 1px solid rgba(63,51,42,0.5);
+    border-bottom: 1px solid rgba(63,51,42,0.5);
+  }
+  .mini-chart-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .mini-chart-head .trend-up { color: #6cd9b8; font-weight: 700; }
+  .mini-chart-head .trend-down { color: #d97878; font-weight: 700; }
+  .mini-chart-head .trend-flat { color: #c9a17a; font-weight: 700; }
+  .mini-chart {
+    width: 100%; height: 32px;
   }
   .bcard:hover { transform: translateY(-2px); border-color: #5c4a3a; }
   .bcard::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
@@ -188,9 +208,9 @@
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 10px;
   }
-  .bname { font-size: 14px; font-weight: 600; color: #b08bd9; }
+  .bname { font-size: 17px; font-weight: 700; color: #b08bd9; letter-spacing: -0.01em; }
   .bbadge {
-    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    font-size: 11px; padding: 4px 10px; border-radius: 4px;
     font-weight: 600; letter-spacing: 0.04em;
   }
   .b-ok { background: rgba(108,217,184,0.15); color: #6cd9b8; }
@@ -198,19 +218,20 @@
   .b-hot { background: rgba(217,120,120,0.18); color: #e89090; }
   .b-up { background: rgba(91,180,229,0.15); color: #5bb4e5; }
   .brev {
-    display: flex; gap: 18px; align-items: baseline;
-    padding: 8px 0 12px; border-bottom: 1px solid rgba(63,51,42,0.5);
-    margin-bottom: 10px;
+    display: flex; gap: 14px; align-items: baseline;
+    padding-bottom: 8px;
+    margin-bottom: 0;
   }
   .brev .lab { font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em; display: block; margin-bottom: 2px; }
   .brev .v1 { font-size: 18px; font-weight: 700; color: #4cb8a4; font-variant-numeric: tabular-nums; }
   .brev .v2 { font-size: 14px; font-weight: 600; color: #f2e8d9; font-variant-numeric: tabular-nums; }
   .bstat {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 12px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 12px;
+    margin-top: 8px;
   }
   .bstat > div { display: flex; flex-direction: column; gap: 2px; }
   .bstat .lab { color: #6b5d4f; font-size: 10px; letter-spacing: 0.04em; }
-  .bstat .val { color: #f2e8d9; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bstat .val { color: #f2e8d9; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13px; }
   .bstat .val.ok { color: #6cd9b8; }
   .bstat .val.warn { color: #f0a93a; }
   .bstat .val.hot { color: #d97878; }
@@ -229,23 +250,23 @@
   .tbl .hint { font-size: 11px; color: #6b5d4f; font-style: italic; }
   .tbl-scroll { overflow-x: auto; }
   table.lst {
-    width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1100px;
+    width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1100px;
   }
   .lst thead th {
-    padding: 10px 10px; text-align: left; font-size: 10px;
+    padding: 12px 12px; text-align: left; font-size: 11px;
     letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;
     background: #352a21; border-bottom: 1px solid #3f332a; color: #c9a17a;
     white-space: nowrap; position: sticky; top: 0;
   }
   .lst th.r { text-align: right; }
   .lst tbody td {
-    padding: 10px; border-bottom: 1px solid #3f332a; color: #f2e8d9;
+    padding: 12px; border-bottom: 1px solid #3f332a; color: #f2e8d9;
     font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer;
   }
   .lst tbody td.r { text-align: right; font-weight: 600; }
   .lst tbody tr:nth-child(even) { background: rgba(52,42,33,0.4); }
   .lst tbody tr:hover { background: #423428; }
-  .lst td.bn { color: #b08bd9; font-weight: 600; }
+  .lst td.bn { color: #b08bd9; font-weight: 700; font-size: 14px; }
   .lst td.sales { color: #4cb8a4; }
   .lst td.op-ok { color: #6cd9b8; }
   .lst td.op-warn { color: #f0a93a; }
@@ -256,7 +277,7 @@
   .lst td.sr-hot { color: #d97878; }
   .lst td.bdg { text-align: center; }
   .lst td.bdg span {
-    font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: 600;
+    font-size: 11px; padding: 4px 9px; border-radius: 4px; font-weight: 600;
   }
   
   /* 로딩 */
@@ -380,7 +401,7 @@
 
   <!-- TOP 10 카드 -->
   <div id="top-section" style="display:none;">
-    <div class="sec-label">TOP 10 브랜드 · 매출액 순</div>
+    <div class="sec-label">TOP 9 브랜드 · 매출액 순</div>
     <div class="cards-grid" id="top-cards"></div>
   </div>
 
@@ -639,13 +660,17 @@
           total_sales: 0,
           total_cost: 0,
           total_qty: 0,
-          dates: new Set()
+          dates: new Set(),
+          dailySales: {}  // {date: sum}
         }
       }
       brandMap[key].total_sales += Number(r.net_sales) || 0
       brandMap[key].total_cost += Number(r.cost_of_goods) || 0
       brandMap[key].total_qty += Number(r.qty_sold) || 0
-      if (r.sale_date) brandMap[key].dates.add(r.sale_date)
+      if (r.sale_date) {
+        brandMap[key].dates.add(r.sale_date)
+        brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + (Number(r.net_sales) || 0)
+      }
     }
     
     // 2. 재고 집계 (가장 최근 년월)
@@ -797,11 +822,68 @@
     return { text: '적극 할인', cls: 'b-hot' }
   }
   
+  // 최근 30일 데이터 추출 (없는 날짜는 0으로 채움)
+  function getRecent30Days(dailySales) {
+    const today = new Date()
+    const result = []
+    // 시즌 내 가장 최근 데이터 날짜 찾기 (오늘이 시즌 밖일 수 있음)
+    let latestDate = null
+    for (const d in dailySales) {
+      if (!latestDate || d > latestDate) latestDate = d
+    }
+    if (!latestDate) return result
+    
+    const endDate = new Date(latestDate)
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(endDate)
+      d.setDate(d.getDate() - i)
+      const key = d.toISOString().slice(0, 10)
+      result.push({ date: key, sales: dailySales[key] || 0 })
+    }
+    return result
+  }
+  
+  // 추세 판정: 최근 7일 평균 vs 이전 23일 평균
+  function calcTrend(daily30) {
+    if (daily30.length < 14) return { dir: 'flat', icon: '→' }
+    const recent7 = daily30.slice(-7).reduce((s, d) => s + d.sales, 0) / 7
+    const prev = daily30.slice(0, -7).reduce((s, d) => s + d.sales, 0) / Math.max(daily30.length - 7, 1)
+    if (prev === 0) return { dir: 'flat', icon: '→' }
+    const change = (recent7 - prev) / prev
+    if (change > 0.10) return { dir: 'up', icon: '↗' }
+    if (change < -0.10) return { dir: 'down', icon: '↘' }
+    return { dir: 'flat', icon: '→' }
+  }
+  
+  // 미니 막대 차트 SVG 생성
+  function renderSparkline(daily30, status) {
+    if (daily30.length === 0) return ''
+    const max = Math.max(...daily30.map(d => d.sales), 1)
+    const w = 100  // viewBox 너비 (% 단위)
+    const h = 32
+    const barW = w / daily30.length
+    
+    // 색상 (상태별)
+    let color = '#4cb8a4'
+    if (status === 'hot') color = '#d97878'
+    else if (status === 'warn') color = '#f0a93a'
+    else if (status === 'up') color = '#5bb4e5'
+    
+    let bars = ''
+    daily30.forEach((d, i) => {
+      const barH = max > 0 ? (d.sales / max) * (h - 2) : 0
+      const x = i * barW + 0.3
+      const y = h - barH
+      bars += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(barW - 0.6).toFixed(2)}" height="${barH.toFixed(2)}" fill="${color}" rx="0.3" opacity="0.85"/>`
+    })
+    return `<svg class="mini-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${bars}</svg>`
+  }
+  
   function fmtMoney(v) {
     if (v === null || v === undefined) return '-'
-    if (Math.abs(v) >= 100000000) return '₩' + (v/100000000).toFixed(1) + '억'
-    if (Math.abs(v) >= 10000) return '₩' + (v/10000).toFixed(0) + '만'
-    return '₩' + Math.round(v).toLocaleString()
+    if (Math.abs(v) >= 100000000) return (v/100000000).toFixed(1) + '억'
+    if (Math.abs(v) >= 10000) return (v/10000).toFixed(0) + '만'
+    return Math.round(v).toLocaleString()
   }
   
   function fmtPct(v, digits = 1) {
@@ -823,12 +905,17 @@
   function renderTopCards() {
     const container = document.getElementById('top-cards')
     container.innerHTML = ''
-    const top10 = currentBrands.slice(0, 10)
-    for (const b of top10) {
+    const top9 = currentBrands.slice(0, 9)
+    for (const b of top9) {
       const sl = statusLabel(b.status)
       const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'ok' : (b.op_margin >= 0.10 ? 'warn' : 'hot'))
       const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'hot' : 'warn'))
       const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? 'ok' : (b.sell_progress_ratio < 0.6 ? 'hot' : 'warn'))
+      
+      const daily30 = getRecent30Days(b.dailySales || {})
+      const trend = calcTrend(daily30)
+      const sparkline = renderSparkline(daily30, b.status)
+      const trendText = trend.dir === 'up' ? '추세 상승' : (trend.dir === 'down' ? '추세 둔화' : '안정')
       
       const card = document.createElement('div')
       card.className = `bcard s-${b.status}`
@@ -840,6 +927,13 @@
         <div class="brev">
           <div><span class="lab">매출액</span><span class="v1">${fmtMoney(b.total_sales)}</span></div>
           <div><span class="lab">일평균</span><span class="v2">${fmtMoney(b.daily_avg)}</span></div>
+        </div>
+        <div class="mini-chart-wrap">
+          <div class="mini-chart-head">
+            <span>최근 30일</span>
+            <span class="trend-${trend.dir}">${trend.icon} ${trendText}</span>
+          </div>
+          ${sparkline}
         </div>
         <div class="bstat">
           <div><span class="lab">영업이익률</span><span class="val ${opCls}">${fmtPct(b.op_margin)}</span></div>
