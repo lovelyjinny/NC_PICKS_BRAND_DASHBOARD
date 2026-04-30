@@ -443,7 +443,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 6 · 메인 대시보드 (회사 KPI 공식 적용) · v0.6
+    Phase 6 · 메인 대시보드 (회사 공식 + 발주/입고 차트 연결) · v0.7
   </div>
 
 </div>
@@ -501,6 +501,7 @@
   let salesData = []
   let invData = []
   let stData = []
+  let poSummary = []  // 발주/입고 브랜드별 시즌 요약
   let currentBrands = []
   
   // ============= 로딩 / 인증 / UI 헬퍼 =============
@@ -591,7 +592,7 @@
         return all
       }
       
-      const [s, i, t] = await Promise.all([
+      const [s, i, t, p] = await Promise.all([
         fetchAll(supabase.from('sales_daily')
           .select('brand_code, brand_name, sale_date, net_sales, cost_of_goods, qty_sold, return_amount')
           .eq('season_year', year).eq('season_type', type)),
@@ -600,14 +601,18 @@
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('sellthrough_daily')
           .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat')
+          .eq('season_year', year).eq('season_type', type)),
+        fetchAll(supabase.from('brand_season_summary')
+          .select('brand_code, total_inbound_amount, total_cost_of_goods, company_cum_sell_rate')
           .eq('season_year', year).eq('season_type', type))
       ])
       
       salesData = s
       invData = i
       stData = t
+      poSummary = p
       
-      console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}`)
+      console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}, 발주요약 ${p.length}`)
       
       computeAndRender()
     } catch (err) {
@@ -710,13 +715,24 @@
       }
     }
     
-    // 4. 브랜드별 지표 계산
+    // 4. 발주/입고 요약 맵 (브랜드별 시즌 누적 입고액)
+    const poMap = {}
+    for (const r of poSummary) {
+      poMap[r.brand_code] = {
+        seasonInbound: Number(r.total_inbound_amount) || 0,
+        companySellRate: r.company_cum_sell_rate !== null ? Number(r.company_cum_sell_rate) : null,
+        companyTotalCost: Number(r.total_cost_of_goods) || 0
+      }
+    }
+    
+    // 5. 브랜드별 지표 계산
     const brands = []
     for (const code in brandMap) {
       const b = brandMap[code]
       const inv = invMap[code] || { qty: 0, value: 0 }
       const stQty = stMap[code] || b.total_qty // 정판 데이터 없으면 매출 수량 대체
-      const inbound = inboundMap[code] || {}    // 일별 입고액 (벤더입고액_부가세)
+      const inbound = inboundMap[code] || {}    // 일별 입고액 (벤더입고액_부가세) - legacy
+      const poData = poMap[code] || { seasonInbound: 0, companySellRate: null, companyTotalCost: 0 }
       
       // 매출 통계
       const totalSales = b.total_sales      // 실매출 (외형/1.1)
@@ -816,7 +832,9 @@
         status: status,
         rec_discount: recDiscount,
         sell_progress_ratio: (sellThrough !== null && progress > 0) ? sellThrough / (progress / 100) : null,
-        inbound: inbound  // 일별 입고액
+        inbound: inbound,  // 일별 입고액 (legacy)
+        season_inbound_total: poData.seasonInbound,  // 시즌 누적 입고액 (purchase_orders)
+        company_sell_rate: poData.companySellRate    // 회사 자체 계산 누적판매율
       })
     }
     
@@ -845,7 +863,8 @@
   }
   
   // 시즌 시작부터 오늘까지 누적판매율 라인 데이터 계산
-  // 누적판매율(누적) = 그날까지 누적 cost_of_goods ÷ 시즌 누적 입고액 (벤더입고액)
+  // 누적판매율 = 그날까지 누적 cost_of_goods ÷ 시즌 누적 입고액 (purchase_orders)
+  // 회사 공식: 누적판매율 = 누적매출원가 ÷ 누적입고액
   function getCumulativeSellThrough(brand, period) {
     const startDate = new Date(period.start)
     const endDate = new Date(period.end)
@@ -853,18 +872,22 @@
     const lastDate = today < endDate ? today : endDate
     
     const dailyCost = brand.dailyCost || {}
-    const inbound = brand.inbound || {}
+    // 시즌 입고액 = purchase_orders의 시즌 합계 (스칼라)
+    const totalInbound = brand.season_inbound_total || 0
     
-    let totalInbound = 0
-    for (const d in inbound) totalInbound += inbound[d]
+    if (totalInbound === 0) return { points: [], finalRate: 0, totalInbound: 0 }
     
-    if (totalInbound === 0) return { points: [], finalRate: 0 }
-    
-    const totalDays = Math.ceil((lastDate - startDate) / (1000 * 60 * 60 * 24))
-    if (totalDays <= 0) return { points: [], finalRate: 0 }
-    
-    // 일별 누적 cost를 미리 계산 (정렬된 날짜 키 활용)
+    // 매출 데이터의 첫 날을 X축 시작점으로 사용 (시즌 시작 전 매출이 있을 수 있음)
     const sortedDates = Object.keys(dailyCost).sort()
+    if (sortedDates.length === 0) return { points: [], finalRate: 0, totalInbound }
+    
+    const dataStartDate = new Date(sortedDates[0])
+    const chartStart = dataStartDate < startDate ? dataStartDate : startDate
+    
+    const totalDays = Math.ceil((lastDate - chartStart) / (1000 * 60 * 60 * 24))
+    if (totalDays <= 0) return { points: [], finalRate: 0, totalInbound }
+    
+    // 일별 누적 cost 계산
     const cumByDate = {}
     let runningCost = 0
     for (const dt of sortedDates) {
@@ -872,16 +895,16 @@
       cumByDate[dt] = runningCost
     }
     
-    // 시즌 진척에 따라 샘플링 간격 조정
+    // 샘플링 간격 (점이 너무 많으면 라인이 무거워짐)
     const step = totalDays > 90 ? 5 : (totalDays > 60 ? 3 : (totalDays > 30 ? 2 : 1))
     
     const points = []
     for (let i = 0; i <= totalDays; i += step) {
-      const d = new Date(startDate)
+      const d = new Date(chartStart)
       d.setDate(d.getDate() + i)
       const key = d.toISOString().slice(0, 10)
       
-      // 그 날까지 누적 cost (key 이전 마지막 누적값)
+      // 그 날까지 누적 cost
       let acc = 0
       for (const dt of sortedDates) {
         if (dt <= key) acc = cumByDate[dt]
