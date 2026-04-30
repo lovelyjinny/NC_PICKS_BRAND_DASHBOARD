@@ -19,252 +19,289 @@
     padding: 24px;
   }
   
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+  .container { max-width: 1400px; margin: 0 auto; }
   
   /* 헤더 */
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 1px solid #3f332a;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1px solid #3f332a; padding-bottom: 16px; margin-bottom: 22px;
   }
-  .logo {
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: #c9a17a;
-    font-weight: 600;
-  }
-  .title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f2e8d9;
-    margin-top: 4px;
-    letter-spacing: -0.01em;
-  }
-  .header-right {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
+  .logo { font-size: 11px; letter-spacing: 0.3em; color: #c9a17a; font-weight: 600; }
+  .title { font-size: 20px; font-weight: 700; color: #f2e8d9; margin-top: 4px; letter-spacing: -0.01em; }
+  .header-right { display: flex; gap: 10px; align-items: center; }
   
-  /* 버튼 */
   .btn {
-    background: transparent;
-    border: 1px solid #3f332a;
-    color: #c9a17a;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    transition: all 0.15s;
-    font-family: inherit;
+    background: transparent; border: 1px solid #3f332a; color: #c9a17a;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+    transition: all 0.15s; font-family: inherit;
   }
-  .btn:hover {
-    border-color: #5c4a3a;
-    color: #f2e8d9;
-    background: rgba(201,161,122,0.05);
-  }
-  .btn-primary {
-    background: #c9a17a;
-    border-color: #c9a17a;
-    color: #1a1410;
-  }
-  .btn-primary:hover {
-    background: #b88f68;
-    border-color: #b88f68;
-    color: #1a1410;
-  }
-  .btn-admin-active {
-    background: rgba(108,217,184,0.15);
-    border-color: #6cd9b8;
-    color: #6cd9b8;
-  }
+  .btn:hover { border-color: #5c4a3a; color: #f2e8d9; background: rgba(201,161,122,0.05); }
+  .btn-primary { background: #c9a17a; border-color: #c9a17a; color: #1a1410; }
+  .btn-primary:hover { background: #b88f68; border-color: #b88f68; color: #1a1410; }
   .admin-badge {
-    font-size: 10px;
-    background: rgba(108,217,184,0.15);
-    color: #6cd9b8;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 10px; background: rgba(108,217,184,0.15); color: #6cd9b8;
+    padding: 4px 10px; border-radius: 4px; font-weight: 600; letter-spacing: 0.04em;
   }
   
-  /* 섹션 라벨 */
   .sec-label {
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #c9a17a;
-    font-weight: 600;
-    margin: 0 0 12px 4px;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: #c9a17a; font-weight: 600; margin: 0 0 12px 4px;
   }
   
-  /* 카드 */
-  .card {
-    background: #2a2018;
-    border: 1px solid #3f332a;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 22px;
+  /* 시즌 셀렉터 */
+  .season-bar {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .season-bar .label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a89884; font-weight: 600;
+  }
+  .season-select {
+    background: #1a1410; border: 1px solid #3f332a; color: #f2e8d9;
+    padding: 7px 14px; border-radius: 6px; font-size: 13px;
+    font-family: inherit; cursor: pointer; min-width: 90px;
+  }
+  .season-select:focus { outline: none; border-color: #c9a17a; }
+  .season-info {
+    margin-left: auto; font-size: 12px; color: #a89884;
+  }
+  .season-info b { color: #f2e8d9; font-weight: 600; }
+  .season-progress {
+    display: inline-block; width: 120px; height: 4px;
+    background: #1a1410; border-radius: 2px; margin: 0 8px;
+    vertical-align: middle; overflow: hidden;
+  }
+  .season-progress-bar {
+    height: 100%; background: linear-gradient(90deg, #c9a17a, #b88f68);
+    transition: width 0.3s;
   }
   
-  /* 시스템 상태 */
-  .status-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    padding: 4px 0;
+  /* 슬라이더 패널 */
+  .sliders { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .sl {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 13px 16px; position: relative;
   }
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .sl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .sl-l { font-size: 11px; font-weight: 600; color: #a89884; letter-spacing: 0.04em; }
+  .sl-v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .sl-v .u { font-size: 11px; color: #6b5d4f; font-weight: 400; margin-left: 2px; }
+  .sl.s1 .sl-v { color: #f0a93a; }
+  .sl.s2 .sl-v { color: #6cd9b8; }
+  .sl.s3 .sl-v { color: #a8c956; }
+  .sl.s4 .sl-v { color: #f08aba; }
+  .sl input[type=range] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 4px; background: #352a21; border-radius: 2px; outline: none;
   }
-  .status-dot.ok { background: #6cd9b8; box-shadow: 0 0 8px rgba(108,217,184,0.5); }
-  .status-dot.err { background: #d97878; box-shadow: 0 0 8px rgba(217,120,120,0.5); }
-  .status-dot.wait { background: #f0a93a; }
-  .status-text { color: #f2e8d9; }
-  .status-text.muted { color: #a89884; }
+  .sl input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    cursor: pointer; border: 2px solid #1a1410;
+  }
+  .sl input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    cursor: pointer; border: 2px solid #1a1410;
+  }
+  .sl.s1 input::-webkit-slider-thumb { background: #f0a93a; }
+  .sl.s1 input::-moz-range-thumb { background: #f0a93a; }
+  .sl.s2 input::-webkit-slider-thumb { background: #6cd9b8; }
+  .sl.s2 input::-moz-range-thumb { background: #6cd9b8; }
+  .sl.s3 input::-webkit-slider-thumb { background: #a8c956; }
+  .sl.s3 input::-moz-range-thumb { background: #a8c956; }
+  .sl.s4 input::-webkit-slider-thumb { background: #f08aba; }
+  .sl.s4 input::-moz-range-thumb { background: #f08aba; }
+  .sl-rng { display: flex; justify-content: space-between; font-size: 10px; color: #6b5d4f; margin-top: 4px; }
+  .sl-sub { font-size: 10px; color: #6b5d4f; margin-top: 6px; line-height: 1.4; }
+  .sl.s4::after {
+    content: '시뮬'; position: absolute; top: 8px; right: 12px;
+    font-size: 9px; letter-spacing: 0.06em; color: #f08aba;
+    background: rgba(240,138,186,0.12); padding: 2px 6px;
+    border-radius: 3px; font-weight: 600; text-transform: uppercase;
+  }
   
-  /* 판관비 테이블 */
-  table.sga-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
+  /* KPI 카드 */
+  .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .k {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 14px 16px 14px 20px; position: relative; overflow: hidden;
+    cursor: pointer; transition: transform 0.15s, border-color 0.15s;
   }
-  .sga-table thead th {
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 600;
-    background: #352a21;
-    border-bottom: 1px solid #3f332a;
-    color: #c9a17a;
+  .k:hover { transform: translateY(-2px); border-color: #5c4a3a; }
+  .k::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+  .k::after {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 90px; height: 90px; border-radius: 50%; pointer-events: none;
   }
-  .sga-table th.r, .sga-table td.r { text-align: right; }
-  .sga-table tbody td {
-    padding: 11px 12px;
-    border-bottom: 1px solid #3f332a;
-    color: #f2e8d9;
-    font-variant-numeric: tabular-nums;
+  .k.k1::before { background: #b08bd9; }
+  .k.k1::after { background: radial-gradient(circle, rgba(176,139,217,0.18) 0%, transparent 70%); }
+  .k.k2::before { background: #6cd9b8; }
+  .k.k2::after { background: radial-gradient(circle, rgba(108,217,184,0.18) 0%, transparent 70%); }
+  .k.k3::before { background: #f0a93a; }
+  .k.k3::after { background: radial-gradient(circle, rgba(240,169,58,0.18) 0%, transparent 70%); }
+  .k.k4::before { background: #d97878; }
+  .k.k4::after { background: radial-gradient(circle, rgba(217,120,120,0.18) 0%, transparent 70%); }
+  .kl {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a89884; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
   }
-  .sga-table tbody tr:nth-child(even) {
-    background: rgba(52,42,33,0.4);
-  }
-  .badge-confirmed {
-    font-size: 10px;
-    background: rgba(108,217,184,0.15);
-    color: #6cd9b8;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-  .badge-predicted {
-    font-size: 10px;
-    background: rgba(240,169,58,0.15);
-    color: #f0a93a;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-  }
+  .kl::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .k.k1 .kl::before { background: #b08bd9; }
+  .k.k2 .kl::before { background: #6cd9b8; }
+  .k.k3 .kl::before { background: #f0a93a; }
+  .k.k4 .kl::before { background: #d97878; }
+  .kv { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .k.k1 .kv { color: #b08bd9; }
+  .k.k2 .kv { color: #6cd9b8; }
+  .k.k3 .kv { color: #f0a93a; }
+  .k.k4 .kv { color: #d97878; }
   
   /* 빈 상태 */
   .empty {
-    padding: 32px;
-    text-align: center;
-    color: #6b5d4f;
-    font-size: 13px;
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 12px;
+    padding: 48px 24px; text-align: center;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-title { font-size: 16px; font-weight: 600; color: #f2e8d9; margin-bottom: 6px; }
+  .empty-text { font-size: 13px; color: #a89884; line-height: 1.6; }
+  
+  /* TOP 카드 */
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px; margin-bottom: 22px;
+  }
+  .bcard {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 14px 16px; position: relative; overflow: hidden;
+    cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+  }
+  .bcard:hover { transform: translateY(-2px); border-color: #5c4a3a; }
+  .bcard::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+  .bcard.s-ok::before { background: #6cd9b8; }
+  .bcard.s-warn::before { background: #f0a93a; }
+  .bcard.s-hot::before { background: #d97878; }
+  .bcard.s-up::before { background: #5bb4e5; }
+  .bhead {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .bname { font-size: 14px; font-weight: 600; color: #b08bd9; }
+  .bbadge {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    font-weight: 600; letter-spacing: 0.04em;
+  }
+  .b-ok { background: rgba(108,217,184,0.15); color: #6cd9b8; }
+  .b-warn { background: rgba(240,169,58,0.15); color: #f0a93a; }
+  .b-hot { background: rgba(217,120,120,0.18); color: #e89090; }
+  .b-up { background: rgba(91,180,229,0.15); color: #5bb4e5; }
+  .brev {
+    display: flex; gap: 18px; align-items: baseline;
+    padding: 8px 0 12px; border-bottom: 1px solid rgba(63,51,42,0.5);
+    margin-bottom: 10px;
+  }
+  .brev .lab { font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em; display: block; margin-bottom: 2px; }
+  .brev .v1 { font-size: 18px; font-weight: 700; color: #4cb8a4; font-variant-numeric: tabular-nums; }
+  .brev .v2 { font-size: 14px; font-weight: 600; color: #f2e8d9; font-variant-numeric: tabular-nums; }
+  .bstat {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 12px;
+  }
+  .bstat > div { display: flex; flex-direction: column; gap: 2px; }
+  .bstat .lab { color: #6b5d4f; font-size: 10px; letter-spacing: 0.04em; }
+  .bstat .val { color: #f2e8d9; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bstat .val.ok { color: #6cd9b8; }
+  .bstat .val.warn { color: #f0a93a; }
+  .bstat .val.hot { color: #d97878; }
+  .bstat .val.up { color: #5bb4e5; }
+  
+  /* 리스트 */
+  .tbl {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    overflow: hidden; margin-bottom: 22px;
+  }
+  .tbl .th {
+    padding: 13px 18px; border-bottom: 1px solid #3f332a;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .tbl .tt { font-size: 14px; font-weight: 600; color: #f2e8d9; }
+  .tbl .hint { font-size: 11px; color: #6b5d4f; font-style: italic; }
+  .tbl-scroll { overflow-x: auto; }
+  table.lst {
+    width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1100px;
+  }
+  .lst thead th {
+    padding: 10px 10px; text-align: left; font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;
+    background: #352a21; border-bottom: 1px solid #3f332a; color: #c9a17a;
+    white-space: nowrap; position: sticky; top: 0;
+  }
+  .lst th.r { text-align: right; }
+  .lst tbody td {
+    padding: 10px; border-bottom: 1px solid #3f332a; color: #f2e8d9;
+    font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer;
+  }
+  .lst tbody td.r { text-align: right; font-weight: 600; }
+  .lst tbody tr:nth-child(even) { background: rgba(52,42,33,0.4); }
+  .lst tbody tr:hover { background: #423428; }
+  .lst td.bn { color: #b08bd9; font-weight: 600; }
+  .lst td.sales { color: #4cb8a4; }
+  .lst td.op-ok { color: #6cd9b8; }
+  .lst td.op-warn { color: #f0a93a; }
+  .lst td.op-hot { color: #d97878; }
+  .lst td.dy-warn { color: #f0a93a; }
+  .lst td.dy-hot { color: #d97878; }
+  .lst td.sr-warn { color: #f0a93a; }
+  .lst td.sr-hot { color: #d97878; }
+  .lst td.bdg { text-align: center; }
+  .lst td.bdg span {
+    font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: 600;
+  }
+  
+  /* 로딩 */
+  .calc-loading {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 24px; text-align: center;
+    color: #c9a17a; font-size: 13px; letter-spacing: 0.1em;
+  }
+  
+  /* 푸터 */
+  .footer {
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid #3f332a;
+    text-align: center; font-size: 11px; color: #6b5d4f;
   }
   
   /* 로그인 모달 */
   .modal-bg {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    align-items: center; justify-content: center;
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: #2a2018;
-    border: 1px solid #5c4a3a;
-    border-radius: 12px;
-    padding: 28px;
-    width: 100%;
-    max-width: 360px;
+    background: #2a2018; border: 1px solid #5c4a3a; border-radius: 12px;
+    padding: 28px; width: 100%; max-width: 360px;
   }
-  .modal h2 {
-    font-size: 16px;
-    color: #f2e8d9;
-    margin-bottom: 6px;
-  }
-  .modal p {
-    font-size: 12px;
-    color: #a89884;
-    margin-bottom: 18px;
-  }
+  .modal h2 { font-size: 16px; color: #f2e8d9; margin-bottom: 6px; }
+  .modal p { font-size: 12px; color: #a89884; margin-bottom: 18px; }
   .modal label {
-    display: block;
-    font-size: 11px;
-    color: #a89884;
-    letter-spacing: 0.04em;
-    margin-bottom: 6px;
-    margin-top: 14px;
+    display: block; font-size: 11px; color: #a89884;
+    letter-spacing: 0.04em; margin-bottom: 6px; margin-top: 14px;
   }
   .modal input {
-    width: 100%;
-    background: #1a1410;
-    border: 1px solid #3f332a;
-    color: #f2e8d9;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: inherit;
+    width: 100%; background: #1a1410; border: 1px solid #3f332a;
+    color: #f2e8d9; padding: 10px 12px; border-radius: 6px;
+    font-size: 13px; font-family: inherit;
   }
-  .modal input:focus {
-    outline: none;
-    border-color: #c9a17a;
-  }
-  .modal-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 22px;
-  }
+  .modal input:focus { outline: none; border-color: #c9a17a; }
+  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; }
   .modal-error {
-    font-size: 12px;
-    color: #d97878;
-    background: rgba(217,120,120,0.08);
-    border-left: 2px solid #d97878;
-    padding: 8px 12px;
-    border-radius: 0 4px 4px 0;
-    margin-top: 12px;
-    display: none;
+    font-size: 12px; color: #d97878; background: rgba(217,120,120,0.08);
+    border-left: 2px solid #d97878; padding: 8px 12px; border-radius: 0 4px 4px 0;
+    margin-top: 12px; display: none;
   }
   .modal-error.show { display: block; }
-  
-  /* 푸터 */
-  .footer {
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid #3f332a;
-    text-align: center;
-    font-size: 11px;
-    color: #6b5d4f;
-  }
 </style>
 </head>
 <body>
@@ -285,30 +322,105 @@
     </div>
   </div>
 
-  <!-- 시스템 상태 -->
-  <div class="sec-label">시스템 상태</div>
-  <div class="card">
-    <div id="status-db" class="status-row">
-      <span class="status-dot wait"></span>
-      <span class="status-text muted">데이터베이스 연결 확인 중...</span>
+  <!-- 시즌 셀렉터 -->
+  <div class="season-bar">
+    <span class="label">시즌</span>
+    <select id="sel-year" class="season-select">
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+    <select id="sel-season" class="season-select">
+      <option value="SS">S/S</option>
+      <option value="FW">F/W</option>
+    </select>
+    <span class="season-info">
+      시즌 <b id="info-period">-</b>
+      <span class="season-progress"><span class="season-progress-bar" id="info-prog-bar"></span></span>
+      진척도 <b id="info-prog">-</b>
+    </span>
+  </div>
+
+  <!-- 임계값 슬라이더 -->
+  <div class="sec-label">임계값 조정 · 슬라이더를 움직이면 결과 즉시 재계산</div>
+  <div class="sliders">
+    <div class="sl s1">
+      <div class="sl-head"><span class="sl-l">재고일수 임계값</span><span class="sl-v"><span id="v1">60</span><span class="u">일</span></span></div>
+      <input type="range" min="30" max="120" value="60" step="5" id="sl-days">
+      <div class="sl-rng"><span>30일</span><span>120일</span></div>
+      <div class="sl-sub">초과 시 마크다운 검토 (조건 2)</div>
     </div>
-    <div id="status-auth" class="status-row">
-      <span class="status-dot wait"></span>
-      <span class="status-text muted">인증 상태 확인 중...</span>
+    <div class="sl s2">
+      <div class="sl-head"><span class="sl-l">소진율 비율 기준</span><span class="sl-v"><span id="v2">60</span><span class="u">%</span></span></div>
+      <input type="range" min="30" max="90" value="60" step="5" id="sl-sell">
+      <div class="sl-rng"><span>30%</span><span>90%</span></div>
+      <div class="sl-sub">소진율÷진척도 미만 시 (조건 3)</div>
+    </div>
+    <div class="sl s3">
+      <div class="sl-head"><span class="sl-l">영업이익률 목표</span><span class="sl-v"><span id="v3">17</span><span class="u">%</span></span></div>
+      <input type="range" min="10" max="25" value="17" step="1" id="sl-op">
+      <div class="sl-rng"><span>10%</span><span>25%</span></div>
+      <div class="sl-sub">마크다운 깊이 산정 기준선</div>
+    </div>
+    <div class="sl s4">
+      <div class="sl-head"><span class="sl-l">판관비율</span><span class="sl-v"><span id="v4">30</span><span class="u">%</span></span></div>
+      <input type="range" min="10" max="50" value="30" step="1" id="sl-sga">
+      <div class="sl-rng"><span>10%</span><span>50%</span></div>
+      <div class="sl-sub">매월 변동, 매출 대비 비율</div>
     </div>
   </div>
 
-  <!-- 판관비 현황 -->
-  <div class="sec-label">월별 판관비 현황</div>
-  <div class="card" style="padding: 0;">
-    <div id="sga-content">
-      <div class="empty">로딩 중...</div>
+  <!-- KPI 카드 -->
+  <div class="kpi">
+    <div class="k k1"><div class="kl">관리 브랜드</div><div class="kv" id="kpi-total">-</div></div>
+    <div class="k k2"><div class="kl">정상 판매</div><div class="kv" id="kpi-ok">-</div></div>
+    <div class="k k3"><div class="kl">할인 검토</div><div class="kv" id="kpi-warn">-</div></div>
+    <div class="k k4"><div class="kl">적극 할인</div><div class="kv" id="kpi-hot">-</div></div>
+  </div>
+
+  <!-- TOP 10 카드 -->
+  <div id="top-section" style="display:none;">
+    <div class="sec-label">TOP 10 브랜드 · 매출액 순</div>
+    <div class="cards-grid" id="top-cards"></div>
+  </div>
+
+  <!-- 전체 리스트 -->
+  <div id="list-section" style="display:none;">
+    <div class="sec-label" id="list-label">전체 브랜드</div>
+    <div class="tbl">
+      <div class="th">
+        <span class="tt" id="list-meta">정렬: 매출액 ↓</span>
+        <span class="hint">← 좌우 스크롤로 모든 컬럼 확인</span>
+      </div>
+      <div class="tbl-scroll">
+        <table class="lst">
+          <thead>
+            <tr>
+              <th>#</th><th>브랜드</th>
+              <th class="r">매출액</th><th class="r">일평균</th>
+              <th class="r">영업이익률</th><th class="r">매총율</th>
+              <th class="r">재고일수</th><th class="r">소진율</th>
+              <th class="r">소진율÷진척도</th><th class="r">권장 할인</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody id="list-body"></tbody>
+        </table>
+      </div>
     </div>
+  </div>
+  
+  <!-- 로딩/빈 상태 -->
+  <div id="state-loading" class="calc-loading" style="display:none;">⏳ 계산 중...</div>
+  <div id="state-empty" class="empty" style="display:none;">
+    <div class="empty-icon">📭</div>
+    <div class="empty-title">선택한 시즌에 데이터가 없습니다</div>
+    <div class="empty-text">다른 시즌을 선택하거나, 관리자 페이지에서 데이터를 업로드하세요.</div>
   </div>
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 5-1 · 메인 대시보드 · v0.2
+    Phase 6 · 메인 대시보드 (시즌·KPI·슬라이더·실시간 계산) · v0.5
   </div>
 
 </div>
@@ -318,15 +430,11 @@
   <div class="modal">
     <h2>관리자 로그인</h2>
     <p>데이터 업로드 및 수정 권한이 필요한 경우에만 로그인하세요.</p>
-    
     <label>이메일</label>
     <input type="email" id="login-email" placeholder="email@example.com" autocomplete="username">
-    
     <label>비밀번호</label>
     <input type="password" id="login-password" autocomplete="current-password">
-    
     <div id="login-error" class="modal-error"></div>
-    
     <div class="modal-buttons">
       <button class="btn" onclick="closeLogin()">취소</button>
       <button class="btn btn-primary" onclick="doLogin()">로그인</button>
@@ -334,87 +442,45 @@
   </div>
 </div>
 
-<!-- Supabase JS SDK -->
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-  // ===== 설정 =====
   const SUPABASE_URL = 'https://tdbdxprjkwvlscsdstcg.supabase.co'
   const SUPABASE_ANON_KEY = 'sb_publishable_nDEDBVxcUiWpn0E8EMWooQ_JAIXCeag'
-
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  
-  // 전역 노출 (인라인 onclick에서 호출하기 위해)
   window.supabase = supabase
   
-  // ===== UI 헬퍼 =====
-  function setStatus(elementId, type, text) {
-    const el = document.getElementById(elementId)
-    el.innerHTML = `
-      <span class="status-dot ${type}"></span>
-      <span class="status-text">${text}</span>
-    `
+  // ============= 시즌 정의 =============
+  function seasonPeriod(year, type) {
+    if (type === 'SS') return { start: `${year}-03-01`, end: `${year}-08-31`, days: 184 }
+    return { start: `${year}-09-01`, end: `${year+1}-02-28`, days: 181 }
   }
   
-  function formatPercent(rate) {
-    return (Number(rate) * 100).toFixed(1) + '%'
+  function seasonProgress(period) {
+    const today = new Date()
+    const start = new Date(period.start)
+    const end = new Date(period.end)
+    if (today < start) return 0
+    if (today > end) return 100
+    const total = end - start
+    const elapsed = today - start
+    return Math.round((elapsed / total) * 100)
   }
   
-  // ===== 1. 데이터베이스 연결 + 판관비 조회 =====
-  async function checkDatabase() {
-    try {
-      const { data, error } = await supabase
-        .from('monthly_sga')
-        .select('*')
-        .order('year_month', { ascending: true })
-      
-      if (error) throw error
-      
-      setStatus('status-db', 'ok', `데이터베이스 연결 정상 (판관비 ${data.length}건 조회 성공)`)
-      renderSgaTable(data)
-    } catch (err) {
-      setStatus('status-db', 'err', `데이터베이스 연결 실패: ${err.message}`)
-      document.getElementById('sga-content').innerHTML = 
-        `<div class="empty">데이터를 불러올 수 없습니다.<br>${err.message}</div>`
-    }
+  function seasonRemainingDays(period) {
+    const today = new Date()
+    const end = new Date(period.end)
+    const ms = end - today
+    return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)))
   }
   
-  function renderSgaTable(data) {
-    if (!data || data.length === 0) {
-      document.getElementById('sga-content').innerHTML = 
-        '<div class="empty">판관비 데이터가 없습니다.</div>'
-      return
-    }
-    
-    const rows = data.map(row => `
-      <tr>
-        <td>${row.year_month}</td>
-        <td class="r">${formatPercent(row.sga_rate)}</td>
-        <td>
-          ${row.is_predicted 
-            ? '<span class="badge-predicted">예측</span>' 
-            : '<span class="badge-confirmed">확정</span>'}
-        </td>
-        <td style="color: #6b5d4f; font-size: 11px;">${row.note || ''}</td>
-      </tr>
-    `).join('')
-    
-    document.getElementById('sga-content').innerHTML = `
-      <table class="sga-table">
-        <thead>
-          <tr>
-            <th>연월</th>
-            <th class="r">판관비율</th>
-            <th>구분</th>
-            <th>메모</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `
-  }
+  // ============= 데이터 캐시 =============
+  let salesData = []
+  let invData = []
+  let stData = []
+  let currentBrands = []
   
-  // ===== 2. 인증 상태 =====
+  // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
     updateAuthUI(session)
@@ -425,15 +491,12 @@
     const btnLogout = document.getElementById('btn-logout')
     const btnAdminPage = document.getElementById('btn-admin-page')
     const badge = document.getElementById('admin-badge')
-    
     if (session) {
-      setStatus('status-auth', 'ok', `관리자 로그인됨 (${session.user.email})`)
       btnLogin.style.display = 'none'
       btnLogout.style.display = 'inline-block'
       btnAdminPage.style.display = 'inline-block'
       badge.style.display = 'inline-block'
     } else {
-      setStatus('status-auth', 'ok', '일반 모드 (조회 전용)')
       btnLogin.style.display = 'inline-block'
       btnLogout.style.display = 'none'
       btnAdminPage.style.display = 'none'
@@ -441,32 +504,26 @@
     }
   }
   
-  // ===== 3. 로그인/로그아웃 =====
   window.openLogin = function() {
     document.getElementById('login-modal').classList.add('show')
     document.getElementById('login-error').classList.remove('show')
     document.getElementById('login-email').focus()
   }
-  
   window.closeLogin = function() {
     document.getElementById('login-modal').classList.remove('show')
     document.getElementById('login-email').value = ''
     document.getElementById('login-password').value = ''
   }
-  
   window.doLogin = async function() {
     const email = document.getElementById('login-email').value.trim()
     const password = document.getElementById('login-password').value
     const errorEl = document.getElementById('login-error')
-    
     if (!email || !password) {
       errorEl.textContent = '이메일과 비밀번호를 입력해주세요.'
       errorEl.classList.add('show')
       return
     }
-    
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    
     if (error) {
       errorEl.textContent = '로그인 실패: ' + error.message
       errorEl.classList.add('show')
@@ -475,34 +532,405 @@
       updateAuthUI(data.session)
     }
   }
-  
   window.doLogout = async function() {
     await supabase.auth.signOut()
     updateAuthUI(null)
   }
-  
-  // ===== 이벤트 바인딩 =====
   document.getElementById('btn-login').addEventListener('click', window.openLogin)
   document.getElementById('btn-logout').addEventListener('click', window.doLogout)
-  
-  // ESC 키로 모달 닫기
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeLogin()
-  })
-  
-  // Enter 키로 로그인
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLogin() })
   document.getElementById('login-password').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') window.doLogin()
   })
+  supabase.auth.onAuthStateChange((_event, session) => updateAuthUI(session))
   
-  // ===== 시작 =====
-  checkDatabase()
-  checkAuth()
+  // ============= 데이터 로드 =============
+  async function loadDataAll(year, type) {
+    document.getElementById('state-loading').style.display = 'block'
+    document.getElementById('state-empty').style.display = 'none'
+    document.getElementById('top-section').style.display = 'none'
+    document.getElementById('list-section').style.display = 'none'
+    
+    try {
+      // 페이지네이션 (Supabase 1000행 제한)
+      async function fetchAll(query, label) {
+        let all = []
+        let from = 0
+        const PAGE = 1000
+        while (true) {
+          const { data, error } = await query.range(from, from + PAGE - 1)
+          if (error) throw error
+          if (!data || data.length === 0) break
+          all = all.concat(data)
+          if (data.length < PAGE) break
+          from += PAGE
+        }
+        return all
+      }
+      
+      const [s, i, t] = await Promise.all([
+        fetchAll(supabase.from('sales_daily')
+          .select('brand_code, brand_name, sale_date, net_sales, cost_of_goods, qty_sold')
+          .eq('season_year', year).eq('season_type', type)),
+        fetchAll(supabase.from('inventory_monthly')
+          .select('brand_code, year_month, qty_stock, stock_value_cost')
+          .eq('season_year', year).eq('season_type', type)),
+        fetchAll(supabase.from('sellthrough_daily')
+          .select('brand_code, trans_date, qty_sold_total')
+          .eq('season_year', year).eq('season_type', type))
+      ])
+      
+      salesData = s
+      invData = i
+      stData = t
+      
+      console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}`)
+      
+      computeAndRender()
+    } catch (err) {
+      console.error('데이터 로드 실패:', err)
+      document.getElementById('state-loading').style.display = 'none'
+      document.getElementById('state-empty').style.display = 'block'
+      document.getElementById('state-empty').querySelector('.empty-title').textContent = '데이터 로드 실패'
+      document.getElementById('state-empty').querySelector('.empty-text').textContent = err.message
+    }
+  }
   
-  // 인증 상태 변경 자동 감지
-  supabase.auth.onAuthStateChange((_event, session) => {
-    updateAuthUI(session)
+  // ============= 계산 엔진 =============
+  function computeAndRender() {
+    const year = parseInt(document.getElementById('sel-year').value, 10)
+    const type = document.getElementById('sel-season').value
+    const period = seasonPeriod(year, type)
+    const progress = seasonProgress(period)
+    const remainingDays = seasonRemainingDays(period)
+    
+    // 시즌 정보 표시
+    document.getElementById('info-period').textContent = `${period.start} ~ ${period.end}`
+    document.getElementById('info-prog').textContent = progress + '%'
+    document.getElementById('info-prog-bar').style.width = progress + '%'
+    
+    // 슬라이더 값
+    const thrDays = parseInt(document.getElementById('sl-days').value, 10)
+    const thrSell = parseInt(document.getElementById('sl-sell').value, 10) / 100
+    const thrOp = parseInt(document.getElementById('sl-op').value, 10) / 100
+    const sgaRate = parseInt(document.getElementById('sl-sga').value, 10) / 100
+    
+    if (salesData.length === 0) {
+      document.getElementById('state-loading').style.display = 'none'
+      document.getElementById('state-empty').style.display = 'block'
+      document.getElementById('state-empty').querySelector('.empty-title').textContent = '선택한 시즌에 데이터가 없습니다'
+      document.getElementById('state-empty').querySelector('.empty-text').textContent = '다른 시즌을 선택해보세요.'
+      // KPI 0
+      document.getElementById('kpi-total').textContent = '0'
+      document.getElementById('kpi-ok').textContent = '0'
+      document.getElementById('kpi-warn').textContent = '0'
+      document.getElementById('kpi-hot').textContent = '0'
+      return
+    }
+    
+    // 1. 매출 집계 (브랜드 단위)
+    const brandMap = {}
+    for (const r of salesData) {
+      const key = r.brand_code
+      if (!brandMap[key]) {
+        brandMap[key] = {
+          brand_code: r.brand_code,
+          brand_name: r.brand_name || r.brand_code,
+          total_sales: 0,
+          total_cost: 0,
+          total_qty: 0,
+          dates: new Set()
+        }
+      }
+      brandMap[key].total_sales += Number(r.net_sales) || 0
+      brandMap[key].total_cost += Number(r.cost_of_goods) || 0
+      brandMap[key].total_qty += Number(r.qty_sold) || 0
+      if (r.sale_date) brandMap[key].dates.add(r.sale_date)
+    }
+    
+    // 2. 재고 집계 (가장 최근 년월)
+    let latestYM = null
+    for (const r of invData) {
+      if (!latestYM || r.year_month > latestYM) latestYM = r.year_month
+    }
+    const invMap = {}
+    if (latestYM) {
+      for (const r of invData) {
+        if (r.year_month !== latestYM) continue
+        const key = r.brand_code
+        if (!invMap[key]) invMap[key] = { qty: 0, value: 0 }
+        invMap[key].qty += Number(r.qty_stock) || 0
+        invMap[key].value += Number(r.stock_value_cost) || 0
+      }
+    }
+    
+    // 3. 정판 집계 (시즌 누적 판매수량)
+    const stMap = {}
+    for (const r of stData) {
+      const key = r.brand_code
+      if (!stMap[key]) stMap[key] = 0
+      stMap[key] += Number(r.qty_sold_total) || 0
+    }
+    
+    // 4. 브랜드별 지표 계산
+    const brands = []
+    for (const code in brandMap) {
+      const b = brandMap[code]
+      const inv = invMap[code] || { qty: 0, value: 0 }
+      const stQty = stMap[code] || b.total_qty // 정판 데이터 없으면 매출 수량 대체
+      
+      // 매출 통계
+      const totalSales = b.total_sales
+      const totalCost = b.total_cost
+      const grossMargin = totalSales > 0 ? (totalSales - totalCost) / totalSales : null
+      
+      // 일평균 매출 (해당 브랜드가 매출 발생한 날 기준)
+      const saleDays = b.dates.size || 1
+      const dailyAvg = totalSales / Math.max(saleDays, 1)
+      
+      // 재고일수 = 현재 재고가치 ÷ 일평균 매출원가
+      // (재고는 원가 기준이므로 일평균 매출원가로 나눠야 통일됨)
+      const dailyAvgCost = totalCost / Math.max(saleDays, 1)
+      const stockValue = inv.value
+      const inventoryDays = (dailyAvgCost > 0 && stockValue > 0)
+        ? Math.round(stockValue / dailyAvgCost)
+        : null
+      
+      // 소진율 = 누적 판매 수량 / (누적 판매 + 현재 재고)
+      const totalQty = b.total_qty
+      const stockQty = inv.qty
+      const sellThrough = (totalQty + stockQty > 0)
+        ? totalQty / (totalQty + stockQty)
+        : null
+      
+      // 영업이익률 = (매총익 - 판관비) / 매출 = 매총율 - 판관비율
+      const opMargin = (grossMargin !== null) ? grossMargin - sgaRate : null
+      
+      // 트리거 판정
+      const triggers = {
+        seasonImminent: false,
+        opUnder: false,
+        sellSlow: false
+      }
+      // 1. 시즌 임박
+      if (inventoryDays !== null && remainingDays < inventoryDays) {
+        triggers.seasonImminent = true
+      }
+      // 2. 이익률 미달
+      if (opMargin !== null && inventoryDays !== null) {
+        if (opMargin < thrOp && inventoryDays > thrDays) {
+          triggers.opUnder = true
+        }
+      }
+      // 3. 소진율 부진
+      if (sellThrough !== null && progress > 0) {
+        const ratio = sellThrough / (progress / 100)
+        if (ratio < thrSell) triggers.sellSlow = true
+      }
+      
+      const triggered = triggers.seasonImminent || triggers.opUnder || triggers.sellSlow
+      
+      // 상태 분류
+      let status = 'ok'
+      if (opMargin !== null && opMargin >= thrOp + 0.05) status = 'up'  // 초과 달성 (5%p 이상)
+      else if (triggers.seasonImminent || (triggers.opUnder && triggers.sellSlow)) status = 'hot'
+      else if (triggered) status = 'warn'
+      
+      // 권장 할인율 (간단 추정: 17%선 유지하면서 매총율로 가능한 최대 할인)
+      let recDiscount = null
+      if (status === 'hot') {
+        // 깊은 할인: 영업이익률 17% 유지선 기준
+        if (grossMargin !== null) {
+          // 새 매총율 = thrOp + sgaRate, 할인 후 매출 ratio = (1-d), 할인 후 매총율 = (grossMargin - d) / (1-d)
+          // (grossMargin - d) / (1-d) = thrOp + sgaRate
+          const target = thrOp + sgaRate
+          if (grossMargin > target) {
+            const d = (grossMargin - target) / (1 - target)
+            recDiscount = Math.max(0, Math.min(0.5, d))
+          }
+        }
+      } else if (status === 'warn') {
+        recDiscount = 0.10  // 10% 시작
+      }
+      
+      brands.push({
+        ...b,
+        total_sales: totalSales,
+        total_cost: totalCost,
+        gross_margin: grossMargin,
+        daily_avg: dailyAvg,
+        sale_days: saleDays,
+        inventory_days: inventoryDays,
+        stock_value: stockValue,
+        stock_qty: stockQty,
+        sell_through: sellThrough,
+        op_margin: opMargin,
+        triggers: triggers,
+        triggered: triggered,
+        status: status,
+        rec_discount: recDiscount,
+        sell_progress_ratio: (sellThrough !== null && progress > 0) ? sellThrough / (progress / 100) : null
+      })
+    }
+    
+    // 매출 0인 브랜드 제외
+    currentBrands = brands.filter(b => b.total_sales > 0)
+    
+    // 매출액 내림차순 정렬
+    currentBrands.sort((a, b) => b.total_sales - a.total_sales)
+    
+    renderKPIs()
+    renderTopCards()
+    renderList()
+    
+    document.getElementById('state-loading').style.display = 'none'
+    document.getElementById('state-empty').style.display = currentBrands.length === 0 ? 'block' : 'none'
+    document.getElementById('top-section').style.display = currentBrands.length > 0 ? 'block' : 'none'
+    document.getElementById('list-section').style.display = currentBrands.length > 0 ? 'block' : 'none'
+  }
+  
+  // ============= 렌더링 =============
+  function statusLabel(s) {
+    if (s === 'up') return { text: '초과 달성', cls: 'b-up' }
+    if (s === 'ok') return { text: '정상', cls: 'b-ok' }
+    if (s === 'warn') return { text: '검토', cls: 'b-warn' }
+    return { text: '적극 할인', cls: 'b-hot' }
+  }
+  
+  function fmtMoney(v) {
+    if (v === null || v === undefined) return '-'
+    if (Math.abs(v) >= 100000000) return '₩' + (v/100000000).toFixed(1) + '억'
+    if (Math.abs(v) >= 10000) return '₩' + (v/10000).toFixed(0) + '만'
+    return '₩' + Math.round(v).toLocaleString()
+  }
+  
+  function fmtPct(v, digits = 1) {
+    if (v === null || v === undefined) return '-'
+    return (v * 100).toFixed(digits) + '%'
+  }
+  
+  function renderKPIs() {
+    const total = currentBrands.length
+    const ok = currentBrands.filter(b => b.status === 'ok' || b.status === 'up').length
+    const warn = currentBrands.filter(b => b.status === 'warn').length
+    const hot = currentBrands.filter(b => b.status === 'hot').length
+    document.getElementById('kpi-total').textContent = total.toLocaleString()
+    document.getElementById('kpi-ok').textContent = ok.toLocaleString()
+    document.getElementById('kpi-warn').textContent = warn.toLocaleString()
+    document.getElementById('kpi-hot').textContent = hot.toLocaleString()
+  }
+  
+  function renderTopCards() {
+    const container = document.getElementById('top-cards')
+    container.innerHTML = ''
+    const top10 = currentBrands.slice(0, 10)
+    for (const b of top10) {
+      const sl = statusLabel(b.status)
+      const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'ok' : (b.op_margin >= 0.10 ? 'warn' : 'hot'))
+      const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'hot' : 'warn'))
+      const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? 'ok' : (b.sell_progress_ratio < 0.6 ? 'hot' : 'warn'))
+      
+      const card = document.createElement('div')
+      card.className = `bcard s-${b.status}`
+      card.innerHTML = `
+        <div class="bhead">
+          <span class="bname">${b.brand_name}</span>
+          <span class="bbadge ${sl.cls}">${sl.text}</span>
+        </div>
+        <div class="brev">
+          <div><span class="lab">매출액</span><span class="v1">${fmtMoney(b.total_sales)}</span></div>
+          <div><span class="lab">일평균</span><span class="v2">${fmtMoney(b.daily_avg)}</span></div>
+        </div>
+        <div class="bstat">
+          <div><span class="lab">영업이익률</span><span class="val ${opCls}">${fmtPct(b.op_margin)}</span></div>
+          <div><span class="lab">재고일수</span><span class="val ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</span></div>
+          <div><span class="lab">소진율</span><span class="val ${srCls}">${fmtPct(b.sell_through, 0)}</span></div>
+        </div>
+      `
+      container.appendChild(card)
+    }
+  }
+  
+  function renderList() {
+    const tbody = document.getElementById('list-body')
+    tbody.innerHTML = ''
+    document.getElementById('list-label').textContent = `전체 브랜드 (${currentBrands.length})`
+    
+    currentBrands.forEach((b, idx) => {
+      const sl = statusLabel(b.status)
+      const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'op-ok' : (b.op_margin >= 0.10 ? 'op-warn' : 'op-hot'))
+      const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'dy-hot' : 'dy-warn'))
+      const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? '' : (b.sell_progress_ratio < 0.6 ? 'sr-hot' : 'sr-warn'))
+      
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td class="bn">${b.brand_name}</td>
+        <td class="r sales">${fmtMoney(b.total_sales)}</td>
+        <td class="r">${fmtMoney(b.daily_avg)}</td>
+        <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
+        <td class="r">${fmtPct(b.gross_margin)}</td>
+        <td class="r ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</td>
+        <td class="r">${fmtPct(b.sell_through, 0)}</td>
+        <td class="r ${srCls}">${fmtPct(b.sell_progress_ratio, 0)}</td>
+        <td class="r">${b.rec_discount !== null ? Math.round(b.rec_discount * 100) + '%' : '—'}</td>
+        <td class="bdg"><span class="${sl.cls}">${sl.text}</span></td>
+      `
+      tbody.appendChild(tr)
+    })
+  }
+  
+  // ============= 슬라이더 동기화 =============
+  document.getElementById('sl-days').addEventListener('input', (e) => {
+    document.getElementById('v1').textContent = e.target.value
+    computeAndRender()
   })
+  document.getElementById('sl-sell').addEventListener('input', (e) => {
+    document.getElementById('v2').textContent = e.target.value
+    computeAndRender()
+  })
+  document.getElementById('sl-op').addEventListener('input', (e) => {
+    document.getElementById('v3').textContent = e.target.value
+    computeAndRender()
+  })
+  document.getElementById('sl-sga').addEventListener('input', (e) => {
+    document.getElementById('v4').textContent = e.target.value
+    computeAndRender()
+  })
+  
+  // ============= 시즌 변경 시 데이터 다시 로드 =============
+  async function reloadSeason() {
+    const year = parseInt(document.getElementById('sel-year').value, 10)
+    const type = document.getElementById('sel-season').value
+    await loadDataAll(year, type)
+  }
+  
+  document.getElementById('sel-year').addEventListener('change', reloadSeason)
+  document.getElementById('sel-season').addEventListener('change', reloadSeason)
+  
+  // ============= 판관비 초기값 로드 =============
+  async function loadInitialSga() {
+    try {
+      const { data } = await supabase
+        .from('monthly_sga')
+        .select('sga_rate')
+        .order('year_month', { ascending: false })
+        .limit(1)
+      if (data && data.length > 0) {
+        const ratePct = Math.round(Number(data[0].sga_rate) * 100)
+        const sgaSlider = document.getElementById('sl-sga')
+        sgaSlider.value = ratePct
+        document.getElementById('v4').textContent = ratePct
+      }
+    } catch (err) { console.error(err) }
+  }
+  
+  // ============= 시작 =============
+  ;(async () => {
+    await checkAuth()
+    await loadInitialSga()
+    await reloadSeason()
+  })()
 </script>
 
 </body>
