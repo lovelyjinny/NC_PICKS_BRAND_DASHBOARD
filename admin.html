@@ -621,7 +621,11 @@
   
   function toNum(v) {
     if (v === null || v === undefined || v === '') return null
-    const n = Number(v)
+    if (typeof v === 'number') return isNaN(v) ? null : v
+    // 문자열인 경우: 콤마/공백 제거 후 숫자 변환
+    const s = String(v).replace(/,/g, '').replace(/\s/g, '').trim()
+    if (s === '' || s === '-') return null
+    const n = Number(s)
     return isNaN(n) ? null : n
   }
   
@@ -868,8 +872,8 @@
                           || wb.SheetNames.find(s => !s.includes('hidden')) 
                           || wb.SheetNames[0]
           const ws = wb.Sheets[sheetName]
-          // 인덱스 기반 + 모든 값을 string으로 (raw:false)
-          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false })
+          // 인덱스 기반, raw:true로 원본 숫자형 보존 (콤마 없는 정수/실수)
+          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true })
           STATE[prefix].data = arr
           
           // 디버그 정보 표시
