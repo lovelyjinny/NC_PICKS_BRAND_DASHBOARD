@@ -180,12 +180,11 @@
     cursor: pointer; transition: transform 0.15s, border-color 0.15s;
   }
   
-  /* 미니 매출 추이 차트 */
+  /* 미니 매출 추이 차트 (카드 맨 아래) */
   .mini-chart-wrap {
-    margin: 10px 0;
-    padding: 8px 0;
+    margin-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid rgba(63,51,42,0.5);
-    border-bottom: 1px solid rgba(63,51,42,0.5);
   }
   .mini-chart-head {
     display: flex; justify-content: space-between; align-items: center;
@@ -196,7 +195,8 @@
   .mini-chart-head .trend-down { color: #d97878; font-weight: 700; }
   .mini-chart-head .trend-flat { color: #c9a17a; font-weight: 700; }
   .mini-chart {
-    width: 100%; height: 32px;
+    width: 100%; height: 36px;
+    display: block;
   }
   .bcard:hover { transform: translateY(-2px); border-color: #5c4a3a; }
   .bcard::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
@@ -218,13 +218,15 @@
   .b-hot { background: rgba(217,120,120,0.18); color: #e89090; }
   .b-up { background: rgba(91,180,229,0.15); color: #5bb4e5; }
   .brev {
-    display: flex; gap: 14px; align-items: baseline;
-    padding-bottom: 8px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: baseline;
+    padding-bottom: 10px;
     margin-bottom: 0;
+    border-bottom: 1px solid rgba(63,51,42,0.5);
   }
-  .brev .lab { font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em; display: block; margin-bottom: 2px; }
-  .brev .v1 { font-size: 18px; font-weight: 700; color: #4cb8a4; font-variant-numeric: tabular-nums; }
-  .brev .v2 { font-size: 14px; font-weight: 600; color: #f2e8d9; font-variant-numeric: tabular-nums; }
+  .brev .lab { font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em; display: block; margin-bottom: 3px; }
+  .brev .v1 { font-size: 17px; font-weight: 700; color: #4cb8a4; font-variant-numeric: tabular-nums; }
+  .brev .v2 { font-size: 15px; font-weight: 600; color: #f2e8d9; font-variant-numeric: tabular-nums; }
+  .brev .v3 { font-size: 15px; font-weight: 600; color: #c9a17a; font-variant-numeric: tabular-nums; }
   .bstat {
     display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 12px;
     margin-top: 8px;
@@ -372,10 +374,10 @@
       <div class="sl-sub">초과 시 마크다운 검토 (조건 2)</div>
     </div>
     <div class="sl s2">
-      <div class="sl-head"><span class="sl-l">소진율 비율 기준</span><span class="sl-v"><span id="v2">60</span><span class="u">%</span></span></div>
+      <div class="sl-head"><span class="sl-l">판매율 비율 기준</span><span class="sl-v"><span id="v2">60</span><span class="u">%</span></span></div>
       <input type="range" min="30" max="90" value="60" step="5" id="sl-sell">
       <div class="sl-rng"><span>30%</span><span>90%</span></div>
-      <div class="sl-sub">소진율÷진척도 미만 시 (조건 3)</div>
+      <div class="sl-sub">판매율÷진척도 미만 시 (조건 3)</div>
     </div>
     <div class="sl s3">
       <div class="sl-head"><span class="sl-l">영업이익률 목표</span><span class="sl-v"><span id="v3">17</span><span class="u">%</span></span></div>
@@ -420,8 +422,8 @@
               <th>#</th><th>브랜드</th>
               <th class="r">매출액</th><th class="r">일평균</th>
               <th class="r">영업이익률</th><th class="r">매총율</th>
-              <th class="r">재고일수</th><th class="r">소진율</th>
-              <th class="r">소진율÷진척도</th><th class="r">권장 할인</th>
+              <th class="r">재고일수</th><th class="r">판매율</th>
+              <th class="r">판매율÷진척도</th><th class="r">권장 할인</th>
               <th>상태</th>
             </tr>
           </thead>
@@ -441,7 +443,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 6 · 메인 대시보드 (시즌·KPI·슬라이더·실시간 계산) · v0.5
+    Phase 6 · 메인 대시보드 (회사 KPI 공식 적용) · v0.6
   </div>
 
 </div>
@@ -591,13 +593,13 @@
       
       const [s, i, t] = await Promise.all([
         fetchAll(supabase.from('sales_daily')
-          .select('brand_code, brand_name, sale_date, net_sales, cost_of_goods, qty_sold')
+          .select('brand_code, brand_name, sale_date, net_sales, cost_of_goods, qty_sold, return_amount')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('inventory_monthly')
           .select('brand_code, year_month, qty_stock, stock_value_cost')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('sellthrough_daily')
-          .select('brand_code, trans_date, qty_sold_total')
+          .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat')
           .eq('season_year', year).eq('season_type', type))
       ])
       
@@ -660,16 +662,20 @@
           total_sales: 0,
           total_cost: 0,
           total_qty: 0,
+          total_return: 0,
           dates: new Set(),
-          dailySales: {}  // {date: sum}
+          dailySales: {},  // {date: net_sales sum}
+          dailyCost: {}    // {date: cost_of_goods sum}
         }
       }
       brandMap[key].total_sales += Number(r.net_sales) || 0
       brandMap[key].total_cost += Number(r.cost_of_goods) || 0
       brandMap[key].total_qty += Number(r.qty_sold) || 0
+      brandMap[key].total_return += Number(r.return_amount) || 0
       if (r.sale_date) {
         brandMap[key].dates.add(r.sale_date)
         brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + (Number(r.net_sales) || 0)
+        brandMap[key].dailyCost[r.sale_date] = (brandMap[key].dailyCost[r.sale_date] || 0) + (Number(r.cost_of_goods) || 0)
       }
     }
     
@@ -689,12 +695,19 @@
       }
     }
     
-    // 3. 정판 집계 (시즌 누적 판매수량)
+    // 3. 정판 집계 (시즌 누적 판매수량 + 일별 입고액)
     const stMap = {}
+    const inboundMap = {}  // {brand: {date: vendor_inbound_with_vat}}
     for (const r of stData) {
       const key = r.brand_code
       if (!stMap[key]) stMap[key] = 0
       stMap[key] += Number(r.qty_sold_total) || 0
+      
+      if (!inboundMap[key]) inboundMap[key] = {}
+      if (r.trans_date) {
+        const v = Number(r.vendor_inbound_with_vat) || 0
+        inboundMap[key][r.trans_date] = (inboundMap[key][r.trans_date] || 0) + v
+      }
     }
     
     // 4. 브랜드별 지표 계산
@@ -703,11 +716,17 @@
       const b = brandMap[code]
       const inv = invMap[code] || { qty: 0, value: 0 }
       const stQty = stMap[code] || b.total_qty // 정판 데이터 없으면 매출 수량 대체
+      const inbound = inboundMap[code] || {}    // 일별 입고액 (벤더입고액_부가세)
       
       // 매출 통계
-      const totalSales = b.total_sales
-      const totalCost = b.total_cost
-      const grossMargin = totalSales > 0 ? (totalSales - totalCost) / totalSales : null
+      const totalSales = b.total_sales      // 실매출 (외형/1.1)
+      const totalCost = b.total_cost        // 소진재고액 (매출원가)
+      const totalReturn = b.total_return    // 환입액
+      
+      // 매총율 = 1 - (소진재고액 - 환입액) / 실매출
+      const grossMargin = totalSales > 0 
+        ? 1 - (totalCost - totalReturn) / totalSales 
+        : null
       
       // 일평균 매출 (해당 브랜드가 매출 발생한 날 기준)
       const saleDays = b.dates.size || 1
@@ -721,11 +740,12 @@
         ? Math.round(stockValue / dailyAvgCost)
         : null
       
-      // 소진율 = 누적 판매 수량 / (누적 판매 + 현재 재고)
-      const totalQty = b.total_qty
-      const stockQty = inv.qty
-      const sellThrough = (totalQty + stockQty > 0)
-        ? totalQty / (totalQty + stockQty)
+      // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)
+      // 분자: 누적 매출원가(cost_of_goods) = 소진재고액
+      // 분모: 분자 + 현재 재고 원가 = 소진재고액 + 잔여재고액
+      const stockValueCost = inv.value  // stock_value_cost
+      const sellThrough = (totalCost + stockValueCost > 0)
+        ? totalCost / (totalCost + stockValueCost)
         : null
       
       // 영업이익률 = (매총익 - 판관비) / 매출 = 매총율 - 판관비율
@@ -782,19 +802,21 @@
         ...b,
         total_sales: totalSales,
         total_cost: totalCost,
+        total_return: totalReturn,
         gross_margin: grossMargin,
         daily_avg: dailyAvg,
         sale_days: saleDays,
         inventory_days: inventoryDays,
         stock_value: stockValue,
-        stock_qty: stockQty,
+        stock_qty: inv.qty,
         sell_through: sellThrough,
         op_margin: opMargin,
         triggers: triggers,
         triggered: triggered,
         status: status,
         rec_discount: recDiscount,
-        sell_progress_ratio: (sellThrough !== null && progress > 0) ? sellThrough / (progress / 100) : null
+        sell_progress_ratio: (sellThrough !== null && progress > 0) ? sellThrough / (progress / 100) : null,
+        inbound: inbound  // 일별 입고액
       })
     }
     
@@ -805,7 +827,7 @@
     currentBrands.sort((a, b) => b.total_sales - a.total_sales)
     
     renderKPIs()
-    renderTopCards()
+    renderTopCards(period)
     renderList()
     
     document.getElementById('state-loading').style.display = 'none'
@@ -822,62 +844,121 @@
     return { text: '적극 할인', cls: 'b-hot' }
   }
   
-  // 최근 30일 데이터 추출 (없는 날짜는 0으로 채움)
-  function getRecent30Days(dailySales) {
+  // 시즌 시작부터 오늘까지 누적판매율 라인 데이터 계산
+  // 누적판매율(누적) = 그날까지 누적 cost_of_goods ÷ 시즌 누적 입고액 (벤더입고액)
+  function getCumulativeSellThrough(brand, period) {
+    const startDate = new Date(period.start)
+    const endDate = new Date(period.end)
     const today = new Date()
-    const result = []
-    // 시즌 내 가장 최근 데이터 날짜 찾기 (오늘이 시즌 밖일 수 있음)
-    let latestDate = null
-    for (const d in dailySales) {
-      if (!latestDate || d > latestDate) latestDate = d
-    }
-    if (!latestDate) return result
+    const lastDate = today < endDate ? today : endDate
     
-    const endDate = new Date(latestDate)
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(endDate)
-      d.setDate(d.getDate() - i)
-      const key = d.toISOString().slice(0, 10)
-      result.push({ date: key, sales: dailySales[key] || 0 })
+    const dailyCost = brand.dailyCost || {}
+    const inbound = brand.inbound || {}
+    
+    let totalInbound = 0
+    for (const d in inbound) totalInbound += inbound[d]
+    
+    if (totalInbound === 0) return { points: [], finalRate: 0 }
+    
+    const totalDays = Math.ceil((lastDate - startDate) / (1000 * 60 * 60 * 24))
+    if (totalDays <= 0) return { points: [], finalRate: 0 }
+    
+    // 일별 누적 cost를 미리 계산 (정렬된 날짜 키 활용)
+    const sortedDates = Object.keys(dailyCost).sort()
+    const cumByDate = {}
+    let runningCost = 0
+    for (const dt of sortedDates) {
+      runningCost += dailyCost[dt]
+      cumByDate[dt] = runningCost
     }
-    return result
+    
+    // 시즌 진척에 따라 샘플링 간격 조정
+    const step = totalDays > 90 ? 5 : (totalDays > 60 ? 3 : (totalDays > 30 ? 2 : 1))
+    
+    const points = []
+    for (let i = 0; i <= totalDays; i += step) {
+      const d = new Date(startDate)
+      d.setDate(d.getDate() + i)
+      const key = d.toISOString().slice(0, 10)
+      
+      // 그 날까지 누적 cost (key 이전 마지막 누적값)
+      let acc = 0
+      for (const dt of sortedDates) {
+        if (dt <= key) acc = cumByDate[dt]
+        else break
+      }
+      
+      const rate = acc / totalInbound
+      points.push({ date: key, rate: rate })
+    }
+    
+    return { 
+      points, 
+      finalRate: points.length > 0 ? points[points.length - 1].rate : 0,
+      totalInbound: totalInbound
+    }
   }
   
-  // 추세 판정: 최근 7일 평균 vs 이전 23일 평균
-  function calcTrend(daily30) {
-    if (daily30.length < 14) return { dir: 'flat', icon: '→' }
-    const recent7 = daily30.slice(-7).reduce((s, d) => s + d.sales, 0) / 7
-    const prev = daily30.slice(0, -7).reduce((s, d) => s + d.sales, 0) / Math.max(daily30.length - 7, 1)
-    if (prev === 0) return { dir: 'flat', icon: '→' }
-    const change = (recent7 - prev) / prev
-    if (change > 0.10) return { dir: 'up', icon: '↗' }
-    if (change < -0.10) return { dir: 'down', icon: '↘' }
+  // 추세 판정: 최근 1/3 구간 기울기 vs 이전 1/3 구간 기울기
+  function calcCumTrend(points) {
+    if (points.length < 6) return { dir: 'flat', icon: '→' }
+    const third = Math.floor(points.length / 3)
+    const recent = points.slice(-third)
+    const prev = points.slice(-third * 2, -third)
+    if (recent.length < 2 || prev.length < 2) return { dir: 'flat', icon: '→' }
+    const recentSlope = (recent[recent.length - 1].rate - recent[0].rate) / Math.max(recent.length - 1, 1)
+    const prevSlope = (prev[prev.length - 1].rate - prev[0].rate) / Math.max(prev.length - 1, 1)
+    if (prevSlope <= 0.0001) return recentSlope > 0.001 ? { dir: 'up', icon: '↗' } : { dir: 'flat', icon: '→' }
+    const change = (recentSlope - prevSlope) / prevSlope
+    if (change > 0.20) return { dir: 'up', icon: '↗' }
+    if (change < -0.20) return { dir: 'down', icon: '↘' }
     return { dir: 'flat', icon: '→' }
   }
   
-  // 미니 막대 차트 SVG 생성
-  function renderSparkline(daily30, status) {
-    if (daily30.length === 0) return ''
-    const max = Math.max(...daily30.map(d => d.sales), 1)
-    const w = 100  // viewBox 너비 (% 단위)
-    const h = 32
-    const barW = w / daily30.length
+  // 누적판매율 라인 차트 SVG
+  function renderCumLine(points, status) {
+    if (points.length < 2) {
+      return '<svg class="mini-chart" viewBox="0 0 100 36" preserveAspectRatio="none"></svg>'
+    }
+    const w = 100
+    const h = 36
+    const padding = 3
+    const maxY = Math.max(...points.map(p => p.rate), 0.01)
     
-    // 색상 (상태별)
     let color = '#4cb8a4'
     if (status === 'hot') color = '#d97878'
     else if (status === 'warn') color = '#f0a93a'
     else if (status === 'up') color = '#5bb4e5'
     
-    let bars = ''
-    daily30.forEach((d, i) => {
-      const barH = max > 0 ? (d.sales / max) * (h - 2) : 0
-      const x = i * barW + 0.3
-      const y = h - barH
-      bars += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(barW - 0.6).toFixed(2)}" height="${barH.toFixed(2)}" fill="${color}" rx="0.3" opacity="0.85"/>`
+    const stepX = points.length > 1 ? w / (points.length - 1) : w
+    const coords = points.map((p, i) => {
+      const x = i * stepX
+      const ratio = maxY > 0 ? p.rate / maxY : 0
+      const y = h - padding - ratio * (h - padding * 2)
+      return { x, y }
     })
-    return `<svg class="mini-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${bars}</svg>`
+    
+    const linePath = coords.map((p, i) => 
+      (i === 0 ? `M ${p.x.toFixed(2)} ${p.y.toFixed(2)}` : `L ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+    ).join(' ')
+    const areaPath = linePath + ` L ${w} ${h} L 0 ${h} Z`
+    const gradId = 'g' + Math.random().toString(36).slice(2, 9)
+    
+    return `<svg class="mini-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaPath}" fill="url(#${gradId})"/>
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    </svg>`
   }
+  
+  
+  
+  
   
   function fmtMoney(v) {
     if (v === null || v === undefined) return '-'
@@ -902,7 +983,7 @@
     document.getElementById('kpi-hot').textContent = hot.toLocaleString()
   }
   
-  function renderTopCards() {
+  function renderTopCards(period) {
     const container = document.getElementById('top-cards')
     container.innerHTML = ''
     const top9 = currentBrands.slice(0, 9)
@@ -912,10 +993,12 @@
       const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'hot' : 'warn'))
       const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? 'ok' : (b.sell_progress_ratio < 0.6 ? 'hot' : 'warn'))
       
-      const daily30 = getRecent30Days(b.dailySales || {})
-      const trend = calcTrend(daily30)
-      const sparkline = renderSparkline(daily30, b.status)
-      const trendText = trend.dir === 'up' ? '추세 상승' : (trend.dir === 'down' ? '추세 둔화' : '안정')
+      // 누적판매율 라인 차트
+      const cum = getCumulativeSellThrough(b, period)
+      const trend = calcCumTrend(cum.points)
+      const sparkline = renderCumLine(cum.points, b.status)
+      const trendText = trend.dir === 'up' ? '가속' : (trend.dir === 'down' ? '둔화' : '일정')
+      const finalRatePct = (cum.finalRate * 100).toFixed(1)
       
       const card = document.createElement('div')
       card.className = `bcard s-${b.status}`
@@ -930,7 +1013,7 @@
         </div>
         <div class="mini-chart-wrap">
           <div class="mini-chart-head">
-            <span>최근 30일</span>
+            <span>누적판매율 ${finalRatePct}%</span>
             <span class="trend-${trend.dir}">${trend.icon} ${trendText}</span>
           </div>
           ${sparkline}
@@ -938,7 +1021,7 @@
         <div class="bstat">
           <div><span class="lab">영업이익률</span><span class="val ${opCls}">${fmtPct(b.op_margin)}</span></div>
           <div><span class="lab">재고일수</span><span class="val ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</span></div>
-          <div><span class="lab">소진율</span><span class="val ${srCls}">${fmtPct(b.sell_through, 0)}</span></div>
+          <div><span class="lab">판매율</span><span class="val ${srCls}">${fmtPct(b.sell_through, 0)}</span></div>
         </div>
       `
       container.appendChild(card)
