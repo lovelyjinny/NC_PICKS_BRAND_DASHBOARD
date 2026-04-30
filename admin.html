@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>관리자 · NC PICKS 브랜드 대시보드</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: #1a1410;
+    color: #f2e8d9;
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 10% 0%, rgba(201,161,122,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(232,134,74,0.04) 0%, transparent 50%);
+  }
+  
+  /* 로딩 화면 */
+  .loading-screen {
+    position: fixed;
+    inset: 0;
+    background: #1a1410;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .loading-screen.hide { display: none; }
+  .loading-text {
+    font-size: 13px;
+    color: #c9a17a;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  
+  /* 레이아웃 */
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  /* 사이드바 */
+  .sidebar {
+    width: 240px;
+    background: #2a2018;
+    border-right: 1px solid #3f332a;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #3f332a;
+    margin-bottom: 12px;
+  }
+  .sidebar-logo {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #c9a17a;
+    font-weight: 600;
+  }
+  .sidebar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f2e8d9;
+    margin-top: 4px;
+  }
+  .sidebar-subtitle {
+    font-size: 10px;
+    color: #6cd9b8;
+    background: rgba(108,217,184,0.12);
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  
+  .sidebar-nav {
+    flex: 1;
+    padding: 8px 12px;
+  }
+  .nav-section {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6b5d4f;
+    font-weight: 600;
+    padding: 12px 8px 8px 8px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #a89884;
+    font-size: 13px;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover {
+    background: rgba(201,161,122,0.06);
+    color: #f2e8d9;
+  }
+  .nav-item.active {
+    background: rgba(201,161,122,0.12);
+    color: #c9a17a;
+    font-weight: 600;
+  }
+  .nav-item .icon {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3f332a;
+    flex-shrink: 0;
+  }
+  .nav-item.active .icon {
+    background: #c9a17a;
+  }
+  .nav-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .nav-item.disabled:hover {
+    background: transparent;
+    color: #a89884;
+  }
+  .badge-soon {
+    margin-left: auto;
+    font-size: 9px;
+    background: #3f332a;
+    color: #a89884;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  
+  .sidebar-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #3f332a;
+  }
+  .user-info {
+    font-size: 11px;
+    color: #6b5d4f;
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+  .btn-logout {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #3f332a;
+    color: #a89884;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.15s;
+    margin-bottom: 6px;
+  }
+  .btn-logout:hover {
+    border-color: #d97878;
+    color: #d97878;
+  }
+  .btn-back {
+    width: 100%;
+    background: #c9a17a;
+    border: 1px solid #c9a17a;
+    color: #1a1410;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .btn-back:hover {
+    background: #b88f68;
+    border-color: #b88f68;
+  }
+  
+  /* 메인 컨텐츠 */
+  .main {
+    flex: 1;
+    padding: 28px 32px;
+    overflow-x: hidden;
+  }
+  .main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid #3f332a;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .main-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f2e8d9;
+    letter-spacing: -0.01em;
+  }
+  .main-subtitle {
+    font-size: 12px;
+    color: #a89884;
+    margin-top: 4px;
+  }
+  
+  /* 페이지 컨텐츠 영역 */
+  .page-content {
+    display: none;
+  }
+  .page-content.active {
+    display: block;
+  }
+  
+  /* 환영 화면 */
+  .welcome-card {
+    background: #2a2018;
+    border: 1px solid #3f332a;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+  .welcome-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .welcome-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f2e8d9;
+    margin-bottom: 8px;
+  }
+  .welcome-text {
+    font-size: 13px;
+    color: #a89884;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  /* 데이터 현황 카드 */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .stat-card {
+    background: #2a2018;
+    border: 1px solid #3f332a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: #c9a17a;
+  }
+  .stat-card.s2::before { background: #6cd9b8; }
+  .stat-card.s3::before { background: #b08bd9; }
+  .stat-card.s4::before { background: #f0a93a; }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #a89884;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f2e8d9;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .stat-sub {
+    font-size: 11px;
+    color: #6b5d4f;
+    margin-top: 4px;
+  }
+  
+  /* 푸터 */
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #3f332a;
+    text-align: center;
+    font-size: 11px;
+    color: #6b5d4f;
+  }
+</style>
+</head>
+<body>
+
+<!-- 로딩 화면 (인증 확인 중) -->
+<div id="loading" class="loading-screen">
+  <div class="loading-text">권한 확인 중...</div>
+</div>
+
+<!-- 메인 앱 (인증 후 표시) -->
+<div id="app" class="app" style="display: none;">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">NC PICKS</div>
+      <div class="sidebar-title">데이터 관리</div>
+      <div class="sidebar-subtitle">관리자 모드</div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section">데이터 업로드</div>
+      <div class="nav-item active" data-page="welcome">
+        <span class="icon"></span>
+        <span>홈</span>
+      </div>
+      <div class="nav-item disabled" data-page="sales">
+        <span class="icon"></span>
+        <span>매출 데이터</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      <div class="nav-item disabled" data-page="inventory">
+        <span class="icon"></span>
+        <span>재고 데이터</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      <div class="nav-item disabled" data-page="sellthrough">
+        <span class="icon"></span>
+        <span>정판율 데이터</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      <div class="nav-item disabled" data-page="inbound">
+        <span class="icon"></span>
+        <span>발주/입고 데이터</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      
+      <div class="nav-section">관리</div>
+      <div class="nav-item disabled" data-page="sga">
+        <span class="icon"></span>
+        <span>판관비 입력</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      <div class="nav-item disabled" data-page="verify">
+        <span class="icon"></span>
+        <span>데이터 검증</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+      <div class="nav-item disabled" data-page="rollback">
+        <span class="icon"></span>
+        <span>삭제/롤백</span>
+        <span class="badge-soon">준비중</span>
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="user-info" id="user-info">로딩 중...</div>
+      <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+      <a href="index.html" class="btn-back">← 대시보드로</a>
+    </div>
+  </aside>
+
+  <!-- 메인 컨텐츠 -->
+  <main class="main">
+    
+    <!-- 홈 페이지 -->
+    <div id="page-welcome" class="page-content active">
+      <div class="main-header">
+        <div>
+          <div class="main-title">데이터 관리 홈</div>
+          <div class="main-subtitle">5종 파일 업로드 및 누적 관리</div>
+        </div>
+      </div>
+      
+      <div class="welcome-card">
+        <div class="welcome-icon">📊</div>
+        <div class="welcome-title">관리자 모드에 오신 것을 환영합니다</div>
+        <div class="welcome-text">
+          좌측 메뉴에서 업로드할 데이터 종류를 선택하세요.<br>
+          현재 인프라 구축이 완료되었으며, 데이터 업로드 기능은 다음 단계에서 추가됩니다.
+        </div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">매출 데이터</div>
+          <div class="stat-value" id="cnt-sales">-</div>
+          <div class="stat-sub">sales_daily</div>
+        </div>
+        <div class="stat-card s2">
+          <div class="stat-label">재고 데이터 (월)</div>
+          <div class="stat-value" id="cnt-invm">-</div>
+          <div class="stat-sub">inventory_monthly</div>
+        </div>
+        <div class="stat-card s3">
+          <div class="stat-label">정판율 데이터</div>
+          <div class="stat-value" id="cnt-st">-</div>
+          <div class="stat-sub">sellthrough_daily</div>
+        </div>
+        <div class="stat-card s4">
+          <div class="stat-label">판관비 데이터</div>
+          <div class="stat-value" id="cnt-sga">-</div>
+          <div class="stat-sub">monthly_sga</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Phase 5-1 · 관리 페이지 골격 · v0.2
+    </div>
+  </main>
+
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+  const SUPABASE_URL = 'https://tdbdxprjkwvlscsdstcg.supabase.co'
+  const SUPABASE_ANON_KEY = 'sb_publishable_nDEDBVxcUiWpn0E8EMWooQ_JAIXCeag'
+  
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  window.supabase = supabase
+  
+  // 인증 가드: 로그인 안 한 사람은 메인으로 튕겨냄
+  async function authGuard() {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      // 로그인 안 됨 → 메인 페이지로
+      alert('관리자만 접근 가능합니다. 메인 페이지로 이동합니다.')
+      window.location.href = 'index.html'
+      return null
+    }
+    
+    return session
+  }
+  
+  // 데이터 현황 조회
+  async function loadStats() {
+    try {
+      // 각 테이블 row 수 카운트
+      const [sales, invm, st, sga] = await Promise.all([
+        supabase.from('sales_daily').select('*', { count: 'exact', head: true }),
+        supabase.from('inventory_monthly').select('*', { count: 'exact', head: true }),
+        supabase.from('sellthrough_daily').select('*', { count: 'exact', head: true }),
+        supabase.from('monthly_sga').select('*', { count: 'exact', head: true })
+      ])
+      
+      document.getElementById('cnt-sales').textContent = (sales.count || 0).toLocaleString()
+      document.getElementById('cnt-invm').textContent = (invm.count || 0).toLocaleString()
+      document.getElementById('cnt-st').textContent = (st.count || 0).toLocaleString()
+      document.getElementById('cnt-sga').textContent = (sga.count || 0).toLocaleString()
+    } catch (err) {
+      console.error('통계 조회 실패:', err)
+    }
+  }
+  
+  // 로그아웃
+  window.doLogout = async function() {
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  }
+  
+  // 사이드바 메뉴 클릭
+  document.querySelectorAll('.nav-item:not(.disabled)').forEach(item => {
+    item.addEventListener('click', () => {
+      // 활성화 상태 변경
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'))
+      item.classList.add('active')
+      
+      // 페이지 전환
+      const page = item.dataset.page
+      document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'))
+      const target = document.getElementById('page-' + page)
+      if (target) target.classList.add('active')
+    })
+  })
+  
+  // 시작
+  ;(async () => {
+    const session = await authGuard()
+    if (!session) return  // 인증 실패 시 멈춤
+    
+    // 로그인 정보 표시
+    document.getElementById('user-info').textContent = session.user.email
+    
+    // 로딩 화면 → 앱 화면 전환
+    document.getElementById('loading').classList.add('hide')
+    document.getElementById('app').style.display = 'flex'
+    
+    // 통계 로드
+    loadStats()
+  })()
+</script>
+
+</body>
+</html>

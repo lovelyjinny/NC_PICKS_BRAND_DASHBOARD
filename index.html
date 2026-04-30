@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>NC PICKS · 브랜드별 마크다운 의사결정</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: #1a1410;
+    color: #f2e8d9;
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 10% 0%, rgba(201,161,122,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(232,134,74,0.04) 0%, transparent 50%);
+    padding: 24px;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* 헤더 */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid #3f332a;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .logo {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #c9a17a;
+    font-weight: 600;
+  }
+  .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f2e8d9;
+    margin-top: 4px;
+    letter-spacing: -0.01em;
+  }
+  .header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  /* 버튼 */
+  .btn {
+    background: transparent;
+    border: 1px solid #3f332a;
+    color: #c9a17a;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover {
+    border-color: #5c4a3a;
+    color: #f2e8d9;
+    background: rgba(201,161,122,0.05);
+  }
+  .btn-primary {
+    background: #c9a17a;
+    border-color: #c9a17a;
+    color: #1a1410;
+  }
+  .btn-primary:hover {
+    background: #b88f68;
+    border-color: #b88f68;
+    color: #1a1410;
+  }
+  .btn-admin-active {
+    background: rgba(108,217,184,0.15);
+    border-color: #6cd9b8;
+    color: #6cd9b8;
+  }
+  .admin-badge {
+    font-size: 10px;
+    background: rgba(108,217,184,0.15);
+    color: #6cd9b8;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  
+  /* 섹션 라벨 */
+  .sec-label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #c9a17a;
+    font-weight: 600;
+    margin: 0 0 12px 4px;
+  }
+  
+  /* 카드 */
+  .card {
+    background: #2a2018;
+    border: 1px solid #3f332a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+  }
+  
+  /* 시스템 상태 */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot.ok { background: #6cd9b8; box-shadow: 0 0 8px rgba(108,217,184,0.5); }
+  .status-dot.err { background: #d97878; box-shadow: 0 0 8px rgba(217,120,120,0.5); }
+  .status-dot.wait { background: #f0a93a; }
+  .status-text { color: #f2e8d9; }
+  .status-text.muted { color: #a89884; }
+  
+  /* 판관비 테이블 */
+  table.sga-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .sga-table thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    background: #352a21;
+    border-bottom: 1px solid #3f332a;
+    color: #c9a17a;
+  }
+  .sga-table th.r, .sga-table td.r { text-align: right; }
+  .sga-table tbody td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #3f332a;
+    color: #f2e8d9;
+    font-variant-numeric: tabular-nums;
+  }
+  .sga-table tbody tr:nth-child(even) {
+    background: rgba(52,42,33,0.4);
+  }
+  .badge-confirmed {
+    font-size: 10px;
+    background: rgba(108,217,184,0.15);
+    color: #6cd9b8;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge-predicted {
+    font-size: 10px;
+    background: rgba(240,169,58,0.15);
+    color: #f0a93a;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  /* 빈 상태 */
+  .empty {
+    padding: 32px;
+    text-align: center;
+    color: #6b5d4f;
+    font-size: 13px;
+  }
+  
+  /* 로그인 모달 */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #2a2018;
+    border: 1px solid #5c4a3a;
+    border-radius: 12px;
+    padding: 28px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .modal h2 {
+    font-size: 16px;
+    color: #f2e8d9;
+    margin-bottom: 6px;
+  }
+  .modal p {
+    font-size: 12px;
+    color: #a89884;
+    margin-bottom: 18px;
+  }
+  .modal label {
+    display: block;
+    font-size: 11px;
+    color: #a89884;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  .modal input {
+    width: 100%;
+    background: #1a1410;
+    border: 1px solid #3f332a;
+    color: #f2e8d9;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .modal input:focus {
+    outline: none;
+    border-color: #c9a17a;
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 22px;
+  }
+  .modal-error {
+    font-size: 12px;
+    color: #d97878;
+    background: rgba(217,120,120,0.08);
+    border-left: 2px solid #d97878;
+    padding: 8px 12px;
+    border-radius: 0 4px 4px 0;
+    margin-top: 12px;
+    display: none;
+  }
+  .modal-error.show { display: block; }
+  
+  /* 푸터 */
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #3f332a;
+    text-align: center;
+    font-size: 11px;
+    color: #6b5d4f;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 헤더 -->
+  <div class="header">
+    <div>
+      <div class="logo">NC PICKS</div>
+      <div class="title">브랜드별 마크다운 의사결정</div>
+    </div>
+    <div class="header-right">
+      <span id="admin-badge" class="admin-badge" style="display:none">관리자</span>
+      <a id="btn-admin-page" href="admin.html" class="btn" style="display:none; text-decoration:none;">데이터 관리 →</a>
+      <button id="btn-login" class="btn">관리자 로그인</button>
+      <button id="btn-logout" class="btn" style="display:none">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- 시스템 상태 -->
+  <div class="sec-label">시스템 상태</div>
+  <div class="card">
+    <div id="status-db" class="status-row">
+      <span class="status-dot wait"></span>
+      <span class="status-text muted">데이터베이스 연결 확인 중...</span>
+    </div>
+    <div id="status-auth" class="status-row">
+      <span class="status-dot wait"></span>
+      <span class="status-text muted">인증 상태 확인 중...</span>
+    </div>
+  </div>
+
+  <!-- 판관비 현황 -->
+  <div class="sec-label">월별 판관비 현황</div>
+  <div class="card" style="padding: 0;">
+    <div id="sga-content">
+      <div class="empty">로딩 중...</div>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <div class="footer">
+    Phase 5-1 · 메인 대시보드 · v0.2
+  </div>
+
+</div>
+
+<!-- 로그인 모달 -->
+<div id="login-modal" class="modal-bg">
+  <div class="modal">
+    <h2>관리자 로그인</h2>
+    <p>데이터 업로드 및 수정 권한이 필요한 경우에만 로그인하세요.</p>
+    
+    <label>이메일</label>
+    <input type="email" id="login-email" placeholder="email@example.com" autocomplete="username">
+    
+    <label>비밀번호</label>
+    <input type="password" id="login-password" autocomplete="current-password">
+    
+    <div id="login-error" class="modal-error"></div>
+    
+    <div class="modal-buttons">
+      <button class="btn" onclick="closeLogin()">취소</button>
+      <button class="btn btn-primary" onclick="doLogin()">로그인</button>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase JS SDK -->
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+  // ===== 설정 =====
+  const SUPABASE_URL = 'https://tdbdxprjkwvlscsdstcg.supabase.co'
+  const SUPABASE_ANON_KEY = 'sb_publishable_nDEDBVxcUiWpn0E8EMWooQ_JAIXCeag'
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  
+  // 전역 노출 (인라인 onclick에서 호출하기 위해)
+  window.supabase = supabase
+  
+  // ===== UI 헬퍼 =====
+  function setStatus(elementId, type, text) {
+    const el = document.getElementById(elementId)
+    el.innerHTML = `
+      <span class="status-dot ${type}"></span>
+      <span class="status-text">${text}</span>
+    `
+  }
+  
+  function formatPercent(rate) {
+    return (Number(rate) * 100).toFixed(1) + '%'
+  }
+  
+  // ===== 1. 데이터베이스 연결 + 판관비 조회 =====
+  async function checkDatabase() {
+    try {
+      const { data, error } = await supabase
+        .from('monthly_sga')
+        .select('*')
+        .order('year_month', { ascending: true })
+      
+      if (error) throw error
+      
+      setStatus('status-db', 'ok', `데이터베이스 연결 정상 (판관비 ${data.length}건 조회 성공)`)
+      renderSgaTable(data)
+    } catch (err) {
+      setStatus('status-db', 'err', `데이터베이스 연결 실패: ${err.message}`)
+      document.getElementById('sga-content').innerHTML = 
+        `<div class="empty">데이터를 불러올 수 없습니다.<br>${err.message}</div>`
+    }
+  }
+  
+  function renderSgaTable(data) {
+    if (!data || data.length === 0) {
+      document.getElementById('sga-content').innerHTML = 
+        '<div class="empty">판관비 데이터가 없습니다.</div>'
+      return
+    }
+    
+    const rows = data.map(row => `
+      <tr>
+        <td>${row.year_month}</td>
+        <td class="r">${formatPercent(row.sga_rate)}</td>
+        <td>
+          ${row.is_predicted 
+            ? '<span class="badge-predicted">예측</span>' 
+            : '<span class="badge-confirmed">확정</span>'}
+        </td>
+        <td style="color: #6b5d4f; font-size: 11px;">${row.note || ''}</td>
+      </tr>
+    `).join('')
+    
+    document.getElementById('sga-content').innerHTML = `
+      <table class="sga-table">
+        <thead>
+          <tr>
+            <th>연월</th>
+            <th class="r">판관비율</th>
+            <th>구분</th>
+            <th>메모</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `
+  }
+  
+  // ===== 2. 인증 상태 =====
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession()
+    updateAuthUI(session)
+  }
+  
+  function updateAuthUI(session) {
+    const btnLogin = document.getElementById('btn-login')
+    const btnLogout = document.getElementById('btn-logout')
+    const btnAdminPage = document.getElementById('btn-admin-page')
+    const badge = document.getElementById('admin-badge')
+    
+    if (session) {
+      setStatus('status-auth', 'ok', `관리자 로그인됨 (${session.user.email})`)
+      btnLogin.style.display = 'none'
+      btnLogout.style.display = 'inline-block'
+      btnAdminPage.style.display = 'inline-block'
+      badge.style.display = 'inline-block'
+    } else {
+      setStatus('status-auth', 'ok', '일반 모드 (조회 전용)')
+      btnLogin.style.display = 'inline-block'
+      btnLogout.style.display = 'none'
+      btnAdminPage.style.display = 'none'
+      badge.style.display = 'none'
+    }
+  }
+  
+  // ===== 3. 로그인/로그아웃 =====
+  window.openLogin = function() {
+    document.getElementById('login-modal').classList.add('show')
+    document.getElementById('login-error').classList.remove('show')
+    document.getElementById('login-email').focus()
+  }
+  
+  window.closeLogin = function() {
+    document.getElementById('login-modal').classList.remove('show')
+    document.getElementById('login-email').value = ''
+    document.getElementById('login-password').value = ''
+  }
+  
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim()
+    const password = document.getElementById('login-password').value
+    const errorEl = document.getElementById('login-error')
+    
+    if (!email || !password) {
+      errorEl.textContent = '이메일과 비밀번호를 입력해주세요.'
+      errorEl.classList.add('show')
+      return
+    }
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    
+    if (error) {
+      errorEl.textContent = '로그인 실패: ' + error.message
+      errorEl.classList.add('show')
+    } else {
+      closeLogin()
+      updateAuthUI(data.session)
+    }
+  }
+  
+  window.doLogout = async function() {
+    await supabase.auth.signOut()
+    updateAuthUI(null)
+  }
+  
+  // ===== 이벤트 바인딩 =====
+  document.getElementById('btn-login').addEventListener('click', window.openLogin)
+  document.getElementById('btn-logout').addEventListener('click', window.doLogout)
+  
+  // ESC 키로 모달 닫기
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLogin()
+  })
+  
+  // Enter 키로 로그인
+  document.getElementById('login-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') window.doLogin()
+  })
+  
+  // ===== 시작 =====
+  checkDatabase()
+  checkAuth()
+  
+  // 인증 상태 변경 자동 감지
+  supabase.auth.onAuthStateChange((_event, session) => {
+    updateAuthUI(session)
+  })
+</script>
+
+</body>
+</html>
