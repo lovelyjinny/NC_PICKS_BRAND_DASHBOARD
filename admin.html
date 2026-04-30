@@ -254,9 +254,9 @@
         <span class="icon"></span><span>정판율 데이터</span>
         <span class="badge-ready">활성</span>
       </div>
-      <div class="nav-item disabled" data-page="inbound">
+      <div class="nav-item" data-page="inbound">
         <span class="icon"></span><span>발주/입고 데이터</span>
-        <span class="badge-soon">준비중</span>
+        <span class="badge-ready">활성</span>
       </div>
       
       <div class="nav-section">관리</div>
@@ -319,6 +319,11 @@
           <div class="stat-label">판관비 데이터</div>
           <div class="stat-value" id="cnt-sga">-</div>
           <div class="stat-sub">monthly_sga</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">발주/입고 데이터</div>
+          <div class="stat-value" id="cnt-po">-</div>
+          <div class="stat-sub">purchase_orders</div>
         </div>
       </div>
     </div>
@@ -478,14 +483,67 @@
       </div>
     </div>
     
+    <!-- 발주/입고 페이지 -->
+    <div id="page-inbound" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">발주/입고 데이터 업로드</div>
+          <div class="main-subtitle">발주입고액_정리_*.xlsx (시즌별 스타일 단위 KPI)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">1. 파일 선택</div>
+        <input type="file" id="po-file" class="hidden-input" accept=".xlsx,.xls">
+        <div id="po-zone" class="upload-zone">
+          <div class="upload-icon">📋</div>
+          <div class="upload-title">발주입고액_정리_*.xlsx 파일을 선택하세요</div>
+          <div class="upload-hint">시즌별 4개 파일을 한 번에 하나씩 업로드 · XLSX만 지원</div>
+          <div id="po-info" class="upload-file-info" style="display:none;"></div>
+        </div>
+      </div>
+      <div id="po-validation" class="card" style="display:none;">
+        <div class="card-title">2. 검증 결과</div>
+        <div id="po-validation-list"></div>
+      </div>
+      <div id="po-preview" class="card" style="display:none;">
+        <div class="card-title">3. 미리보기 (처음 5행)</div>
+        <div class="preview-table-wrap"><table class="preview" id="po-preview-table"></table></div>
+      </div>
+      <div id="po-options" class="card" style="display:none;">
+        <div class="card-title">4. 업로드 옵션</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;">
+          ⓘ <b style="color:#f2e8d9;">스타일별 누적 KPI</b>가 purchase_orders 테이블에 저장됩니다.<br>
+          ⓘ <b style="color:#f2e8d9;">중복 시즌 처리:</b> 같은 시즌(예: 26SS) 데이터를 다시 올리면 누적되니 주의하세요.<br>
+          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 시즌당 2~5만 행 기준 1~3분 소요.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="startUpload('po')">업로드 시작</button>
+          <button class="btn" onclick="resetUpload('po')">취소</button>
+        </div>
+      </div>
+      <div id="po-progress" class="card" style="display:none;">
+        <div class="card-title">5. 업로드 진행 중</div>
+        <div class="progress-wrap"><div class="progress-bar" id="po-bar"></div></div>
+        <div class="progress-text">
+          <span id="po-pct">0%</span>
+          <span id="po-cnt">0 / 0 행</span>
+        </div>
+        <div class="upload-log" id="po-log"></div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="po-stop" onclick="stopUpload('po')">긴급 중단</button>
+        </div>
+      </div>
+    </div>
+    
     <div class="footer">
-      Phase 5-3 · 매출/재고/정판율 업로드 · v0.4
+      Phase 5-4 · 매출/재고/정판율/발주입고 업로드 · v0.5
     </div>
   </main>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -510,16 +568,19 @@
   // ============= 통계 =============
   async function loadStats() {
     try {
-      const [sales, invm, st, sga] = await Promise.all([
+      const [sales, invm, st, sga, po] = await Promise.all([
         supabase.from('sales_daily').select('*', { count: 'exact', head: true }),
         supabase.from('inventory_monthly').select('*', { count: 'exact', head: true }),
         supabase.from('sellthrough_daily').select('*', { count: 'exact', head: true }),
-        supabase.from('monthly_sga').select('*', { count: 'exact', head: true })
+        supabase.from('monthly_sga').select('*', { count: 'exact', head: true }),
+        supabase.from('purchase_orders').select('*', { count: 'exact', head: true })
       ])
       document.getElementById('cnt-sales').textContent = (sales.count || 0).toLocaleString()
       document.getElementById('cnt-invm').textContent = (invm.count || 0).toLocaleString()
       document.getElementById('cnt-st').textContent = (st.count || 0).toLocaleString()
       document.getElementById('cnt-sga').textContent = (sga.count || 0).toLocaleString()
+      const cntPo = document.getElementById('cnt-po')
+      if (cntPo) cntPo.textContent = (po.count || 0).toLocaleString()
     } catch (err) { console.error(err) }
   }
   window.loadStats = loadStats
@@ -679,6 +740,57 @@
           normal_sales_amount: toNum(row['정상판매액'])
         }
       }
+    },
+    po: {
+      table: 'purchase_orders',
+      isExcel: true,  // xlsx 파싱
+      // Excel 파일은 컬럼명이 아닌 인덱스로 접근 (헤더가 합쳐져있음)
+      requiredCols: [],  // 인덱스 기반이라 컬럼 검증 다름
+      previewCols: ['계절코드','브랜드','스타일코드','누적입고액','누적매출원가','누적판매율','전사재고액'],
+      filterInvalidSeason: true,
+      dateField: '계절코드',
+      transformRow: (row) => {
+        // row는 인덱스 배열로 들어옴
+        const seasonCodeRaw = row[3]  // col3: 계절연도+계절
+        const season = parseSeason(seasonCodeRaw)
+        if (!season.type) return null
+        // 누적 발주량(col25)이 숫자여야 데이터 행
+        const cumOrderQty = toNum(row[25])
+        if (cumOrderQty === null) return null
+        return {
+          buy_group_code: row[1] || null,
+          buy_group_name: row[2] || null,
+          season_code: seasonCodeRaw || null,
+          season_year: season.year,
+          season_type: season.type,
+          mc_code: row[4] || null,
+          mc_name: row[5] || null,
+          brand_code: row[6] || '',
+          brand_name: row[7] || null,
+          style_code: row[8] || null,
+          style_name: row[9] || null,
+          first_inbound_date: row[10] || null,
+          first_outbound_date: row[11] || null,
+          initial_price: toNum(row[12]),
+          current_price: toNum(row[13]),
+          cum_order_qty: toNum(row[25]),
+          cum_order_amount: toNum(row[26]),
+          cum_inbound_qty: toNum(row[27]),
+          cum_inbound_amount: toNum(row[28]),
+          cum_pending_qty: toNum(row[29]),
+          cum_pending_amount: toNum(row[30]),
+          cum_sold_qty: toNum(row[31]),
+          cum_real_sales: toNum(row[32]),
+          cum_cost_of_goods: toNum(row[33]),
+          cum_gross_margin_rate: toNum(row[34]),
+          cum_sell_through_rate: toNum(row[35]),
+          total_stock_qty: toNum(row[36]),
+          total_stock_amount: toNum(row[37]),
+          sale_days: toNum(row[38]),
+          daily_avg_sold_qty: toNum(row[39]),
+          moving_avg_price: toNum(row[40])
+        }
+      }
     }
   }
   
@@ -686,7 +798,8 @@
   const STATE = {
     sales: { file: null, data: null, validRows: 0, uploading: false, shouldStop: false },
     inv:   { file: null, data: null, validRows: 0, uploading: false, shouldStop: false },
-    st:    { file: null, data: null, validRows: 0, uploading: false, shouldStop: false }
+    st:    { file: null, data: null, validRows: 0, uploading: false, shouldStop: false },
+    po:    { file: null, data: null, validRows: 0, uploading: false, shouldStop: false }
   }
   
   // ============= 파일 선택 (드래그&드롭) =============
@@ -709,11 +822,23 @@
   setupZone('sales')
   setupZone('inv')
   setupZone('st')
+  setupZone('po')
   
   function handleFile(prefix, file) {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      alert('CSV 파일만 업로드 가능합니다.')
-      return
+    const config = UPLOADERS[prefix]
+    const isExcel = config.isExcel === true
+    const fname = file.name.toLowerCase()
+    
+    if (isExcel) {
+      if (!fname.endsWith('.xlsx') && !fname.endsWith('.xls')) {
+        alert('Excel 파일(.xlsx)만 업로드 가능합니다.')
+        return
+      }
+    } else {
+      if (!fname.endsWith('.csv')) {
+        alert('CSV 파일만 업로드 가능합니다.')
+        return
+      }
     }
     
     STATE[prefix].file = file
@@ -727,19 +852,47 @@
     document.getElementById(prefix + '-validation-list').innerHTML = ''
     addValidation(prefix, '파일 파싱 중... (큰 파일은 시간이 걸립니다)', 'warn')
     
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      worker: false,
-      complete: (result) => {
-        STATE[prefix].data = result.data
-        validateData(prefix)
-      },
-      error: (err) => {
-        document.getElementById(prefix + '-validation-list').innerHTML = ''
-        addValidation(prefix, '파일 파싱 실패: ' + err.message, 'err')
+    if (isExcel) {
+      // XLSX 파싱
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result)
+          const wb = XLSX.read(data, { type: 'array', cellDates: false })
+          // 발주관리분석 시트 찾기
+          const sheetName = wb.SheetNames.find(s => s.includes('발주관리') || s.includes('발주분석')) 
+                          || wb.SheetNames.find(s => !s.includes('hidden')) 
+                          || wb.SheetNames[0]
+          const ws = wb.Sheets[sheetName]
+          // 인덱스 기반 (헤더 없이 모든 셀을 배열로)
+          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true })
+          STATE[prefix].data = arr
+          validateData(prefix)
+        } catch (err) {
+          document.getElementById(prefix + '-validation-list').innerHTML = ''
+          addValidation(prefix, 'Excel 파싱 실패: ' + err.message, 'err')
+        }
       }
-    })
+      reader.onerror = () => {
+        addValidation(prefix, '파일 읽기 실패', 'err')
+      }
+      reader.readAsArrayBuffer(file)
+    } else {
+      // CSV 파싱
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        worker: false,
+        complete: (result) => {
+          STATE[prefix].data = result.data
+          validateData(prefix)
+        },
+        error: (err) => {
+          document.getElementById(prefix + '-validation-list').innerHTML = ''
+          addValidation(prefix, '파일 파싱 실패: ' + err.message, 'err')
+        }
+      })
+    }
   }
   
   function validateData(prefix) {
@@ -753,15 +906,32 @@
       return
     }
     
+    const isExcel = config.isExcel === true
+    
     addValidation(prefix, `전체 행 수: ${data.length.toLocaleString()}건`, 'ok')
     
-    const actualCols = Object.keys(data[0])
-    const missing = config.requiredCols.filter(r => !actualCols.includes(r))
-    if (missing.length > 0) {
-      addValidation(prefix, `필수 컬럼 누락: ${missing.join(', ')}`, 'err')
-      return
+    if (!isExcel) {
+      // CSV: 컬럼명 검증
+      const actualCols = Object.keys(data[0])
+      const missing = config.requiredCols.filter(r => !actualCols.includes(r))
+      if (missing.length > 0) {
+        addValidation(prefix, `필수 컬럼 누락: ${missing.join(', ')}`, 'err')
+        return
+      }
+      addValidation(prefix, `컬럼 ${config.requiredCols.length}개 모두 존재`, 'ok')
+    } else {
+      // Excel: 행이 배열, transformRow 미리 시도
+      let firstValid = null
+      for (const row of data) {
+        const t = config.transformRow(row)
+        if (t !== null) { firstValid = t; break }
+      }
+      if (!firstValid) {
+        addValidation(prefix, '유효한 데이터 행을 찾을 수 없습니다', 'err')
+        return
+      }
+      addValidation(prefix, '엑셀 시트 구조 확인 완료', 'ok')
     }
-    addValidation(prefix, `컬럼 ${config.requiredCols.length}개 모두 존재`, 'ok')
     
     let invalidCnt = 0
     let validCnt = 0
@@ -769,28 +939,48 @@
     const brandSet = new Set()
     
     for (const row of data) {
-      if (config.filterInvalidSeason) {
-        const season = parseSeason(row['계절코드'])
-        if (!season.type) {
+      if (isExcel) {
+        // Excel: transformRow가 null 반환하면 건너뜀
+        const t = config.transformRow(row)
+        if (t === null) {
           invalidCnt++
           continue
         }
-      }
-      validCnt++
-      brandSet.add(row['브랜드코드'])
-      const d = row[config.dateField]
-      if (d) {
-        if (!dateMin || d < dateMin) dateMin = d
-        if (!dateMax || d > dateMax) dateMax = d
+        validCnt++
+        brandSet.add(t.brand_code)
+        const d = t.season_code
+        if (d) {
+          if (!dateMin || d < dateMin) dateMin = d
+          if (!dateMax || d > dateMax) dateMax = d
+        }
+      } else {
+        if (config.filterInvalidSeason) {
+          const season = parseSeason(row['계절코드'])
+          if (!season.type) {
+            invalidCnt++
+            continue
+          }
+        }
+        validCnt++
+        brandSet.add(row['브랜드코드'])
+        const d = row[config.dateField]
+        if (d) {
+          if (!dateMin || d < dateMin) dateMin = d
+          if (!dateMax || d > dateMax) dateMax = d
+        }
       }
     }
     STATE[prefix].validRows = validCnt
     
-    addValidation(prefix, `${config.dateField} 범위: ${dateMin} ~ ${dateMax}`, 'ok')
+    if (isExcel) {
+      addValidation(prefix, `시즌코드 범위: ${dateMin} ~ ${dateMax}`, 'ok')
+    } else {
+      addValidation(prefix, `${config.dateField} 범위: ${dateMin} ~ ${dateMax}`, 'ok')
+    }
     addValidation(prefix, `고유 브랜드: ${brandSet.size}개`, 'ok')
     addValidation(prefix, `유효 행: ${validCnt.toLocaleString()}건`, 'ok')
     if (invalidCnt > 0) {
-      addValidation(prefix, `비표준 계절코드 자동 제외: ${invalidCnt.toLocaleString()}건`, 'warn')
+      addValidation(prefix, `${isExcel ? '헤더/빈 행' : '비표준 계절코드'} 자동 제외: ${invalidCnt.toLocaleString()}건`, 'warn')
     }
     
     showPreview(prefix)
@@ -799,28 +989,50 @@
   
   function showPreview(prefix) {
     const config = UPLOADERS[prefix]
-    const data = STATE[prefix].data.slice(0, 5)
-    const cols = config.previewCols
+    const isExcel = config.isExcel === true
     
     let html = '<thead><tr>'
-    cols.forEach(c => html += `<th>${c}</th>`)
+    config.previewCols.forEach(c => html += `<th>${c}</th>`)
     html += '</tr></thead><tbody>'
     
-    data.forEach(row => {
-      html += '<tr>'
-      cols.forEach(c => {
-        let val = row[c] || ''
-        if (c.includes('액') || c.includes('원가') || c === '판매수량' || 
-            c === '재고량' || c === '총판매량' || c.includes('재고액')) {
-          const n = toNum(val)
-          val = n !== null ? n.toLocaleString() : val
-        }
-        html += `<td>${val}</td>`
+    if (isExcel) {
+      // Excel: transformRow로 변환 후 5개 첫 행 미리보기
+      let previewCount = 0
+      const fmt = (v) => v === null || v === undefined ? '-' : 
+                          (typeof v === 'number' ? v.toLocaleString() : v)
+      for (const row of STATE[prefix].data) {
+        if (previewCount >= 5) break
+        const t = config.transformRow(row)
+        if (t === null) continue
+        html += '<tr>'
+        html += `<td>${t.season_code || '-'}</td>`
+        html += `<td>${t.brand_name || t.brand_code || '-'}</td>`
+        html += `<td>${t.style_code || '-'}</td>`
+        html += `<td>${fmt(t.cum_inbound_amount)}</td>`
+        html += `<td>${fmt(t.cum_cost_of_goods)}</td>`
+        html += `<td>${t.cum_sell_through_rate !== null ? (Number(t.cum_sell_through_rate)*100).toFixed(1) + '%' : '-'}</td>`
+        html += `<td>${fmt(t.total_stock_amount)}</td>`
+        html += '</tr>'
+        previewCount++
+      }
+    } else {
+      const data = STATE[prefix].data.slice(0, 5)
+      data.forEach(row => {
+        html += '<tr>'
+        config.previewCols.forEach(c => {
+          let val = row[c] || ''
+          if (c.includes('액') || c.includes('원가') || c === '판매수량' || 
+              c === '재고량' || c === '총판매량' || c.includes('재고액')) {
+            const n = toNum(val)
+            val = n !== null ? n.toLocaleString() : val
+          }
+          html += `<td>${val}</td>`
+        })
+        html += '</tr>'
       })
-      html += '</tr>'
-    })
-    html += '</tbody>'
+    }
     
+    html += '</tbody>'
     document.getElementById(prefix + '-preview-table').innerHTML = html
     document.getElementById(prefix + '-preview').style.display = 'block'
   }
@@ -831,7 +1043,7 @@
     const state = STATE[prefix]
     if (!state.data) return
     
-    const labelMap = { sales: '매출', inv: '재고', st: '정판율' }
+    const labelMap = { sales: '매출', inv: '재고', st: '정판율', po: '발주/입고' }
     if (!confirm(`${state.validRows.toLocaleString()}건을 ${labelMap[prefix]} 테이블에 업로드합니다.\n진행하시겠어요?\n\n중간에 브라우저를 닫지 마세요.`)) return
     
     document.getElementById(prefix + '-options').style.display = 'none'
