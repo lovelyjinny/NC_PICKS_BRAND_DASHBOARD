@@ -295,6 +295,144 @@
     text-align: center; font-size: 11px; color: #6b5d4f;
   }
   
+  /* 브랜드 상세 모달 */
+  .bd-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 90;
+    align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 40px 20px;
+  }
+  .bd-modal-bg.show { display: flex; }
+  .bd-modal {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 12px;
+    width: 100%; max-width: 900px; padding: 0;
+    animation: bdSlide 0.2s ease-out;
+  }
+  @keyframes bdSlide {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .bd-head {
+    padding: 20px 26px; border-bottom: 1px solid #3f332a;
+    display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; background: #2a2018; z-index: 1;
+    border-radius: 12px 12px 0 0;
+  }
+  .bd-head .bd-name { font-size: 22px; font-weight: 700; color: #b08bd9; flex: 1; }
+  .bd-head .bd-meta { font-size: 12px; color: #a89884; margin-top: 3px; display: block; font-weight: 400; }
+  .bd-head .bd-status {
+    font-size: 12px; padding: 5px 12px; border-radius: 5px;
+    font-weight: 600; letter-spacing: 0.04em;
+  }
+  .bd-close {
+    background: transparent; border: 1px solid #3f332a; color: #a89884;
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+    font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  }
+  .bd-close:hover { border-color: #5c4a3a; color: #f2e8d9; }
+  .bd-body { padding: 22px 26px 26px; }
+  
+  /* KPI 4개 가로 박스 */
+  .bd-kpi {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 22px;
+  }
+  .bd-k {
+    background: #1a1410; border: 1px solid #3f332a; border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .bd-k .l {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a89884; margin-bottom: 6px; font-weight: 600;
+  }
+  .bd-k .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bd-k .sub { font-size: 11px; color: #6b5d4f; margin-top: 3px; }
+  .bd-k.k1 .v { color: #4cb8a4; }
+  .bd-k.k2 .v { color: #f0a93a; }
+  .bd-k.k3 .v { color: #d97878; }
+  .bd-k.k4 .v { color: #5bb4e5; }
+  
+  /* 큰 차트 */
+  .bd-section {
+    background: #1a1410; border: 1px solid #3f332a; border-radius: 8px;
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  .bd-section-title {
+    font-size: 13px; font-weight: 600; color: #c9a17a;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .bd-section-title .meta {
+    font-size: 11px; color: #6b5d4f; font-weight: 500;
+    text-transform: none; letter-spacing: 0;
+  }
+  .bd-chart-wrap { width: 100%; height: 180px; position: relative; }
+  .bd-chart-wrap svg { width: 100%; height: 100%; display: block; }
+  
+  /* 트리거 진단 */
+  .bd-triggers { display: flex; flex-direction: column; gap: 10px; }
+  .bd-trigger {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 14px; border-radius: 6px;
+    background: rgba(26,20,16,0.5); border: 1px solid #3f332a;
+  }
+  .bd-trigger.fired { border-color: #d97878; background: rgba(217,120,120,0.06); }
+  .bd-trigger.safe { border-color: #4cb8a4; background: rgba(76,184,164,0.06); }
+  .bd-trigger .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .bd-trigger.fired .dot { background: #d97878; }
+  .bd-trigger.safe .dot { background: #4cb8a4; }
+  .bd-trigger .lab { font-size: 12px; color: #f2e8d9; font-weight: 600; flex-shrink: 0; min-width: 110px; }
+  .bd-trigger .desc { font-size: 12px; color: #a89884; flex: 1; }
+  .bd-trigger .desc b { color: #f2e8d9; }
+  .bd-trigger .verdict { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 4px; }
+  .bd-trigger.fired .verdict { background: rgba(217,120,120,0.18); color: #e89090; }
+  .bd-trigger.safe .verdict { background: rgba(76,184,164,0.18); color: #6cd9b8; }
+  
+  /* 시뮬레이터 */
+  .bd-sim-slider-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+    margin: 8px 0 16px;
+  }
+  .bd-sim-slider input[type=range] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 5px; background: #352a21; border-radius: 3px; outline: none;
+  }
+  .bd-sim-slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #f08aba; cursor: pointer; border: 2px solid #1a1410;
+  }
+  .bd-sim-slider input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #f08aba; cursor: pointer; border: 2px solid #1a1410;
+  }
+  .bd-sim-rng { display: flex; justify-content: space-between; font-size: 10px; color: #6b5d4f; margin-top: 4px; }
+  .bd-sim-val {
+    font-size: 32px; font-weight: 700; color: #f08aba;
+    font-variant-numeric: tabular-nums; min-width: 80px; text-align: right;
+  }
+  .bd-sim-val .u { font-size: 14px; color: #6b5d4f; font-weight: 500; }
+  
+  .bd-sim-result {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 14px;
+  }
+  .bd-sim-r {
+    background: rgba(26,20,16,0.6); border: 1px solid #3f332a; border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .bd-sim-r .l { font-size: 10px; color: #a89884; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+  .bd-sim-r .v {
+    font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: #f2e8d9;
+  }
+  .bd-sim-r .delta { font-size: 11px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .bd-sim-r .delta.down { color: #d97878; }
+  .bd-sim-r .delta.up { color: #6cd9b8; }
+  .bd-sim-r .delta.flat { color: #a89884; }
+  
   /* 로그인 모달 */
   .modal-bg {
     display: none; position: fixed; inset: 0;
@@ -443,9 +581,95 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 6 · 메인 대시보드 (회사 공식 + 발주/입고 차트 연결) · v0.7
+    Phase 7 · 브랜드 상세 모달 + 마크다운 시뮬레이터 · v0.8
   </div>
 
+</div>
+
+<!-- 브랜드 상세 모달 -->
+<div id="bd-modal" class="bd-modal-bg">
+  <div class="bd-modal" onclick="event.stopPropagation()">
+    <div class="bd-head">
+      <div style="flex:1">
+        <div class="bd-name" id="bd-name">-</div>
+        <span class="bd-meta" id="bd-meta">-</span>
+      </div>
+      <span class="bd-status" id="bd-status">-</span>
+      <button class="bd-close" onclick="closeBrandModal()">✕</button>
+    </div>
+    <div class="bd-body">
+      <!-- 상단 KPI 4개 -->
+      <div class="bd-kpi">
+        <div class="bd-k k1">
+          <div class="l">매출액</div>
+          <div class="v" id="bd-sales">-</div>
+          <div class="sub" id="bd-sales-sub">일평균 -</div>
+        </div>
+        <div class="bd-k k2">
+          <div class="l">영업이익률</div>
+          <div class="v" id="bd-op">-</div>
+          <div class="sub" id="bd-op-sub">매총율 - / 판관비 -</div>
+        </div>
+        <div class="bd-k k3">
+          <div class="l">재고일수</div>
+          <div class="v" id="bd-days">-</div>
+          <div class="sub" id="bd-days-sub">재고 -</div>
+        </div>
+        <div class="bd-k k4">
+          <div class="l">판매율</div>
+          <div class="v" id="bd-sell">-</div>
+          <div class="sub" id="bd-sell-sub">진척도 대비 -</div>
+        </div>
+      </div>
+      
+      <!-- 큰 누적판매율 차트 -->
+      <div class="bd-section">
+        <div class="bd-section-title">
+          <span>시즌 누적판매율 추이</span>
+          <span class="meta" id="bd-chart-meta">-</span>
+        </div>
+        <div class="bd-chart-wrap" id="bd-chart"></div>
+      </div>
+      
+      <!-- 트리거 진단 -->
+      <div class="bd-section">
+        <div class="bd-section-title">마크다운 트리거 진단</div>
+        <div class="bd-triggers" id="bd-triggers"></div>
+      </div>
+      
+      <!-- 마크다운 시뮬레이터 -->
+      <div class="bd-section">
+        <div class="bd-section-title">
+          <span>마크다운 시뮬레이터</span>
+          <span class="meta">단순 가격 효과 (수요 변화 미반영)</span>
+        </div>
+        <div class="bd-sim-slider-row">
+          <div class="bd-sim-slider">
+            <input type="range" min="0" max="50" step="1" value="0" id="bd-sim">
+            <div class="bd-sim-rng"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span></div>
+          </div>
+          <div class="bd-sim-val"><span id="bd-sim-val">0</span><span class="u">%</span></div>
+        </div>
+        <div class="bd-sim-result">
+          <div class="bd-sim-r">
+            <div class="l">예상 매출</div>
+            <div class="v" id="bd-sim-sales">-</div>
+            <div class="delta flat" id="bd-sim-sales-d">±0</div>
+          </div>
+          <div class="bd-sim-r">
+            <div class="l">예상 매총율</div>
+            <div class="v" id="bd-sim-gm">-</div>
+            <div class="delta flat" id="bd-sim-gm-d">±0%p</div>
+          </div>
+          <div class="bd-sim-r">
+            <div class="l">예상 영업이익률</div>
+            <div class="v" id="bd-sim-op">-</div>
+            <div class="delta flat" id="bd-sim-op-d">±0%p</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 로그인 모달 -->
@@ -1025,6 +1249,8 @@
       
       const card = document.createElement('div')
       card.className = `bcard s-${b.status}`
+      card.dataset.brandCode = b.brand_code
+      card.addEventListener('click', () => openBrandModal(b.brand_code))
       card.innerHTML = `
         <div class="bhead">
           <span class="bname">${b.brand_name}</span>
@@ -1063,6 +1289,8 @@
       const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? '' : (b.sell_progress_ratio < 0.6 ? 'sr-hot' : 'sr-warn'))
       
       const tr = document.createElement('tr')
+      tr.dataset.brandCode = b.brand_code
+      tr.addEventListener('click', () => openBrandModal(b.brand_code))
       tr.innerHTML = `
         <td>${idx + 1}</td>
         <td class="bn">${b.brand_name}</td>
@@ -1097,6 +1325,293 @@
     document.getElementById('v4').textContent = e.target.value
     computeAndRender()
   })
+  
+  // ============= 브랜드 상세 모달 =============
+  let bdCurrentBrand = null  // 현재 모달의 브랜드 객체
+  let bdCurrentPeriod = null
+  let bdCurrentSga = 0       // 현재 슬라이더 판관비율
+  
+  function openBrandModal(brandCode) {
+    const brand = currentBrands.find(b => b.brand_code === brandCode)
+    if (!brand) {
+      console.warn('브랜드 못 찾음:', brandCode)
+      return
+    }
+    
+    // 현재 시즌 정보 + 판관비 가져오기
+    const year = parseInt(document.getElementById('sel-year').value, 10)
+    const type = document.getElementById('sel-season').value
+    const period = seasonPeriod(year, type)
+    const sgaRate = parseInt(document.getElementById('sl-sga').value, 10) / 100
+    
+    bdCurrentBrand = brand
+    bdCurrentPeriod = period
+    bdCurrentSga = sgaRate
+    
+    renderBrandModal()
+    document.getElementById('bd-modal').classList.add('show')
+    document.body.style.overflow = 'hidden'
+  }
+  
+  window.closeBrandModal = function() {
+    document.getElementById('bd-modal').classList.remove('show')
+    document.body.style.overflow = ''
+    bdCurrentBrand = null
+    // 시뮬레이터 값 초기화
+    document.getElementById('bd-sim').value = 0
+    document.getElementById('bd-sim-val').textContent = '0'
+  }
+  
+  function renderBrandModal() {
+    const b = bdCurrentBrand
+    const period = bdCurrentPeriod
+    const sgaRate = bdCurrentSga
+    if (!b) return
+    
+    const sl = statusLabel(b.status)
+    const progress = seasonProgress(period)
+    const remainingDays = seasonRemainingDays(period)
+    const year = parseInt(document.getElementById('sel-year').value, 10)
+    const type = document.getElementById('sel-season').value
+    
+    // 헤더
+    document.getElementById('bd-name').textContent = b.brand_name
+    document.getElementById('bd-meta').textContent = `${year} ${type} · 시즌 진척도 ${progress}% · 잔여 ${remainingDays}일`
+    const statusEl = document.getElementById('bd-status')
+    statusEl.textContent = sl.text
+    statusEl.className = 'bd-status ' + sl.cls
+    
+    // KPI 4개
+    document.getElementById('bd-sales').textContent = fmtMoney(b.total_sales)
+    document.getElementById('bd-sales-sub').textContent = `일평균 ${fmtMoney(b.daily_avg)} · ${b.sale_days}일 판매`
+    
+    document.getElementById('bd-op').textContent = fmtPct(b.op_margin)
+    document.getElementById('bd-op-sub').textContent = `매총율 ${fmtPct(b.gross_margin)} - 판관비 ${(sgaRate*100).toFixed(0)}%`
+    
+    document.getElementById('bd-days').textContent = b.inventory_days !== null ? b.inventory_days + '일' : '-'
+    document.getElementById('bd-days-sub').textContent = `재고 ${fmtMoney(b.stock_value)} (원가)`
+    
+    document.getElementById('bd-sell').textContent = fmtPct(b.sell_through, 0)
+    const ratio = b.sell_progress_ratio
+    document.getElementById('bd-sell-sub').textContent = ratio !== null ? `진척도 대비 ${(ratio*100).toFixed(0)}%` : '진척도 대비 -'
+    
+    // 큰 차트 그리기
+    renderBrandModalChart(b, period)
+    
+    // 트리거 진단
+    renderBrandTriggers(b, period, remainingDays, progress)
+    
+    // 시뮬레이터 초기 (0% 할인)
+    document.getElementById('bd-sim').value = 0
+    document.getElementById('bd-sim-val').textContent = '0'
+    runSimulator(0)
+  }
+  
+  function renderBrandModalChart(brand, period) {
+    const cum = getCumulativeSellThrough(brand, period)
+    const wrap = document.getElementById('bd-chart')
+    const meta = document.getElementById('bd-chart-meta')
+    
+    if (cum.points.length < 2) {
+      wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b5d4f;font-size:13px;">차트 데이터 부족 (입고액 데이터 없음)</div>'
+      meta.textContent = '데이터 없음'
+      return
+    }
+    
+    const pts = cum.points
+    const finalRate = cum.finalRate
+    const trend = calcCumTrend(pts)
+    const trendText = trend.dir === 'up' ? '가속' : (trend.dir === 'down' ? '둔화' : '일정')
+    meta.textContent = `현재 ${(finalRate*100).toFixed(1)}% · ${trend.icon} ${trendText} · 시즌 입고액 ${fmtMoney(cum.totalInbound)}`
+    
+    // SVG 큰 차트
+    const w = 860
+    const h = 180
+    const padL = 50, padR = 16, padT = 16, padB = 30
+    const innerW = w - padL - padR
+    const innerH = h - padT - padB
+    
+    const maxY = Math.max(finalRate * 1.15, 0.05)  // 위 여백 약간
+    const stepX = pts.length > 1 ? innerW / (pts.length - 1) : innerW
+    
+    let color = '#4cb8a4'
+    if (brand.status === 'hot') color = '#d97878'
+    else if (brand.status === 'warn') color = '#f0a93a'
+    else if (brand.status === 'up') color = '#5bb4e5'
+    
+    const coords = pts.map((p, i) => {
+      const x = padL + i * stepX
+      const y = padT + innerH - (p.rate / maxY) * innerH
+      return { x, y, p }
+    })
+    
+    const linePath = coords.map((c, i) => 
+      (i === 0 ? `M ${c.x.toFixed(1)} ${c.y.toFixed(1)}` : `L ${c.x.toFixed(1)} ${c.y.toFixed(1)}`)
+    ).join(' ')
+    const areaPath = linePath + ` L ${padL + innerW} ${padT + innerH} L ${padL} ${padT + innerH} Z`
+    
+    // Y축 그리드 (4단)
+    let yGrid = ''
+    let yLabels = ''
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + (innerH * i / 4)
+      const val = maxY * (1 - i/4)
+      yGrid += `<line x1="${padL}" y1="${y}" x2="${padL + innerW}" y2="${y}" stroke="#3f332a" stroke-dasharray="2,3" stroke-width="0.5"/>`
+      yLabels += `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" fill="#6b5d4f">${(val*100).toFixed(0)}%</text>`
+    }
+    
+    // X축 라벨 (시작/중간/끝)
+    const xLabel0 = pts[0].date
+    const xLabelMid = pts[Math.floor(pts.length/2)].date
+    const xLabelEnd = pts[pts.length-1].date
+    const fmt = (d) => d.slice(5)  // MM-DD
+    
+    const gradId = 'bdg' + Math.random().toString(36).slice(2,8)
+    
+    wrap.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${yGrid}
+      <path d="${areaPath}" fill="url(#${gradId})"/>
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${coords[coords.length-1].x}" cy="${coords[coords.length-1].y}" r="4" fill="${color}" stroke="#1a1410" stroke-width="2"/>
+      ${yLabels}
+      <text x="${padL}" y="${h-10}" font-size="10" fill="#6b5d4f">${fmt(xLabel0)}</text>
+      <text x="${padL + innerW/2}" y="${h-10}" text-anchor="middle" font-size="10" fill="#6b5d4f">${fmt(xLabelMid)}</text>
+      <text x="${padL + innerW}" y="${h-10}" text-anchor="end" font-size="10" fill="#6b5d4f">${fmt(xLabelEnd)}</text>
+    </svg>`
+  }
+  
+  function renderBrandTriggers(brand, period, remainingDays, progress) {
+    const thrDays = parseInt(document.getElementById('sl-days').value, 10)
+    const thrSell = parseInt(document.getElementById('sl-sell').value, 10) / 100
+    const thrOp = parseInt(document.getElementById('sl-op').value, 10) / 100
+    
+    const triggers = []
+    
+    // 1. 시즌 임박 vs 재고일수
+    const t1Fired = brand.inventory_days !== null && remainingDays < brand.inventory_days
+    triggers.push({
+      label: '1. 시즌 임박',
+      desc: brand.inventory_days !== null
+        ? `잔여 시즌 <b>${remainingDays}일</b> / 현재 재고일수 <b>${brand.inventory_days}일</b>`
+        : '재고일수 데이터 없음',
+      fired: t1Fired
+    })
+    
+    // 2. 영업이익률 미달 + 재고일수 초과
+    const opPct = brand.op_margin !== null ? (brand.op_margin * 100).toFixed(1) : '-'
+    const t2Fired = brand.op_margin !== null && brand.inventory_days !== null 
+      && brand.op_margin < thrOp && brand.inventory_days > thrDays
+    triggers.push({
+      label: '2. 이익률 미달',
+      desc: `영업이익률 <b>${opPct}%</b> ${brand.op_margin !== null && brand.op_margin < thrOp ? '＜' : '≥'} 목표 <b>${(thrOp*100).toFixed(0)}%</b> · 재고일수 ${brand.inventory_days || '-'}일 ${brand.inventory_days !== null && brand.inventory_days > thrDays ? '＞' : '≤'} 임계 ${thrDays}일`,
+      fired: t2Fired
+    })
+    
+    // 3. 판매율 진척 부진
+    const sellRatio = brand.sell_progress_ratio
+    const t3Fired = sellRatio !== null && sellRatio < thrSell
+    triggers.push({
+      label: '3. 판매율 부진',
+      desc: sellRatio !== null
+        ? `판매율 <b>${(brand.sell_through*100).toFixed(0)}%</b> ÷ 진척도 <b>${progress}%</b> = <b>${(sellRatio*100).toFixed(0)}%</b> ${sellRatio < thrSell ? '＜' : '≥'} 기준 <b>${(thrSell*100).toFixed(0)}%</b>`
+        : '판매율 데이터 없음',
+      fired: t3Fired
+    })
+    
+    const html = triggers.map(t => `
+      <div class="bd-trigger ${t.fired ? 'fired' : 'safe'}">
+        <span class="dot"></span>
+        <span class="lab">${t.label}</span>
+        <span class="desc">${t.desc}</span>
+        <span class="verdict">${t.fired ? '발동' : '정상'}</span>
+      </div>
+    `).join('')
+    document.getElementById('bd-triggers').innerHTML = html
+  }
+  
+  function runSimulator(discountPct) {
+    const b = bdCurrentBrand
+    const sgaRate = bdCurrentSga
+    if (!b) return
+    
+    const d = discountPct / 100
+    const origSales = b.total_sales
+    const origCost = b.total_cost
+    const origReturn = b.total_return || 0
+    const origGM = b.gross_margin
+    const origOp = b.op_margin
+    
+    // 단순 가격 효과: 매출만 (1-d)배, 원가는 그대로
+    const newSales = origSales * (1 - d)
+    let newGM = null
+    if (newSales > 0) {
+      newGM = 1 - (origCost - origReturn) / newSales
+    }
+    const newOp = newGM !== null ? newGM - sgaRate : null
+    
+    // 표시
+    document.getElementById('bd-sim-sales').textContent = fmtMoney(newSales)
+    const salesDelta = newSales - origSales
+    const salesDeltaEl = document.getElementById('bd-sim-sales-d')
+    salesDeltaEl.textContent = (salesDelta >= 0 ? '+' : '') + fmtMoney(salesDelta)
+    salesDeltaEl.className = 'delta ' + (Math.abs(salesDelta) < 1 ? 'flat' : (salesDelta < 0 ? 'down' : 'up'))
+    
+    document.getElementById('bd-sim-gm').textContent = fmtPct(newGM)
+    const gmDelta = (newGM !== null && origGM !== null) ? (newGM - origGM) * 100 : 0
+    const gmDeltaEl = document.getElementById('bd-sim-gm-d')
+    gmDeltaEl.textContent = (gmDelta >= 0 ? '+' : '') + gmDelta.toFixed(1) + '%p'
+    gmDeltaEl.className = 'delta ' + (Math.abs(gmDelta) < 0.1 ? 'flat' : (gmDelta < 0 ? 'down' : 'up'))
+    
+    document.getElementById('bd-sim-op').textContent = fmtPct(newOp)
+    const opDelta = (newOp !== null && origOp !== null) ? (newOp - origOp) * 100 : 0
+    const opDeltaEl = document.getElementById('bd-sim-op-d')
+    opDeltaEl.textContent = (opDelta >= 0 ? '+' : '') + opDelta.toFixed(1) + '%p'
+    opDeltaEl.className = 'delta ' + (Math.abs(opDelta) < 0.1 ? 'flat' : (opDelta < 0 ? 'down' : 'up'))
+  }
+  
+  // 시뮬레이터 슬라이더 이벤트
+  document.getElementById('bd-sim').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value, 10)
+    document.getElementById('bd-sim-val').textContent = v
+    runSimulator(v)
+  })
+  
+  // 모달 외부 클릭 / ESC 닫기
+  document.getElementById('bd-modal').addEventListener('click', () => closeBrandModal())
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('bd-modal').classList.contains('show')) {
+      closeBrandModal()
+    }
+  })
+  
+  // 슬라이더 변경 시 모달도 갱신 (열려있을 때)
+  ['sl-days','sl-sell','sl-op','sl-sga'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (bdCurrentBrand && document.getElementById('bd-modal').classList.contains('show')) {
+        // 판관비 업데이트
+        bdCurrentSga = parseInt(document.getElementById('sl-sga').value, 10) / 100
+        // 모달 다시 그리기 (계산은 부모쪽에서 하므로 약간 후 다시 호출)
+        setTimeout(() => {
+          if (bdCurrentBrand) {
+            // currentBrands에서 최신 brand 객체 다시 찾기 (재계산 후)
+            const refreshed = currentBrands.find(b => b.brand_code === bdCurrentBrand.brand_code)
+            if (refreshed) {
+              bdCurrentBrand = refreshed
+              renderBrandModal()
+            }
+          }
+        }, 50)
+      }
+    })
+  })
+  
+  window.openBrandModalByCode = openBrandModal  // 카드/리스트에서 호출용
   
   // ============= 시즌 변경 시 데이터 다시 로드 =============
   async function reloadSeason() {
