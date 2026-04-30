@@ -744,33 +744,37 @@
     po: {
       table: 'purchase_orders',
       isExcel: true,  // xlsx 파싱
-      // Excel 파일은 컬럼명이 아닌 인덱스로 접근 (헤더가 합쳐져있음)
-      requiredCols: [],  // 인덱스 기반이라 컬럼 검증 다름
+      requiredCols: [],
       previewCols: ['계절코드','브랜드','스타일코드','누적입고액','누적매출원가','누적판매율','전사재고액'],
       filterInvalidSeason: true,
       dateField: '계절코드',
       transformRow: (row) => {
-        // row는 인덱스 배열로 들어옴
-        const seasonCodeRaw = row[3]  // col3: 계절연도+계절
+        if (!Array.isArray(row) || row.length < 26) return null
+        // 계절코드 (col3) - 문자/숫자 모두 처리
+        const seasonCodeRaw = row[3] !== null && row[3] !== undefined ? String(row[3]).trim() : null
+        if (!seasonCodeRaw) return null
         const season = parseSeason(seasonCodeRaw)
         if (!season.type) return null
         // 누적 발주량(col25)이 숫자여야 데이터 행
         const cumOrderQty = toNum(row[25])
         if (cumOrderQty === null) return null
+        // 브랜드코드(col6)가 있어야 함
+        const brandCode = row[6] !== null && row[6] !== undefined ? String(row[6]).trim() : null
+        if (!brandCode) return null
         return {
-          buy_group_code: row[1] || null,
-          buy_group_name: row[2] || null,
-          season_code: seasonCodeRaw || null,
+          buy_group_code: row[1] ? String(row[1]) : null,
+          buy_group_name: row[2] ? String(row[2]) : null,
+          season_code: seasonCodeRaw,
           season_year: season.year,
           season_type: season.type,
-          mc_code: row[4] || null,
-          mc_name: row[5] || null,
-          brand_code: row[6] || '',
-          brand_name: row[7] || null,
-          style_code: row[8] || null,
-          style_name: row[9] || null,
-          first_inbound_date: row[10] || null,
-          first_outbound_date: row[11] || null,
+          mc_code: row[4] ? String(row[4]) : null,
+          mc_name: row[5] ? String(row[5]) : null,
+          brand_code: brandCode,
+          brand_name: row[7] ? String(row[7]) : null,
+          style_code: row[8] ? String(row[8]) : null,
+          style_name: row[9] ? String(row[9]) : null,
+          first_inbound_date: row[10] ? String(row[10]) : null,
+          first_outbound_date: row[11] ? String(row[11]) : null,
           initial_price: toNum(row[12]),
           current_price: toNum(row[13]),
           cum_order_qty: toNum(row[25]),
@@ -864,9 +868,14 @@
                           || wb.SheetNames.find(s => !s.includes('hidden')) 
                           || wb.SheetNames[0]
           const ws = wb.Sheets[sheetName]
-          // 인덱스 기반 (헤더 없이 모든 셀을 배열로)
-          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true })
+          // 인덱스 기반 + 모든 값을 string으로 (raw:false)
+          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false })
           STATE[prefix].data = arr
+          
+          // 디버그 정보 표시
+          addValidation(prefix, `시트: "${sheetName}" / 전체 시트 수: ${wb.SheetNames.length}`, 'ok')
+          addValidation(prefix, `읽은 행 수: ${arr.length}`, 'ok')
+          
           validateData(prefix)
         } catch (err) {
           document.getElementById(prefix + '-validation-list').innerHTML = ''
@@ -928,6 +937,14 @@
       }
       if (!firstValid) {
         addValidation(prefix, '유효한 데이터 행을 찾을 수 없습니다', 'err')
+        // 디버그: 데이터 첫 행 일부 보여주기
+        for (let i = 5; i < Math.min(10, data.length); i++) {
+          const r = data[i]
+          if (Array.isArray(r) && r.length > 0) {
+            const summary = `[디버그 R${i+1}] col1="${r[1]}" col3="${r[3]}" col6="${r[6]}" col25="${r[25]}" col28="${r[28]}"`
+            addValidation(prefix, summary, 'warn')
+          }
+        }
         return
       }
       addValidation(prefix, '엑셀 시트 구조 확인 완료', 'ok')
