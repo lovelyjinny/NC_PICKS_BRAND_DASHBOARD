@@ -7,7 +7,6 @@
 <title>관리자 · NC PICKS 브랜드 대시보드</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
   body {
     font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     background: #1a1410;
@@ -17,310 +16,233 @@
       radial-gradient(ellipse at 10% 0%, rgba(201,161,122,0.06) 0%, transparent 50%),
       radial-gradient(ellipse at 90% 100%, rgba(232,134,74,0.04) 0%, transparent 50%);
   }
-  
-  /* 로딩 화면 */
   .loading-screen {
-    position: fixed;
-    inset: 0;
-    background: #1a1410;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    flex-direction: column;
-    gap: 12px;
+    position: fixed; inset: 0; background: #1a1410;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; flex-direction: column; gap: 12px;
   }
   .loading-screen.hide { display: none; }
-  .loading-text {
-    font-size: 13px;
-    color: #c9a17a;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
+  .loading-text { font-size: 13px; color: #c9a17a; letter-spacing: 0.16em; text-transform: uppercase; }
   
-  /* 레이아웃 */
-  .app {
-    display: flex;
-    min-height: 100vh;
-  }
+  .app { display: flex; min-height: 100vh; }
   
-  /* 사이드바 */
   .sidebar {
-    width: 240px;
-    background: #2a2018;
-    border-right: 1px solid #3f332a;
-    padding: 20px 0;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+    width: 240px; background: #2a2018; border-right: 1px solid #3f332a;
+    padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0;
   }
-  .sidebar-header {
-    padding: 0 20px 20px 20px;
-    border-bottom: 1px solid #3f332a;
-    margin-bottom: 12px;
-  }
-  .sidebar-logo {
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: #c9a17a;
-    font-weight: 600;
-  }
-  .sidebar-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #f2e8d9;
-    margin-top: 4px;
-  }
+  .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid #3f332a; margin-bottom: 12px; }
+  .sidebar-logo { font-size: 11px; letter-spacing: 0.3em; color: #c9a17a; font-weight: 600; }
+  .sidebar-title { font-size: 14px; font-weight: 700; color: #f2e8d9; margin-top: 4px; }
   .sidebar-subtitle {
-    font-size: 10px;
-    color: #6cd9b8;
-    background: rgba(108,217,184,0.12);
-    padding: 3px 8px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-top: 8px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 10px; color: #6cd9b8; background: rgba(108,217,184,0.12);
+    padding: 3px 8px; border-radius: 4px; display: inline-block;
+    margin-top: 8px; font-weight: 600; letter-spacing: 0.04em;
   }
   
-  .sidebar-nav {
-    flex: 1;
-    padding: 8px 12px;
-  }
+  .sidebar-nav { flex: 1; padding: 8px 12px; }
   .nav-section {
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #6b5d4f;
-    font-weight: 600;
-    padding: 12px 8px 8px 8px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: #6b5d4f; font-weight: 600; padding: 12px 8px 8px 8px;
   }
   .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #a89884;
-    font-size: 13px;
-    transition: all 0.15s;
-    margin-bottom: 2px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+    color: #a89884; font-size: 13px; transition: all 0.15s; margin-bottom: 2px;
   }
-  .nav-item:hover {
-    background: rgba(201,161,122,0.06);
-    color: #f2e8d9;
-  }
-  .nav-item.active {
-    background: rgba(201,161,122,0.12);
-    color: #c9a17a;
-    font-weight: 600;
-  }
-  .nav-item .icon {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #3f332a;
-    flex-shrink: 0;
-  }
-  .nav-item.active .icon {
-    background: #c9a17a;
-  }
-  .nav-item.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  .nav-item.disabled:hover {
-    background: transparent;
-    color: #a89884;
-  }
+  .nav-item:hover { background: rgba(201,161,122,0.06); color: #f2e8d9; }
+  .nav-item.active { background: rgba(201,161,122,0.12); color: #c9a17a; font-weight: 600; }
+  .nav-item .icon { width: 6px; height: 6px; border-radius: 50%; background: #3f332a; flex-shrink: 0; }
+  .nav-item.active .icon { background: #c9a17a; }
+  .nav-item.disabled { opacity: 0.4; cursor: not-allowed; }
+  .nav-item.disabled:hover { background: transparent; color: #a89884; }
   .badge-soon {
-    margin-left: auto;
-    font-size: 9px;
-    background: #3f332a;
-    color: #a89884;
-    padding: 2px 6px;
-    border-radius: 3px;
-    letter-spacing: 0.04em;
+    margin-left: auto; font-size: 9px; background: #3f332a; color: #a89884;
+    padding: 2px 6px; border-radius: 3px; letter-spacing: 0.04em;
+  }
+  .badge-ready {
+    margin-left: auto; font-size: 9px; background: rgba(108,217,184,0.15);
+    color: #6cd9b8; padding: 2px 6px; border-radius: 3px;
+    letter-spacing: 0.04em; font-weight: 600;
   }
   
-  .sidebar-footer {
-    padding: 12px 20px;
-    border-top: 1px solid #3f332a;
-  }
-  .user-info {
-    font-size: 11px;
-    color: #6b5d4f;
-    margin-bottom: 8px;
-    word-break: break-all;
-  }
+  .sidebar-footer { padding: 12px 20px; border-top: 1px solid #3f332a; }
+  .user-info { font-size: 11px; color: #6b5d4f; margin-bottom: 8px; word-break: break-all; }
   .btn-logout {
-    width: 100%;
-    background: transparent;
-    border: 1px solid #3f332a;
-    color: #a89884;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-family: inherit;
-    transition: all 0.15s;
-    margin-bottom: 6px;
+    width: 100%; background: transparent; border: 1px solid #3f332a;
+    color: #a89884; padding: 8px 12px; border-radius: 6px;
+    cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all 0.15s; margin-bottom: 6px;
   }
-  .btn-logout:hover {
-    border-color: #d97878;
-    color: #d97878;
-  }
+  .btn-logout:hover { border-color: #d97878; color: #d97878; }
   .btn-back {
-    width: 100%;
-    background: #c9a17a;
-    border: 1px solid #c9a17a;
-    color: #1a1410;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: inherit;
-    text-decoration: none;
-    display: block;
-    text-align: center;
-    transition: all 0.15s;
+    width: 100%; background: #c9a17a; border: 1px solid #c9a17a;
+    color: #1a1410; padding: 8px 12px; border-radius: 6px;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    font-family: inherit; text-decoration: none; display: block;
+    text-align: center; transition: all 0.15s;
   }
-  .btn-back:hover {
-    background: #b88f68;
-    border-color: #b88f68;
-  }
+  .btn-back:hover { background: #b88f68; border-color: #b88f68; }
   
-  /* 메인 컨텐츠 */
-  .main {
-    flex: 1;
-    padding: 28px 32px;
-    overflow-x: hidden;
-  }
+  .main { flex: 1; padding: 28px 32px; overflow-x: hidden; }
   .main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 1px solid #3f332a;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1px solid #3f332a; padding-bottom: 16px; margin-bottom: 24px;
   }
-  .main-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f2e8d9;
-    letter-spacing: -0.01em;
-  }
-  .main-subtitle {
-    font-size: 12px;
-    color: #a89884;
-    margin-top: 4px;
-  }
+  .main-title { font-size: 20px; font-weight: 700; color: #f2e8d9; letter-spacing: -0.01em; }
+  .main-subtitle { font-size: 12px; color: #a89884; margin-top: 4px; }
   
-  /* 페이지 컨텐츠 영역 */
-  .page-content {
-    display: none;
-  }
-  .page-content.active {
-    display: block;
-  }
+  .page-content { display: none; }
+  .page-content.active { display: block; }
   
-  /* 환영 화면 */
   .welcome-card {
-    background: #2a2018;
-    border: 1px solid #3f332a;
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 12px;
+    padding: 40px; text-align: center;
   }
-  .welcome-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
-  .welcome-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #f2e8d9;
-    margin-bottom: 8px;
-  }
-  .welcome-text {
-    font-size: 13px;
-    color: #a89884;
-    line-height: 1.6;
-    max-width: 500px;
-    margin: 0 auto;
-  }
+  .welcome-icon { font-size: 48px; margin-bottom: 16px; }
+  .welcome-title { font-size: 18px; font-weight: 700; color: #f2e8d9; margin-bottom: 8px; }
+  .welcome-text { font-size: 13px; color: #a89884; line-height: 1.6; max-width: 500px; margin: 0 auto; }
   
-  /* 데이터 현황 카드 */
   .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 24px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin-top: 24px;
   }
   .stat-card {
-    background: #2a2018;
-    border: 1px solid #3f332a;
-    border-radius: 10px;
-    padding: 16px 20px;
-    position: relative;
-    overflow: hidden;
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 16px 20px; position: relative; overflow: hidden;
   }
   .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: #c9a17a;
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: #c9a17a;
   }
   .stat-card.s2::before { background: #6cd9b8; }
   .stat-card.s3::before { background: #b08bd9; }
   .stat-card.s4::before { background: #f0a93a; }
   .stat-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #a89884;
-    margin-bottom: 6px;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a89884; margin-bottom: 6px;
   }
   .stat-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: #f2e8d9;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+    font-size: 22px; font-weight: 700; color: #f2e8d9;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
   }
-  .stat-sub {
-    font-size: 11px;
-    color: #6b5d4f;
-    margin-top: 4px;
+  .stat-sub { font-size: 11px; color: #6b5d4f; margin-top: 4px; }
+  
+  .upload-zone {
+    background: #2a2018; border: 2px dashed #3f332a; border-radius: 12px;
+    padding: 40px 24px; text-align: center; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 20px;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: #c9a17a; background: rgba(201,161,122,0.04);
+  }
+  .upload-zone.has-file {
+    border-color: #6cd9b8; border-style: solid; background: rgba(108,217,184,0.04);
+  }
+  .upload-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.6; }
+  .upload-title { font-size: 14px; font-weight: 600; color: #f2e8d9; margin-bottom: 6px; }
+  .upload-hint { font-size: 12px; color: #a89884; }
+  .upload-file-info { font-size: 13px; color: #6cd9b8; margin-top: 8px; font-weight: 500; }
+  
+  .card {
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: #c9a17a;
+    margin-bottom: 12px; letter-spacing: 0.04em;
   }
   
-  /* 푸터 */
-  .footer {
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid #3f332a;
-    text-align: center;
-    font-size: 11px;
-    color: #6b5d4f;
+  .validation-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0; font-size: 13px;
   }
+  .validation-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .validation-icon.ok { background: rgba(108,217,184,0.18); color: #6cd9b8; }
+  .validation-icon.warn { background: rgba(240,169,58,0.18); color: #f0a93a; }
+  .validation-icon.err { background: rgba(217,120,120,0.18); color: #d97878; }
+  
+  .preview-table-wrap {
+    overflow-x: auto; background: #1a1410; border-radius: 6px; margin-top: 8px;
+  }
+  table.preview {
+    width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px;
+  }
+  .preview thead th {
+    padding: 8px 10px; background: #352a21; text-align: left;
+    font-weight: 600; color: #c9a17a; border-bottom: 1px solid #3f332a;
+    white-space: nowrap; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .preview tbody td {
+    padding: 7px 10px; border-bottom: 1px solid #3f332a; color: #f2e8d9;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .preview tbody tr:nth-child(even) { background: rgba(52,42,33,0.4); }
+  
+  .progress-wrap {
+    background: #1a1410; border-radius: 6px; padding: 4px;
+    height: 18px; overflow: hidden; margin: 12px 0 8px 0;
+  }
+  .progress-bar {
+    height: 100%; background: linear-gradient(90deg, #6cd9b8, #4cb8a4);
+    border-radius: 3px; transition: width 0.3s; width: 0%;
+  }
+  .progress-text {
+    display: flex; justify-content: space-between; font-size: 11px;
+    color: #a89884; font-variant-numeric: tabular-nums;
+  }
+  
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn {
+    background: transparent; border: 1px solid #3f332a; color: #c9a17a;
+    padding: 10px 18px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 500; font-family: inherit; transition: all 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    border-color: #5c4a3a; color: #f2e8d9; background: rgba(201,161,122,0.05);
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary {
+    background: #c9a17a; border-color: #c9a17a; color: #1a1410; font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #b88f68; border-color: #b88f68; color: #1a1410;
+  }
+  .btn-danger { border-color: #d97878; color: #d97878; }
+  .btn-danger:hover:not(:disabled) {
+    background: rgba(217,120,120,0.08); color: #e89090;
+  }
+  
+  .upload-log {
+    background: #1a1410; border: 1px solid #3f332a; border-radius: 6px;
+    padding: 12px 14px; margin-top: 10px; max-height: 240px; overflow-y: auto;
+    font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; line-height: 1.7;
+  }
+  .log-line { color: #a89884; }
+  .log-line.ok { color: #6cd9b8; }
+  .log-line.warn { color: #f0a93a; }
+  .log-line.err { color: #d97878; }
+  .log-line.info { color: #b08bd9; }
+  
+  .footer {
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid #3f332a;
+    text-align: center; font-size: 11px; color: #6b5d4f;
+  }
+  
+  .hidden-input { display: none; }
 </style>
 </head>
 <body>
 
-<!-- 로딩 화면 (인증 확인 중) -->
 <div id="loading" class="loading-screen">
   <div class="loading-text">권한 확인 중...</div>
 </div>
 
-<!-- 메인 앱 (인증 후 표시) -->
 <div id="app" class="app" style="display: none;">
 
-  <!-- 사이드바 -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">NC PICKS</div>
@@ -331,44 +253,36 @@
     <nav class="sidebar-nav">
       <div class="nav-section">데이터 업로드</div>
       <div class="nav-item active" data-page="welcome">
-        <span class="icon"></span>
-        <span>홈</span>
+        <span class="icon"></span><span>홈</span>
       </div>
-      <div class="nav-item disabled" data-page="sales">
-        <span class="icon"></span>
-        <span>매출 데이터</span>
-        <span class="badge-soon">준비중</span>
+      <div class="nav-item" data-page="sales">
+        <span class="icon"></span><span>매출 데이터</span>
+        <span class="badge-ready">활성</span>
       </div>
       <div class="nav-item disabled" data-page="inventory">
-        <span class="icon"></span>
-        <span>재고 데이터</span>
+        <span class="icon"></span><span>재고 데이터</span>
         <span class="badge-soon">준비중</span>
       </div>
       <div class="nav-item disabled" data-page="sellthrough">
-        <span class="icon"></span>
-        <span>정판율 데이터</span>
+        <span class="icon"></span><span>정판율 데이터</span>
         <span class="badge-soon">준비중</span>
       </div>
       <div class="nav-item disabled" data-page="inbound">
-        <span class="icon"></span>
-        <span>발주/입고 데이터</span>
+        <span class="icon"></span><span>발주/입고 데이터</span>
         <span class="badge-soon">준비중</span>
       </div>
       
       <div class="nav-section">관리</div>
       <div class="nav-item disabled" data-page="sga">
-        <span class="icon"></span>
-        <span>판관비 입력</span>
+        <span class="icon"></span><span>판관비 입력</span>
         <span class="badge-soon">준비중</span>
       </div>
       <div class="nav-item disabled" data-page="verify">
-        <span class="icon"></span>
-        <span>데이터 검증</span>
+        <span class="icon"></span><span>데이터 검증</span>
         <span class="badge-soon">준비중</span>
       </div>
       <div class="nav-item disabled" data-page="rollback">
-        <span class="icon"></span>
-        <span>삭제/롤백</span>
+        <span class="icon"></span><span>삭제/롤백</span>
         <span class="badge-soon">준비중</span>
       </div>
     </nav>
@@ -380,10 +294,8 @@
     </div>
   </aside>
 
-  <!-- 메인 컨텐츠 -->
   <main class="main">
     
-    <!-- 홈 페이지 -->
     <div id="page-welcome" class="page-content active">
       <div class="main-header">
         <div>
@@ -394,10 +306,10 @@
       
       <div class="welcome-card">
         <div class="welcome-icon">📊</div>
-        <div class="welcome-title">관리자 모드에 오신 것을 환영합니다</div>
+        <div class="welcome-title">관리자 모드</div>
         <div class="welcome-text">
           좌측 메뉴에서 업로드할 데이터 종류를 선택하세요.<br>
-          현재 인프라 구축이 완료되었으며, 데이터 업로드 기능은 다음 단계에서 추가됩니다.
+          매출 데이터부터 시작하시면 됩니다.
         </div>
       </div>
       
@@ -425,12 +337,75 @@
       </div>
     </div>
     
+    <div id="page-sales" class="page-content">
+      <div class="main-header">
+        <div>
+          <div class="main-title">매출 데이터 업로드</div>
+          <div class="main-subtitle">매출_master.csv (브랜드×매장×일별 raw)</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">1. 파일 선택</div>
+        <input type="file" id="sales-file" class="hidden-input" accept=".csv">
+        <div id="sales-upload-zone" class="upload-zone">
+          <div class="upload-icon">📁</div>
+          <div class="upload-title">매출_master.csv 파일을 선택하세요</div>
+          <div class="upload-hint">클릭하거나 파일을 끌어다 놓으세요 · CSV 파일만 지원</div>
+          <div id="sales-file-info" class="upload-file-info" style="display:none;"></div>
+        </div>
+      </div>
+      
+      <div id="sales-validation" class="card" style="display:none;">
+        <div class="card-title">2. 검증 결과</div>
+        <div id="sales-validation-list"></div>
+      </div>
+      
+      <div id="sales-preview" class="card" style="display:none;">
+        <div class="card-title">3. 미리보기 (처음 5행)</div>
+        <div class="preview-table-wrap">
+          <table class="preview" id="sales-preview-table"></table>
+        </div>
+      </div>
+      
+      <div id="sales-options" class="card" style="display:none;">
+        <div class="card-title">4. 업로드 옵션</div>
+        <div style="font-size:13px;color:#a89884;line-height:1.7;">
+          ⓘ <b style="color:#f2e8d9;">중복 허용:</b> 같은 데이터가 여러 번 들어가지 않도록 같은 날짜의 데이터는 먼저 삭제 후 재업로드하세요.<br>
+          ⓘ <b style="color:#f2e8d9;">비표준 코드:</b> 계절코드 '#' 데이터는 자동 제외됩니다.<br>
+          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 70만 행 기준 5~15분 소요. 도중에 브라우저를 닫지 마세요.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="sales-start-btn" onclick="startSalesUpload()">업로드 시작</button>
+          <button class="btn" onclick="resetSalesUpload()">취소</button>
+        </div>
+      </div>
+      
+      <div id="sales-progress" class="card" style="display:none;">
+        <div class="card-title">5. 업로드 진행 중</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="sales-progress-bar"></div>
+        </div>
+        <div class="progress-text">
+          <span id="sales-progress-pct">0%</span>
+          <span id="sales-progress-cnt">0 / 0 행</span>
+        </div>
+        <div class="upload-log" id="sales-log"></div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="sales-stop-btn" onclick="stopSalesUpload()">긴급 중단</button>
+        </div>
+      </div>
+      
+    </div>
+    
     <div class="footer">
-      Phase 5-1 · 관리 페이지 골격 · v0.2
+      Phase 5-2 · 매출 데이터 업로드 · v0.3
     </div>
   </main>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -441,31 +416,24 @@
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   window.supabase = supabase
   
-  // 인증 가드: 로그인 안 한 사람은 메인으로 튕겨냄
   async function authGuard() {
     const { data: { session } } = await supabase.auth.getSession()
-    
     if (!session) {
-      // 로그인 안 됨 → 메인 페이지로
       alert('관리자만 접근 가능합니다. 메인 페이지로 이동합니다.')
       window.location.href = 'index.html'
       return null
     }
-    
     return session
   }
   
-  // 데이터 현황 조회
   async function loadStats() {
     try {
-      // 각 테이블 row 수 카운트
       const [sales, invm, st, sga] = await Promise.all([
         supabase.from('sales_daily').select('*', { count: 'exact', head: true }),
         supabase.from('inventory_monthly').select('*', { count: 'exact', head: true }),
         supabase.from('sellthrough_daily').select('*', { count: 'exact', head: true }),
         supabase.from('monthly_sga').select('*', { count: 'exact', head: true })
       ])
-      
       document.getElementById('cnt-sales').textContent = (sales.count || 0).toLocaleString()
       document.getElementById('cnt-invm').textContent = (invm.count || 0).toLocaleString()
       document.getElementById('cnt-st').textContent = (st.count || 0).toLocaleString()
@@ -474,21 +442,17 @@
       console.error('통계 조회 실패:', err)
     }
   }
+  window.loadStats = loadStats
   
-  // 로그아웃
   window.doLogout = async function() {
     await supabase.auth.signOut()
     window.location.href = 'index.html'
   }
   
-  // 사이드바 메뉴 클릭
   document.querySelectorAll('.nav-item:not(.disabled)').forEach(item => {
     item.addEventListener('click', () => {
-      // 활성화 상태 변경
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'))
       item.classList.add('active')
-      
-      // 페이지 전환
       const page = item.dataset.page
       document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'))
       const target = document.getElementById('page-' + page)
@@ -496,19 +460,317 @@
     })
   })
   
-  // 시작
+  let salesFile = null
+  let salesData = null
+  let salesValidRows = 0
+  let salesUploading = false
+  let salesShouldStop = false
+  
+  function parseSeason(code) {
+    if (!code || code === '#' || code === 'null') return { year: null, type: null }
+    const str = String(code).trim()
+    if (str.length < 5) return { year: null, type: null }
+    const last = str.charAt(str.length - 1)
+    const yearStr = str.substring(0, str.length - 1)
+    const year = parseInt(yearStr, 10)
+    if (isNaN(year)) return { year: null, type: null }
+    let type = null
+    if (last === '1' || last === '2') type = 'SS'
+    else if (last === '3' || last === '4' || last === '9') type = 'FW'
+    else return { year: null, type: null }
+    return { year, type }
+  }
+  
+  function toNum(v) {
+    if (v === null || v === undefined || v === '') return null
+    const n = Number(v)
+    return isNaN(n) ? null : n
+  }
+  
+  function salesLog(text, type = '') {
+    const log = document.getElementById('sales-log')
+    const div = document.createElement('div')
+    div.className = 'log-line ' + type
+    const time = new Date().toLocaleTimeString('ko-KR')
+    div.textContent = `[${time}] ${text}`
+    log.appendChild(div)
+    log.scrollTop = log.scrollHeight
+  }
+  
+  function addValidation(text, type) {
+    const list = document.getElementById('sales-validation-list')
+    const row = document.createElement('div')
+    row.className = 'validation-row'
+    let icon = '✓'
+    if (type === 'warn') icon = '!'
+    if (type === 'err') icon = '×'
+    row.innerHTML = `<span class="validation-icon ${type}">${icon}</span><span>${text}</span>`
+    list.appendChild(row)
+  }
+  
+  const uploadZone = document.getElementById('sales-upload-zone')
+  const fileInput = document.getElementById('sales-file')
+  
+  uploadZone.addEventListener('click', () => fileInput.click())
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    uploadZone.classList.add('dragover')
+  })
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'))
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault()
+    uploadZone.classList.remove('dragover')
+    if (e.dataTransfer.files[0]) handleSalesFile(e.dataTransfer.files[0])
+  })
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleSalesFile(e.target.files[0])
+  })
+  
+  async function handleSalesFile(file) {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('CSV 파일만 업로드 가능합니다.')
+      return
+    }
+    
+    salesFile = file
+    
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+    document.getElementById('sales-file-info').style.display = 'block'
+    document.getElementById('sales-file-info').textContent = `📄 ${file.name} (${sizeMB} MB)`
+    uploadZone.classList.add('has-file')
+    
+    document.getElementById('sales-validation').style.display = 'block'
+    document.getElementById('sales-validation-list').innerHTML = ''
+    addValidation('파일 파싱 중... (큰 파일은 시간이 걸립니다)', 'warn')
+    
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      worker: false,
+      complete: (result) => {
+        salesData = result.data
+        validateSalesData()
+      },
+      error: (err) => {
+        document.getElementById('sales-validation-list').innerHTML = ''
+        addValidation('파일 파싱 실패: ' + err.message, 'err')
+      }
+    })
+  }
+  
+  function validateSalesData() {
+    const list = document.getElementById('sales-validation-list')
+    list.innerHTML = ''
+    
+    if (!salesData || salesData.length === 0) {
+      addValidation('데이터가 비어있습니다', 'err')
+      return
+    }
+    
+    addValidation(`전체 행 수: ${salesData.length.toLocaleString()}건`, 'ok')
+    
+    const required = ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
+                      '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
+                      '총매출액','실매출액','총매출원가','판매수량','환입액']
+    const actualCols = Object.keys(salesData[0])
+    const missing = required.filter(r => !actualCols.includes(r))
+    if (missing.length > 0) {
+      addValidation(`필수 컬럼 누락: ${missing.join(', ')}`, 'err')
+      return
+    }
+    addValidation(`컬럼 17개 모두 존재`, 'ok')
+    
+    let invalidSeasonCnt = 0
+    let validCnt = 0
+    let dateMin = null, dateMax = null
+    const brandSet = new Set()
+    
+    for (const row of salesData) {
+      const season = parseSeason(row['계절코드'])
+      if (!season.type) {
+        invalidSeasonCnt++
+        continue
+      }
+      validCnt++
+      brandSet.add(row['브랜드코드'])
+      const d = row['날짜']
+      if (d) {
+        if (!dateMin || d < dateMin) dateMin = d
+        if (!dateMax || d > dateMax) dateMax = d
+      }
+    }
+    salesValidRows = validCnt
+    
+    addValidation(`날짜 범위: ${dateMin} ~ ${dateMax}`, 'ok')
+    addValidation(`고유 브랜드: ${brandSet.size}개`, 'ok')
+    addValidation(`유효 행: ${validCnt.toLocaleString()}건`, 'ok')
+    if (invalidSeasonCnt > 0) {
+      addValidation(`비표준 계절코드 자동 제외: ${invalidSeasonCnt.toLocaleString()}건`, 'warn')
+    }
+    
+    showSalesPreview()
+    document.getElementById('sales-options').style.display = 'block'
+  }
+  
+  function showSalesPreview() {
+    const cols = ['날짜','브랜드코드','브랜드명','지점명','계절코드','실매출액','총매출원가','판매수량']
+    const previewData = salesData.slice(0, 5)
+    
+    let html = '<thead><tr>'
+    cols.forEach(c => html += `<th>${c}</th>`)
+    html += '</tr></thead><tbody>'
+    
+    previewData.forEach(row => {
+      html += '<tr>'
+      cols.forEach(c => {
+        let val = row[c] || ''
+        if (c.includes('액') || c.includes('원가') || c === '판매수량') {
+          const n = toNum(val)
+          val = n !== null ? n.toLocaleString() : val
+        }
+        html += `<td>${val}</td>`
+      })
+      html += '</tr>'
+    })
+    html += '</tbody>'
+    
+    document.getElementById('sales-preview-table').innerHTML = html
+    document.getElementById('sales-preview').style.display = 'block'
+  }
+  
+  window.startSalesUpload = async function() {
+    if (!salesData) return
+    if (!confirm(`${salesValidRows.toLocaleString()}건을 업로드합니다. 진행하시겠어요?\n\n중간에 브라우저를 닫지 마세요.`)) return
+    
+    document.getElementById('sales-options').style.display = 'none'
+    document.getElementById('sales-progress').style.display = 'block'
+    document.getElementById('sales-log').innerHTML = ''
+    document.getElementById('sales-stop-btn').disabled = false
+    document.getElementById('sales-stop-btn').textContent = '긴급 중단'
+    
+    salesUploading = true
+    salesShouldStop = false
+    
+    salesLog('업로드 준비 중...', 'info')
+    
+    const rows = []
+    for (const row of salesData) {
+      const season = parseSeason(row['계절코드'])
+      if (!season.type) continue
+      
+      rows.push({
+        sale_date: row['날짜'] || null,
+        brand_code: row['브랜드코드'] || '',
+        brand_name: row['브랜드명'] || null,
+        store_code: row['지점코드'] || null,
+        store_name: row['지점명'] || null,
+        buy_group_code: row['구매그룹코드'] || null,
+        buy_group_name: row['구매그룹명'] || null,
+        mc_code: row['MC코드'] || null,
+        mc_name: row['MC명'] || null,
+        season_code: row['계절코드'] || null,
+        season_year: season.year,
+        season_type: season.type,
+        gross_sales: toNum(row['총매출액']),
+        net_sales: toNum(row['실매출액']),
+        cost_of_goods: toNum(row['총매출원가']),
+        qty_sold: toNum(row['판매수량']),
+        return_amount: toNum(row['환입액'])
+      })
+    }
+    
+    salesLog(`변환 완료: ${rows.length.toLocaleString()}건`, 'ok')
+    salesLog(`Supabase로 전송 시작...`, 'info')
+    
+    const BATCH_SIZE = 1000
+    const total = rows.length
+    let success = 0
+    let failed = 0
+    let retries = 0
+    
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      if (salesShouldStop) {
+        salesLog(`사용자 요청으로 중단됨 (${success}건 업로드 완료)`, 'warn')
+        break
+      }
+      
+      const batch = rows.slice(i, i + BATCH_SIZE)
+      let attempt = 0
+      let ok = false
+      
+      while (attempt < 3 && !ok) {
+        attempt++
+        try {
+          const { error } = await supabase.from('sales_daily').insert(batch)
+          if (error) throw error
+          ok = true
+          success += batch.length
+        } catch (err) {
+          if (attempt < 3) {
+            retries++
+            salesLog(`배치 ${i+1}~${i+batch.length} 재시도 (${attempt}/3): ${err.message}`, 'warn')
+            await new Promise(r => setTimeout(r, 1000))
+          } else {
+            failed += batch.length
+            salesLog(`배치 ${i+1}~${i+batch.length} 실패: ${err.message}`, 'err')
+          }
+        }
+      }
+      
+      const pct = Math.floor(((i + batch.length) / total) * 100)
+      document.getElementById('sales-progress-bar').style.width = pct + '%'
+      document.getElementById('sales-progress-pct').textContent = pct + '%'
+      document.getElementById('sales-progress-cnt').textContent = 
+        `${(i + batch.length).toLocaleString()} / ${total.toLocaleString()} 행`
+      
+      if ((i + batch.length) % 10000 === 0 || (i + batch.length) >= total) {
+        salesLog(`진행: ${(i + batch.length).toLocaleString()} / ${total.toLocaleString()} (${pct}%)`, '')
+      }
+    }
+    
+    salesUploading = false
+    document.getElementById('sales-stop-btn').disabled = true
+    document.getElementById('sales-stop-btn').textContent = salesShouldStop ? '중단됨' : '완료'
+    
+    if (failed === 0 && !salesShouldStop) {
+      salesLog(`✓ 업로드 완료! 총 ${success.toLocaleString()}건 (재시도 ${retries}회)`, 'ok')
+      alert(`업로드 완료!\n\n성공: ${success.toLocaleString()}건\n재시도: ${retries}회`)
+    } else {
+      salesLog(`업로드 종료. 성공 ${success.toLocaleString()} / 실패 ${failed.toLocaleString()}`, 'warn')
+      alert(`업로드 종료\n\n성공: ${success.toLocaleString()}건\n실패: ${failed.toLocaleString()}건`)
+    }
+    
+    loadStats()
+  }
+  
+  window.stopSalesUpload = function() {
+    if (!salesUploading) return
+    if (confirm('업로드를 중단하시겠어요? 이미 업로드된 데이터는 그대로 유지됩니다.')) {
+      salesShouldStop = true
+      salesLog('중단 요청됨...', 'warn')
+    }
+  }
+  
+  window.resetSalesUpload = function() {
+    salesFile = null
+    salesData = null
+    salesValidRows = 0
+    document.getElementById('sales-file').value = ''
+    document.getElementById('sales-file-info').style.display = 'none'
+    document.getElementById('sales-upload-zone').classList.remove('has-file')
+    document.getElementById('sales-validation').style.display = 'none'
+    document.getElementById('sales-preview').style.display = 'none'
+    document.getElementById('sales-options').style.display = 'none'
+  }
+  
   ;(async () => {
     const session = await authGuard()
-    if (!session) return  // 인증 실패 시 멈춤
+    if (!session) return
     
-    // 로그인 정보 표시
     document.getElementById('user-info').textContent = session.user.email
-    
-    // 로딩 화면 → 앱 화면 전환
     document.getElementById('loading').classList.add('hide')
     document.getElementById('app').style.display = 'flex'
     
-    // 통계 로드
     loadStats()
   })()
 </script>
