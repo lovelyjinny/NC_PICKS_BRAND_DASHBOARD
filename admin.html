@@ -488,16 +488,16 @@
       <div class="main-header">
         <div>
           <div class="main-title">발주/입고 데이터 업로드</div>
-          <div class="main-subtitle">발주입고액_정리_*.xlsx (시즌별 스타일 단위 KPI)</div>
+          <div class="main-subtitle">발주입고액_master_*.csv (시즌별 스타일 단위 KPI)</div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">1. 파일 선택</div>
-        <input type="file" id="po-file" class="hidden-input" accept=".xlsx,.xls">
+        <input type="file" id="po-file" class="hidden-input" accept=".csv">
         <div id="po-zone" class="upload-zone">
           <div class="upload-icon">📋</div>
-          <div class="upload-title">발주입고액_정리_*.xlsx 파일을 선택하세요</div>
-          <div class="upload-hint">시즌별 4개 파일을 한 번에 하나씩 업로드 · XLSX만 지원</div>
+          <div class="upload-title">발주입고액_master_*.csv 파일을 선택하세요</div>
+          <div class="upload-hint">시즌별 4개 파일을 한 번에 하나씩 업로드 · CSV만 지원</div>
           <div id="po-info" class="upload-file-info" style="display:none;"></div>
         </div>
       </div>
@@ -514,7 +514,7 @@
         <div style="font-size:13px;color:#a89884;line-height:1.7;">
           ⓘ <b style="color:#f2e8d9;">스타일별 누적 KPI</b>가 purchase_orders 테이블에 저장됩니다.<br>
           ⓘ <b style="color:#f2e8d9;">중복 시즌 처리:</b> 같은 시즌(예: 26SS) 데이터를 다시 올리면 누적되니 주의하세요.<br>
-          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 시즌당 2~5만 행 기준 1~3분 소요.
+          ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 시즌당 5천 ~ 3만 행 기준 1~3분 소요.
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="startUpload('po')">업로드 시작</button>
@@ -543,7 +543,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -747,56 +746,50 @@
     },
     po: {
       table: 'purchase_orders',
-      isExcel: true,  // xlsx 파싱
-      requiredCols: [],
-      previewCols: ['계절코드','브랜드','스타일코드','누적입고액','누적매출원가','누적판매율','전사재고액'],
+      requiredCols: ['구매그룹코드','계절코드','브랜드코드','스타일코드',
+                     '누적발주량','누적발주액','누적입고량','누적입고액',
+                     '누적판매량','누적실매출액','누적매출원가','누적판매율',
+                     '전사재고량','전사재고액'],
+      previewCols: ['계절코드','브랜드명','스타일코드','누적입고액','누적매출원가','누적판매율','전사재고액'],
       filterInvalidSeason: true,
       dateField: '계절코드',
       transformRow: (row) => {
-        if (!Array.isArray(row) || row.length < 26) return null
-        // 계절코드 (col3) - 문자/숫자 모두 처리
-        const seasonCodeRaw = row[3] !== null && row[3] !== undefined ? String(row[3]).trim() : null
-        if (!seasonCodeRaw) return null
-        const season = parseSeason(seasonCodeRaw)
+        const season = parseSeason(row['계절코드'])
         if (!season.type) return null
-        // 누적 발주량(col25)이 숫자여야 데이터 행
-        const cumOrderQty = toNum(row[25])
-        if (cumOrderQty === null) return null
-        // 브랜드코드(col6)가 있어야 함
-        const brandCode = row[6] !== null && row[6] !== undefined ? String(row[6]).trim() : null
+        const brandCode = row['브랜드코드']
         if (!brandCode) return null
         return {
-          buy_group_code: row[1] ? String(row[1]) : null,
-          buy_group_name: row[2] ? String(row[2]) : null,
-          season_code: seasonCodeRaw,
+          buy_group_code: row['구매그룹코드'] || null,
+          buy_group_name: row['구매그룹명'] || null,
+          season_code: row['계절코드'] || null,
           season_year: season.year,
           season_type: season.type,
-          mc_code: row[4] ? String(row[4]) : null,
-          mc_name: row[5] ? String(row[5]) : null,
+          mc_code: row['MC코드'] || null,
+          mc_name: row['MC명'] || null,
           brand_code: brandCode,
-          brand_name: row[7] ? String(row[7]) : null,
-          style_code: row[8] ? String(row[8]) : null,
-          style_name: row[9] ? String(row[9]) : null,
-          first_inbound_date: row[10] ? String(row[10]) : null,
-          first_outbound_date: row[11] ? String(row[11]) : null,
-          initial_price: toNum(row[12]),
-          current_price: toNum(row[13]),
-          cum_order_qty: toNum(row[25]),
-          cum_order_amount: toNum(row[26]),
-          cum_inbound_qty: toNum(row[27]),
-          cum_inbound_amount: toNum(row[28]),
-          cum_pending_qty: toNum(row[29]),
-          cum_pending_amount: toNum(row[30]),
-          cum_sold_qty: toNum(row[31]),
-          cum_real_sales: toNum(row[32]),
-          cum_cost_of_goods: toNum(row[33]),
-          cum_gross_margin_rate: toNum(row[34]),
-          cum_sell_through_rate: toNum(row[35]),
-          total_stock_qty: toNum(row[36]),
-          total_stock_amount: toNum(row[37]),
-          sale_days: toNum(row[38]),
-          daily_avg_sold_qty: toNum(row[39]),
-          moving_avg_price: toNum(row[40])
+          brand_name: row['브랜드명'] || null,
+          style_code: row['스타일코드'] || null,
+          style_name: row['스타일명'] || null,
+          first_inbound_date: row['최초입고일'] && row['최초입고일'] !== '#' ? row['최초입고일'] : null,
+          first_outbound_date: row['최초출고일'] && row['최초출고일'] !== '#' ? row['최초출고일'] : null,
+          initial_price: toNum(row['최초판매가']),
+          current_price: toNum(row['현재판매가']),
+          cum_order_qty: toNum(row['누적발주량']),
+          cum_order_amount: toNum(row['누적발주액']),
+          cum_inbound_qty: toNum(row['누적입고량']),
+          cum_inbound_amount: toNum(row['누적입고액']),
+          cum_pending_qty: toNum(row['누적미입고량']),
+          cum_pending_amount: toNum(row['누적미입고액']),
+          cum_sold_qty: toNum(row['누적판매량']),
+          cum_real_sales: toNum(row['누적실매출액']),
+          cum_cost_of_goods: toNum(row['누적매출원가']),
+          cum_gross_margin_rate: toNum(row['누적매출총이익율']),
+          cum_sell_through_rate: toNum(row['누적판매율']),
+          total_stock_qty: toNum(row['전사재고량']),
+          total_stock_amount: toNum(row['전사재고액']),
+          sale_days: toNum(row['판매일수']),
+          daily_avg_sold_qty: toNum(row['일평균판매량']),
+          moving_avg_price: toNum(row['이동평균가'])
         }
       }
     }
@@ -833,20 +826,9 @@
   setupZone('po')
   
   function handleFile(prefix, file) {
-    const config = UPLOADERS[prefix]
-    const isExcel = config.isExcel === true
-    const fname = file.name.toLowerCase()
-    
-    if (isExcel) {
-      if (!fname.endsWith('.xlsx') && !fname.endsWith('.xls')) {
-        alert('Excel 파일(.xlsx)만 업로드 가능합니다.')
-        return
-      }
-    } else {
-      if (!fname.endsWith('.csv')) {
-        alert('CSV 파일만 업로드 가능합니다.')
-        return
-      }
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('CSV 파일만 업로드 가능합니다.')
+      return
     }
     
     STATE[prefix].file = file
@@ -860,52 +842,19 @@
     document.getElementById(prefix + '-validation-list').innerHTML = ''
     addValidation(prefix, '파일 파싱 중... (큰 파일은 시간이 걸립니다)', 'warn')
     
-    if (isExcel) {
-      // XLSX 파싱
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result)
-          const wb = XLSX.read(data, { type: 'array', cellDates: false })
-          // 발주관리분석 시트 찾기
-          const sheetName = wb.SheetNames.find(s => s.includes('발주관리') || s.includes('발주분석')) 
-                          || wb.SheetNames.find(s => !s.includes('hidden')) 
-                          || wb.SheetNames[0]
-          const ws = wb.Sheets[sheetName]
-          // 인덱스 기반, raw:true로 원본 숫자형 보존 (콤마 없는 정수/실수)
-          const arr = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true })
-          STATE[prefix].data = arr
-          
-          // 디버그 정보 표시
-          addValidation(prefix, `시트: "${sheetName}" / 전체 시트 수: ${wb.SheetNames.length}`, 'ok')
-          addValidation(prefix, `읽은 행 수: ${arr.length}`, 'ok')
-          
-          validateData(prefix)
-        } catch (err) {
-          document.getElementById(prefix + '-validation-list').innerHTML = ''
-          addValidation(prefix, 'Excel 파싱 실패: ' + err.message, 'err')
-        }
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      worker: false,
+      complete: (result) => {
+        STATE[prefix].data = result.data
+        validateData(prefix)
+      },
+      error: (err) => {
+        document.getElementById(prefix + '-validation-list').innerHTML = ''
+        addValidation(prefix, '파일 파싱 실패: ' + err.message, 'err')
       }
-      reader.onerror = () => {
-        addValidation(prefix, '파일 읽기 실패', 'err')
-      }
-      reader.readAsArrayBuffer(file)
-    } else {
-      // CSV 파싱
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        worker: false,
-        complete: (result) => {
-          STATE[prefix].data = result.data
-          validateData(prefix)
-        },
-        error: (err) => {
-          document.getElementById(prefix + '-validation-list').innerHTML = ''
-          addValidation(prefix, '파일 파싱 실패: ' + err.message, 'err')
-        }
-      })
-    }
+    })
   }
   
   function validateData(prefix) {
@@ -919,40 +868,15 @@
       return
     }
     
-    const isExcel = config.isExcel === true
-    
     addValidation(prefix, `전체 행 수: ${data.length.toLocaleString()}건`, 'ok')
     
-    if (!isExcel) {
-      // CSV: 컬럼명 검증
-      const actualCols = Object.keys(data[0])
-      const missing = config.requiredCols.filter(r => !actualCols.includes(r))
-      if (missing.length > 0) {
-        addValidation(prefix, `필수 컬럼 누락: ${missing.join(', ')}`, 'err')
-        return
-      }
-      addValidation(prefix, `컬럼 ${config.requiredCols.length}개 모두 존재`, 'ok')
-    } else {
-      // Excel: 행이 배열, transformRow 미리 시도
-      let firstValid = null
-      for (const row of data) {
-        const t = config.transformRow(row)
-        if (t !== null) { firstValid = t; break }
-      }
-      if (!firstValid) {
-        addValidation(prefix, '유효한 데이터 행을 찾을 수 없습니다', 'err')
-        // 디버그: 데이터 첫 행 일부 보여주기
-        for (let i = 5; i < Math.min(10, data.length); i++) {
-          const r = data[i]
-          if (Array.isArray(r) && r.length > 0) {
-            const summary = `[디버그 R${i+1}] col1="${r[1]}" col3="${r[3]}" col6="${r[6]}" col25="${r[25]}" col28="${r[28]}"`
-            addValidation(prefix, summary, 'warn')
-          }
-        }
-        return
-      }
-      addValidation(prefix, '엑셀 시트 구조 확인 완료', 'ok')
+    const actualCols = Object.keys(data[0])
+    const missing = config.requiredCols.filter(r => !actualCols.includes(r))
+    if (missing.length > 0) {
+      addValidation(prefix, `필수 컬럼 누락: ${missing.join(', ')}`, 'err')
+      return
     }
+    addValidation(prefix, `컬럼 ${config.requiredCols.length}개 모두 존재`, 'ok')
     
     let invalidCnt = 0
     let validCnt = 0
@@ -960,48 +884,28 @@
     const brandSet = new Set()
     
     for (const row of data) {
-      if (isExcel) {
-        // Excel: transformRow가 null 반환하면 건너뜀
-        const t = config.transformRow(row)
-        if (t === null) {
+      if (config.filterInvalidSeason) {
+        const season = parseSeason(row['계절코드'])
+        if (!season.type) {
           invalidCnt++
           continue
         }
-        validCnt++
-        brandSet.add(t.brand_code)
-        const d = t.season_code
-        if (d) {
-          if (!dateMin || d < dateMin) dateMin = d
-          if (!dateMax || d > dateMax) dateMax = d
-        }
-      } else {
-        if (config.filterInvalidSeason) {
-          const season = parseSeason(row['계절코드'])
-          if (!season.type) {
-            invalidCnt++
-            continue
-          }
-        }
-        validCnt++
-        brandSet.add(row['브랜드코드'])
-        const d = row[config.dateField]
-        if (d) {
-          if (!dateMin || d < dateMin) dateMin = d
-          if (!dateMax || d > dateMax) dateMax = d
-        }
+      }
+      validCnt++
+      brandSet.add(row['브랜드코드'])
+      const d = row[config.dateField]
+      if (d) {
+        if (!dateMin || d < dateMin) dateMin = d
+        if (!dateMax || d > dateMax) dateMax = d
       }
     }
     STATE[prefix].validRows = validCnt
     
-    if (isExcel) {
-      addValidation(prefix, `시즌코드 범위: ${dateMin} ~ ${dateMax}`, 'ok')
-    } else {
-      addValidation(prefix, `${config.dateField} 범위: ${dateMin} ~ ${dateMax}`, 'ok')
-    }
+    addValidation(prefix, `${config.dateField} 범위: ${dateMin} ~ ${dateMax}`, 'ok')
     addValidation(prefix, `고유 브랜드: ${brandSet.size}개`, 'ok')
     addValidation(prefix, `유효 행: ${validCnt.toLocaleString()}건`, 'ok')
     if (invalidCnt > 0) {
-      addValidation(prefix, `${isExcel ? '헤더/빈 행' : '비표준 계절코드'} 자동 제외: ${invalidCnt.toLocaleString()}건`, 'warn')
+      addValidation(prefix, `비표준 계절코드 자동 제외: ${invalidCnt.toLocaleString()}건`, 'warn')
     }
     
     showPreview(prefix)
@@ -1010,50 +914,32 @@
   
   function showPreview(prefix) {
     const config = UPLOADERS[prefix]
-    const isExcel = config.isExcel === true
+    const data = STATE[prefix].data.slice(0, 5)
+    const cols = config.previewCols
     
     let html = '<thead><tr>'
-    config.previewCols.forEach(c => html += `<th>${c}</th>`)
+    cols.forEach(c => html += `<th>${c}</th>`)
     html += '</tr></thead><tbody>'
     
-    if (isExcel) {
-      // Excel: transformRow로 변환 후 5개 첫 행 미리보기
-      let previewCount = 0
-      const fmt = (v) => v === null || v === undefined ? '-' : 
-                          (typeof v === 'number' ? v.toLocaleString() : v)
-      for (const row of STATE[prefix].data) {
-        if (previewCount >= 5) break
-        const t = config.transformRow(row)
-        if (t === null) continue
-        html += '<tr>'
-        html += `<td>${t.season_code || '-'}</td>`
-        html += `<td>${t.brand_name || t.brand_code || '-'}</td>`
-        html += `<td>${t.style_code || '-'}</td>`
-        html += `<td>${fmt(t.cum_inbound_amount)}</td>`
-        html += `<td>${fmt(t.cum_cost_of_goods)}</td>`
-        html += `<td>${t.cum_sell_through_rate !== null ? (Number(t.cum_sell_through_rate)*100).toFixed(1) + '%' : '-'}</td>`
-        html += `<td>${fmt(t.total_stock_amount)}</td>`
-        html += '</tr>'
-        previewCount++
-      }
-    } else {
-      const data = STATE[prefix].data.slice(0, 5)
-      data.forEach(row => {
-        html += '<tr>'
-        config.previewCols.forEach(c => {
-          let val = row[c] || ''
-          if (c.includes('액') || c.includes('원가') || c === '판매수량' || 
-              c === '재고량' || c === '총판매량' || c.includes('재고액')) {
-            const n = toNum(val)
-            val = n !== null ? n.toLocaleString() : val
-          }
-          html += `<td>${val}</td>`
-        })
-        html += '</tr>'
+    data.forEach(row => {
+      html += '<tr>'
+      cols.forEach(c => {
+        let val = row[c] || ''
+        if (c.includes('액') || c.includes('원가') || c === '판매수량' || 
+            c === '재고량' || c === '총판매량' || c.includes('재고액') ||
+            c === '누적입고액' || c === '누적매출원가' || c === '전사재고액') {
+          const n = toNum(val)
+          val = n !== null ? n.toLocaleString() : val
+        } else if (c === '누적판매율') {
+          const n = toNum(val)
+          val = n !== null ? n.toFixed(1) + '%' : val
+        }
+        html += `<td>${val}</td>`
       })
-    }
-    
+      html += '</tr>'
+    })
     html += '</tbody>'
+    
     document.getElementById(prefix + '-preview-table').innerHTML = html
     document.getElementById(prefix + '-preview').style.display = 'block'
   }
