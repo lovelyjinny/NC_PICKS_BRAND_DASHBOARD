@@ -169,75 +169,75 @@
   .empty-title { font-size: 16px; font-weight: 600; color: #f2e8d9; margin-bottom: 6px; }
   .empty-text { font-size: 13px; color: #a89884; line-height: 1.6; }
   
-  /* TOP 카드 */
-  .cards-grid {
+  /* TOP 3 카드 (3개 나란히) */
+  .top3-grid {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px; margin-bottom: 22px;
+    gap: 14px; margin-bottom: 22px;
   }
-  .bcard {
+  .top3-card {
     background: #2a2018; border: 1px solid #3f332a; border-radius: 10px;
-    padding: 16px 18px; position: relative; overflow: hidden;
-    cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+    padding: 18px 20px;
+    display: flex; flex-direction: column;
   }
-  
-  /* 미니 매출 추이 차트 (카드 맨 아래) */
-  .mini-chart-wrap {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(63,51,42,0.5);
-  }
-  .mini-chart-head {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em;
-    margin-bottom: 6px;
-  }
-  .mini-chart-head .trend-up { color: #6cd9b8; font-weight: 700; }
-  .mini-chart-head .trend-down { color: #d97878; font-weight: 700; }
-  .mini-chart-head .trend-flat { color: #c9a17a; font-weight: 700; }
-  .mini-chart {
-    width: 100%; height: 36px;
-    display: block;
-  }
-  .bcard:hover { transform: translateY(-2px); border-color: #5c4a3a; }
-  .bcard::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
-  .bcard.s-ok::before { background: #6cd9b8; }
-  .bcard.s-warn::before { background: #f0a93a; }
-  .bcard.s-hot::before { background: #d97878; }
-  .bcard.s-up::before { background: #5bb4e5; }
-  .bhead {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px;
-  }
-  .bname { font-size: 17px; font-weight: 700; color: #b08bd9; letter-spacing: -0.01em; }
-  .bbadge {
-    font-size: 11px; padding: 4px 10px; border-radius: 4px;
-    font-weight: 600; letter-spacing: 0.04em;
-  }
-  .b-ok { background: rgba(108,217,184,0.15); color: #6cd9b8; }
-  .b-warn { background: rgba(240,169,58,0.15); color: #f0a93a; }
-  .b-hot { background: rgba(217,120,120,0.18); color: #e89090; }
-  .b-up { background: rgba(91,180,229,0.15); color: #5bb4e5; }
-  .brev {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: baseline;
-    padding-bottom: 10px;
-    margin-bottom: 0;
+  .top3-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 14px; margin-bottom: 6px;
     border-bottom: 1px solid rgba(63,51,42,0.5);
   }
-  .brev .lab { font-size: 10px; color: #6b5d4f; letter-spacing: 0.04em; display: block; margin-bottom: 3px; }
-  .brev .v1 { font-size: 17px; font-weight: 700; color: #4cb8a4; font-variant-numeric: tabular-nums; }
-  .brev .v2 { font-size: 15px; font-weight: 600; color: #f2e8d9; font-variant-numeric: tabular-nums; }
-  .brev .v3 { font-size: 15px; font-weight: 600; color: #c9a17a; font-variant-numeric: tabular-nums; }
-  .bstat {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 12px;
-    margin-top: 8px;
+  .top3-title {
+    font-size: 14px; font-weight: 700; color: #c9a17a;
+    letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .bstat > div { display: flex; flex-direction: column; gap: 2px; }
-  .bstat .lab { color: #6b5d4f; font-size: 10px; letter-spacing: 0.04em; }
-  .bstat .val { color: #f2e8d9; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13px; }
-  .bstat .val.ok { color: #6cd9b8; }
-  .bstat .val.warn { color: #f0a93a; }
-  .bstat .val.hot { color: #d97878; }
-  .bstat .val.up { color: #5bb4e5; }
+  .top3-meta { font-size: 11px; color: #6b5d4f; }
+  .top3-list {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .top3-row {
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(63,51,42,0.4);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .top3-row:last-child { border-bottom: none; }
+  .top3-row:hover { background: rgba(201,161,122,0.06); }
+  .top3-row-top {
+    display: grid; grid-template-columns: 22px 1fr auto;
+    gap: 10px; align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .top3-rank {
+    font-size: 12px; font-weight: 700; color: #6b5d4f;
+    font-variant-numeric: tabular-nums;
+  }
+  .top3-row.r1 .top3-rank { color: #f0a93a; font-size: 14px; }
+  .top3-row.r2 .top3-rank { color: #c9a17a; font-size: 13px; }
+  .top3-row.r3 .top3-rank { color: #a89884; font-size: 13px; }
+  .top3-bname {
+    font-size: 13px; font-weight: 600; color: #f2e8d9;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .top3-row:hover .top3-bname { color: #b08bd9; }
+  .top3-val {
+    font-size: 13px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #4cb8a4;
+  }
+  .top3-card:nth-child(2) .top3-val { color: #5bb4e5; }
+  .top3-card:nth-child(3) .top3-val { color: #f08aba; }
+  .top3-bar-wrap {
+    height: 6px; background: rgba(63,51,42,0.4); border-radius: 3px;
+    overflow: hidden; margin-left: 32px;
+  }
+  .top3-bar {
+    height: 100%; background: #4cb8a4; border-radius: 3px;
+    transition: width 0.4s ease-out;
+  }
+  .top3-card:nth-child(2) .top3-bar { background: #5bb4e5; }
+  .top3-card:nth-child(3) .top3-bar { background: #f08aba; }
+  .top3-empty {
+    text-align: center; padding: 40px 12px;
+    color: #6b5d4f; font-size: 12px;
+  }
   
   /* 리스트 */
   .tbl {
@@ -601,10 +601,31 @@
     <div class="k k4" data-category="hot" onclick="openKpiModal('hot')"><div class="kl">적극 할인</div><div class="kv" id="kpi-hot">-</div></div>
   </div>
 
-  <!-- TOP 10 카드 -->
+  <!-- TOP 5 카드 (3개 나란히) -->
   <div id="top-section" style="display:none;">
-    <div class="sec-label">TOP 9 브랜드 · 매출액 순</div>
-    <div class="cards-grid" id="top-cards"></div>
+    <div class="top3-grid">
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-title">매출액 TOP 5</span>
+          <span class="top3-meta" id="top3-meta-sales">-</span>
+        </div>
+        <div class="top3-list" id="top3-list-sales"></div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-title">판매율 TOP 5</span>
+          <span class="top3-meta" id="top3-meta-sell">-</span>
+        </div>
+        <div class="top3-list" id="top3-list-sell"></div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-title">TCR TOP 5</span>
+          <span class="top3-meta" id="top3-meta-tcr">실매출÷입고</span>
+        </div>
+        <div class="top3-list" id="top3-list-tcr"></div>
+      </div>
+    </div>
   </div>
 
   <!-- 전체 리스트 -->
@@ -643,7 +664,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 8 · 브랜드 상세 + KPI 카드 클릭 모달 · v0.9
+    Phase 10 · TOP 5 카드 3종 (매출/판매율/TCR) · v1.0
   </div>
 
 </div>
@@ -925,7 +946,7 @@
           .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('brand_season_summary')
-          .select('brand_code, total_inbound_amount, total_cost_of_goods, company_cum_sell_rate')
+          .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate')
           .eq('season_year', year).eq('season_type', type))
       ])
       
@@ -1042,6 +1063,7 @@
     for (const r of poSummary) {
       poMap[r.brand_code] = {
         seasonInbound: Number(r.total_inbound_amount) || 0,
+        seasonRealSales: Number(r.total_real_sales) || 0,
         companySellRate: r.company_cum_sell_rate !== null ? Number(r.company_cum_sell_rate) : null,
         companyTotalCost: Number(r.total_cost_of_goods) || 0
       }
@@ -1054,7 +1076,7 @@
       const inv = invMap[code] || { qty: 0, value: 0 }
       const stQty = stMap[code] || b.total_qty // 정판 데이터 없으면 매출 수량 대체
       const inbound = inboundMap[code] || {}    // 일별 입고액 (벤더입고액_부가세) - legacy
-      const poData = poMap[code] || { seasonInbound: 0, companySellRate: null, companyTotalCost: 0 }
+      const poData = poMap[code] || { seasonInbound: 0, seasonRealSales: 0, companySellRate: null, companyTotalCost: 0 }
       
       // 매출 통계
       const totalSales = b.total_sales      // 실매출 (외형/1.1)
@@ -1156,6 +1178,8 @@
         sell_progress_ratio: (sellThrough !== null && progress > 0) ? sellThrough / (progress / 100) : null,
         inbound: inbound,  // 일별 입고액 (legacy)
         season_inbound_total: poData.seasonInbound,  // 시즌 누적 입고액 (purchase_orders)
+        season_real_sales: poData.seasonRealSales,   // 시즌 누적 실매출액 (TCR 분자)
+        tcr: poData.seasonInbound > 0 ? poData.seasonRealSales / poData.seasonInbound : null,  // TCR = 누적실매출 / 누적입고
         company_sell_rate: poData.companySellRate    // 회사 자체 계산 누적판매율
       })
     }
@@ -1329,50 +1353,54 @@
   }
   
   function renderTopCards(period) {
-    const container = document.getElementById('top-cards')
-    container.innerHTML = ''
-    const top9 = currentBrands.slice(0, 9)
-    for (const b of top9) {
-      const sl = statusLabel(b.status)
-      const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'ok' : (b.op_margin >= 0.10 ? 'warn' : 'hot'))
-      const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'hot' : 'warn'))
-      const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? 'ok' : (b.sell_progress_ratio < 0.6 ? 'hot' : 'warn'))
-      
-      // 누적판매율 라인 차트
-      const cum = getCumulativeSellThrough(b, period)
-      const trend = calcCumTrend(cum.points)
-      const sparkline = renderCumLine(cum.points, b.status)
-      const trendText = trend.dir === 'up' ? '가속' : (trend.dir === 'down' ? '둔화' : '일정')
-      const finalRatePct = (cum.finalRate * 100).toFixed(1)
-      
-      const card = document.createElement('div')
-      card.className = `bcard s-${b.status}`
-      card.dataset.brandCode = b.brand_code
-      card.addEventListener('click', () => openBrandModal(b.brand_code))
-      card.innerHTML = `
-        <div class="bhead">
-          <span class="bname">${b.brand_name}</span>
-          <span class="bbadge ${sl.cls}">${sl.text}</span>
+    // 3개 TOP 5 카드 렌더링: 매출액 / 판매율 / TCR
+    renderOneTop3('sales', '매출액', currentBrands, b => b.total_sales, v => fmtMoney(v), '실매출 기준')
+    renderOneTop3('sell',  '판매율', currentBrands, b => b.sell_through, v => fmtPct(v, 0), '재고 대비')
+    renderOneTop3('tcr',   'TCR',   currentBrands, b => b.tcr, v => fmtPct(v, 0), '실매출÷입고')
+  }
+  
+  function renderOneTop3(key, label, brands, valFn, fmtFn, metaText) {
+    const listEl = document.getElementById('top3-list-' + key)
+    const metaEl = document.getElementById('top3-meta-' + key)
+    if (!listEl) return
+    
+    // 유효한 값을 가진 브랜드만 (null/0 제외)
+    const filtered = brands
+      .map(b => ({ b: b, v: valFn(b) }))
+      .filter(x => x.v !== null && x.v !== undefined && !isNaN(x.v) && x.v > 0)
+      .sort((a, b) => b.v - a.v)
+      .slice(0, 5)
+    
+    if (metaEl) metaEl.textContent = metaText
+    
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="top3-empty">데이터 없음</div>'
+      return
+    }
+    
+    // 1위 값 = 막대 길이 기준 (100%)
+    const maxV = filtered[0].v
+    
+    listEl.innerHTML = ''
+    filtered.forEach((item, idx) => {
+      const rank = idx + 1
+      const pct = maxV > 0 ? (item.v / maxV * 100) : 0
+      const row = document.createElement('div')
+      row.className = `top3-row r${rank}`
+      row.dataset.brandCode = item.b.brand_code
+      row.addEventListener('click', () => openBrandModal(item.b.brand_code))
+      row.innerHTML = `
+        <div class="top3-row-top">
+          <span class="top3-rank">${rank}</span>
+          <span class="top3-bname">${item.b.brand_name}</span>
+          <span class="top3-val">${fmtFn(item.v)}</span>
         </div>
-        <div class="brev">
-          <div><span class="lab">매출액</span><span class="v1">${fmtMoney(b.total_sales)}</span></div>
-          <div><span class="lab">일평균</span><span class="v2">${fmtMoney(b.daily_avg)}</span></div>
-        </div>
-        <div class="mini-chart-wrap">
-          <div class="mini-chart-head">
-            <span>누적판매율 ${finalRatePct}%</span>
-            <span class="trend-${trend.dir}">${trend.icon} ${trendText}</span>
-          </div>
-          ${sparkline}
-        </div>
-        <div class="bstat">
-          <div><span class="lab">영업이익률</span><span class="val ${opCls}">${fmtPct(b.op_margin)}</span></div>
-          <div><span class="lab">재고일수</span><span class="val ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</span></div>
-          <div><span class="lab">판매율</span><span class="val ${srCls}">${fmtPct(b.sell_through, 0)}</span></div>
+        <div class="top3-bar-wrap">
+          <div class="top3-bar" style="width: ${pct.toFixed(1)}%"></div>
         </div>
       `
-      container.appendChild(card)
-    }
+      listEl.appendChild(row)
+    })
   }
   
   function renderList() {
