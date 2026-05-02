@@ -223,7 +223,7 @@
     color: #4cb8a4;
   }
   .top3-card:nth-child(2) .top3-val { color: #5bb4e5; }
-  .top3-card:nth-child(3) .top3-val { color: #f08aba; }
+  .top3-card:nth-child(3) .top3-val { color: #d97878; }
   .top3-bar-wrap {
     height: 6px; background: rgba(63,51,42,0.4); border-radius: 3px;
     overflow: hidden; margin-left: 32px;
@@ -233,7 +233,7 @@
     transition: width 0.4s ease-out;
   }
   .top3-card:nth-child(2) .top3-bar { background: #5bb4e5; }
-  .top3-card:nth-child(3) .top3-bar { background: #f08aba; }
+  .top3-card:nth-child(3) .top3-bar { background: #d97878; }
   .top3-empty {
     text-align: center; padding: 40px 12px;
     color: #6b5d4f; font-size: 12px;
@@ -620,10 +620,10 @@
       </div>
       <div class="top3-card">
         <div class="top3-head">
-          <span class="top3-title">TCR TOP 5</span>
-          <span class="top3-meta" id="top3-meta-tcr">실매출÷입고</span>
+          <span class="top3-title">재고일수 TOP 5</span>
+          <span class="top3-meta" id="top3-meta-days">장기 체류 (검토 필요)</span>
         </div>
-        <div class="top3-list" id="top3-list-tcr"></div>
+        <div class="top3-list" id="top3-list-days"></div>
       </div>
     </div>
   </div>
@@ -664,7 +664,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 10 · TOP 5 카드 3종 (매출/판매율/TCR) · v1.0
+    Phase 10 · TOP 5 카드 3종 (매출/판매율/재고일수) + 트리거 라벨 정리 · v1.1
   </div>
 
 </div>
@@ -1117,11 +1117,11 @@
         opUnder: false,
         sellSlow: false
       }
-      // 1. 시즌 임박
+      // 1. 재고일수 위험
       if (inventoryDays !== null && remainingDays < inventoryDays) {
         triggers.seasonImminent = true
       }
-      // 2. 이익률 미달
+      // 2. 이익률 부족
       if (opMargin !== null && inventoryDays !== null) {
         if (opMargin < thrOp && inventoryDays > thrDays) {
           triggers.opUnder = true
@@ -1356,7 +1356,7 @@
     // 3개 TOP 5 카드 렌더링: 매출액 / 판매율 / TCR
     renderOneTop3('sales', '매출액', currentBrands, b => b.total_sales, v => fmtMoney(v), '실매출 기준')
     renderOneTop3('sell',  '판매율', currentBrands, b => b.sell_through, v => fmtPct(v, 0), '재고 대비')
-    renderOneTop3('tcr',   'TCR',   currentBrands, b => b.tcr, v => fmtPct(v, 0), '실매출÷입고')
+    renderOneTop3('days',  '재고일수', currentBrands, b => b.inventory_days, v => v + '일', '장기 체류 (검토 필요)')
   }
   
   function renderOneTop3(key, label, brands, valFn, fmtFn, metaText) {
@@ -1623,22 +1623,22 @@
     
     const triggers = []
     
-    // 1. 시즌 임박 vs 재고일수
+    // 1. 재고일수 vs 잔여 시즌
     const t1Fired = brand.inventory_days !== null && remainingDays < brand.inventory_days
     triggers.push({
-      label: '1. 시즌 임박',
+      label: '재고일수',
       desc: brand.inventory_days !== null
         ? `잔여 시즌 <b>${remainingDays}일</b> / 현재 재고일수 <b>${brand.inventory_days}일</b>`
         : '재고일수 데이터 없음',
       fired: t1Fired
     })
     
-    // 2. 영업이익률 미달 + 재고일수 초과
+    // 2. 영업이익률 부족 + 재고일수 초과
     const opPct = brand.op_margin !== null ? (brand.op_margin * 100).toFixed(1) : '-'
     const t2Fired = brand.op_margin !== null && brand.inventory_days !== null 
       && brand.op_margin < thrOp && brand.inventory_days > thrDays
     triggers.push({
-      label: '2. 이익률 미달',
+      label: '이익률',
       desc: `영업이익률 <b>${opPct}%</b> ${brand.op_margin !== null && brand.op_margin < thrOp ? '＜' : '≥'} 목표 <b>${(thrOp*100).toFixed(0)}%</b> · 재고일수 ${brand.inventory_days || '-'}일 ${brand.inventory_days !== null && brand.inventory_days > thrDays ? '＞' : '≤'} 임계 ${thrDays}일`,
       fired: t2Fired
     })
@@ -1647,7 +1647,7 @@
     const sellRatio = brand.sell_progress_ratio
     const t3Fired = sellRatio !== null && sellRatio < thrSell
     triggers.push({
-      label: '3. 판매율 부진',
+      label: '판매율',
       desc: sellRatio !== null
         ? `판매율 <b>${(brand.sell_through*100).toFixed(0)}%</b> ÷ 진척도 <b>${progress}%</b> = <b>${(sellRatio*100).toFixed(0)}%</b> ${sellRatio < thrSell ? '＜' : '≥'} 기준 <b>${(thrSell*100).toFixed(0)}%</b>`
         : '판매율 데이터 없음',
