@@ -260,6 +260,30 @@
     background: #352a21; border-bottom: 1px solid #3f332a; color: #c9a17a;
     white-space: nowrap; position: sticky; top: 0;
   }
+  .lst thead th.sortable {
+    cursor: pointer; user-select: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .lst thead th.sortable:hover {
+    background: #423428; color: #f0d4a3;
+  }
+  .lst thead th.sortable .sort-ind {
+    display: inline-block; margin-left: 5px; opacity: 0.3;
+    font-size: 9px; vertical-align: 1px; transition: opacity 0.12s;
+  }
+  .lst thead th.sortable .sort-ind::before { content: '⇅'; }
+  .lst thead th.sortable:hover .sort-ind { opacity: 0.6; }
+  .lst thead th.sortable.sort-asc .sort-ind {
+    opacity: 1; color: #f2e8d9;
+  }
+  .lst thead th.sortable.sort-asc .sort-ind::before { content: '▲'; }
+  .lst thead th.sortable.sort-desc .sort-ind {
+    opacity: 1; color: #f2e8d9;
+  }
+  .lst thead th.sortable.sort-desc .sort-ind::before { content: '▼'; }
+  .lst thead th.sortable.sort-asc, .lst thead th.sortable.sort-desc {
+    color: #f0d4a3; background: #423428;
+  }
   .lst th.r { text-align: right; }
   .lst tbody td {
     padding: 12px; border-bottom: 1px solid #3f332a; color: #f2e8d9;
@@ -640,11 +664,16 @@
         <table class="lst">
           <thead>
             <tr>
-              <th>#</th><th>브랜드</th>
-              <th class="r">매출액</th><th class="r">일평균</th>
-              <th class="r">영업이익률</th><th class="r">매총율</th>
-              <th class="r">재고일수</th><th class="r">판매율</th>
-              <th class="r">판매율÷진척도</th><th class="r">권장 할인</th>
+              <th>#</th>
+              <th class="sortable" data-sort="brand_name">브랜드<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="total_sales">매출액<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="daily_avg">일평균<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="op_margin">영업이익률<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="gross_margin">매총율<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="inventory_days">재고일수<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="sell_through">판매율<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="sell_progress_ratio">판매율÷진척도<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="rec_discount">권장 할인<span class="sort-ind"></span></th>
               <th>상태</th>
             </tr>
           </thead>
@@ -664,7 +693,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 10 · TOP 5 카드 3종 (매출/판매율/재고일수) + 트리거 라벨 정리 · v1.1
+    Phase 10 · TOP 5 카드 3종 + 트리거 라벨 정리 + 리스트 정렬 가능 · v1.2
   </div>
 
 </div>
@@ -846,6 +875,8 @@
   let stData = []
   let poSummary = []  // 발주/입고 브랜드별 시즌 요약
   let currentBrands = []
+  let listSortKey = 'total_sales'   // 현재 정렬 컬럼
+  let listSortDir = 'desc'          // 'asc' | 'desc'
   
   // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
@@ -1403,12 +1434,51 @@
     })
   }
   
+  // 사용자 선택 정렬을 적용한 브랜드 배열 반환
+  function getSortedBrandsForList() {
+    const arr = currentBrands.slice()  // 복제
+    const key = listSortKey
+    const dir = listSortDir === 'asc' ? 1 : -1
+    
+    arr.sort((a, b) => {
+      const va = a[key]
+      const vb = b[key]
+      
+      // null 처리: 항상 맨 아래
+      const aNull = (va === null || va === undefined)
+      const bNull = (vb === null || vb === undefined)
+      if (aNull && bNull) return 0
+      if (aNull) return 1   // a를 뒤로
+      if (bNull) return -1  // b를 뒤로
+      
+      // 문자열 (브랜드명)은 한국어 정렬
+      if (typeof va === 'string' || typeof vb === 'string') {
+        return String(va).localeCompare(String(vb), 'ko') * dir
+      }
+      
+      // 숫자
+      return (va - vb) * dir
+    })
+    
+    return arr
+  }
+  
   function renderList() {
     const tbody = document.getElementById('list-body')
     tbody.innerHTML = ''
     document.getElementById('list-label').textContent = `전체 브랜드 (${currentBrands.length})`
     
-    currentBrands.forEach((b, idx) => {
+    // 헤더 정렬 표시 갱신
+    document.querySelectorAll('.lst thead th.sortable').forEach(th => {
+      th.classList.remove('sort-asc', 'sort-desc')
+      if (th.dataset.sort === listSortKey) {
+        th.classList.add(listSortDir === 'asc' ? 'sort-asc' : 'sort-desc')
+      }
+    })
+    
+    const sorted = getSortedBrandsForList()
+    
+    sorted.forEach((b, idx) => {
       const sl = statusLabel(b.status)
       const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'op-ok' : (b.op_margin >= 0.10 ? 'op-warn' : 'op-hot'))
       const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'dy-hot' : 'dy-warn'))
@@ -1432,6 +1502,29 @@
       `
       tbody.appendChild(tr)
     })
+  }
+  
+  // ============= 리스트 정렬 (헤더 클릭) =============
+  // 정렬 가능한 헤더 클릭 시 정렬 상태 토글
+  try {
+    document.querySelectorAll('.lst thead th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort
+        if (!key) return
+        if (listSortKey === key) {
+          // 같은 컬럼 → 방향 토글
+          listSortDir = (listSortDir === 'desc') ? 'asc' : 'desc'
+        } else {
+          // 다른 컬럼 → 그 컬럼으로 변경 (기본: 내림차순)
+          listSortKey = key
+          // 브랜드명만 가나다순(asc)이 자연스러움, 나머지는 큰 값부터(desc)
+          listSortDir = (key === 'brand_name') ? 'asc' : 'desc'
+        }
+        renderList()
+      })
+    })
+  } catch (err) {
+    console.error('정렬 헤더 핸들러 등록 실패:', err)
   }
   
   // ============= 슬라이더 동기화 =============
