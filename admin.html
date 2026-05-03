@@ -357,7 +357,7 @@
       <div id="sales-options" class="card" style="display:none;">
         <div class="card-title">4. 업로드 옵션</div>
         <div style="font-size:13px;color:#a89884;line-height:1.7;">
-          ⓘ <b style="color:#f2e8d9;">중복 주의:</b> 같은 데이터를 두 번 업로드하면 중복됩니다.<br>
+          ⓘ <b style="color:#6cd9b8;">자동 갱신:</b> 같은 키(날짜+브랜드+매장+MC)의 데이터는 자동으로 새 값으로 덮어씁니다.<br>
           ⓘ <b style="color:#f2e8d9;">비표준 코드:</b> 계절코드 '#' 데이터는 자동 제외됩니다.<br>
           ⓘ <b style="color:#f2e8d9;">처리 시간:</b> 70만 행 기준 5~15분 소요. 도중에 브라우저를 닫지 마세요.
         </div>
@@ -676,6 +676,16 @@
         <div id="del-msg" style="font-size:12px; margin-top:14px;"></div>
       </div>
       <div class="card">
+        <div class="card-title">발주/입고 전체 시즌 삭제</div>
+        <div style="font-size:13px; color:#a89884; line-height:1.7; margin-bottom:14px;">
+          📋 BW에서 발주/입고 전체 데이터를 한 파일로 받아서 새로 올리실 때 사용하세요.<br>
+          모든 시즌(25SS, 25FW, 26SS, 26FW 등)의 <b style="color:#e89090;">purchase_orders 데이터를 한꺼번에</b> 비웁니다.
+        </div>
+        <button class="btn btn-danger" onclick="clearAllPurchaseOrders()">발주/입고 전체 삭제</button>
+        <div id="clear-po-msg" style="font-size:12px; margin-top:12px;"></div>
+      </div>
+      
+      <div class="card">
         <div class="card-title">전체 판관비 삭제</div>
         <div style="font-size:13px; color:#a89884; line-height:1.7; margin-bottom:14px;">
           판관비 데이터를 특정 월만 삭제하려면 "판관비 입력" 페이지에서 직접 삭제하세요.<br>
@@ -687,7 +697,7 @@
     </div>
     
     <div class="footer">
-      Phase 9 · 관리 메뉴 4종 + 캐시 갱신 · v0.6
+      Phase 9 · 관리 메뉴 + UPSERT 자동 갱신 · v0.8
     </div>
   </main>
 
@@ -812,6 +822,7 @@
   const UPLOADERS = {
     sales: {
       table: 'sales_daily',
+      upsertKey: 'sale_date,brand_code,store_code,season_code,mc_code',
       requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
                      '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
                      '총매출액','실매출액','총매출원가','판매수량','환입액'],
@@ -844,6 +855,7 @@
     },
     inv: {
       table: 'inventory_monthly',
+      upsertKey: 'year_month,brand_code,store_code,season_code,mc_code',
       requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
                      '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','년월',
                      '재고량','재고액_원가','재고액_최초판매가','재고액_현판가'],
@@ -874,6 +886,7 @@
     },
     st: {
       table: 'sellthrough_daily',
+      upsertKey: 'trans_date,brand_code,store_code,season_code,mc_code',
       requiredCols: ['지점코드','지점명','구매그룹코드','구매그룹명','MC코드','MC명',
                      '브랜드코드','브랜드명','계절코드','계절월코드','계절월명','날짜',
                      '벤더입고액_부가세','총판매량','총입고액_정상가','총판매액_정상가','정상판매액'],
@@ -903,6 +916,7 @@
     },
     po: {
       table: 'purchase_orders',
+      upsertKey: 'brand_code,style_code,season_year,season_type',
       requiredCols: ['구매그룹코드','계절코드','브랜드코드','스타일코드',
                      '누적발주량','누적발주액','누적입고량','누적입고액',
                      '누적판매량','누적실매출액','누적매출원가','누적판매율',
@@ -1149,7 +1163,11 @@
       while (attempt < 3 && !ok) {
         attempt++
         try {
-          const { error } = await supabase.from(config.table).insert(batch)
+          const { error } = await supabase.from(config.table)
+            .upsert(batch, { 
+              onConflict: config.upsertKey,
+              ignoreDuplicates: false  // 같은 키면 새 값으로 덮어쓰기
+            })
           if (error) throw error
           ok = true
           success += batch.length
@@ -1451,6 +1469,29 @@
       
       msg.style.color = '#6cd9b8'
       msg.textContent = `✓ ${totalDeleted.toLocaleString()}건 삭제 완료. 캐시도 갱신해주세요.`
+      loadStats()
+    } catch (err) {
+      msg.style.color = '#d97878'
+      msg.textContent = '✗ 삭제 실패: ' + err.message
+    }
+  }
+  
+  window.clearAllPurchaseOrders = async function() {
+    if (!confirm('발주/입고 데이터 전체(모든 시즌)를 삭제합니다.\n\nBW에서 새 파일을 받아 다시 올리실 때 사용하는 기능입니다. 진행하시겠습니까?')) return
+    if (!confirm('마지막 확인: 모든 시즌의 purchase_orders 데이터가 삭제됩니다.')) return
+    
+    const msg = document.getElementById('clear-po-msg')
+    msg.style.color = '#a89884'
+    msg.textContent = '삭제 중...'
+    
+    try {
+      const { error, count } = await supabase
+        .from('purchase_orders')
+        .delete({ count: 'exact' })
+        .gt('id', 0)  // 모든 행 매칭 (id는 BIGSERIAL이라 모두 0보다 큼)
+      if (error) throw error
+      msg.style.color = '#6cd9b8'
+      msg.textContent = `✓ ${(count || 0).toLocaleString()}건 삭제 완료. 새 CSV 파일을 업로드하세요.`
       loadStats()
     } catch (err) {
       msg.style.color = '#d97878'

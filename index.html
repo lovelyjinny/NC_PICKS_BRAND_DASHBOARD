@@ -2,9 +2,24 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>NC PICKS · 브랜드별 마크다운 의사결정</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e89043">
+<meta name="application-name" content="OPR 브랜드">
+
+<!-- iOS PWA 지원 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OPR 브랜드">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<!-- 일반 favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -549,6 +564,200 @@
     margin-top: 12px; display: none;
   }
   .modal-error.show { display: block; }
+  
+  /* ============================================ */
+  /* 반응형 - 태블릿 (768px 이하) */
+  /* ============================================ */
+  @media (max-width: 768px) {
+    .container { padding: 16px 12px 60px; }
+    
+    /* 헤더: 작게, 버튼 줄여서 */
+    .top-header {
+      padding: 12px 0;
+      flex-wrap: wrap;
+    }
+    .top-header .brand {
+      font-size: 18px;
+    }
+    .top-header .brand-sub {
+      font-size: 13px;
+    }
+    .top-header .actions {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .btn-admin, .btn-logout {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+    
+    /* 시즌 선택 */
+    .season-row {
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+    .season-row .progress-bar-wrap {
+      width: 100%;
+      order: 99;
+    }
+    
+    /* 슬라이더 4개 → 2x2 */
+    .sliders {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .sliders .slider-card {
+      padding: 12px 14px;
+    }
+    
+    /* KPI 4개 → 2x2 */
+    .kpi {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .k {
+      padding: 14px 16px;
+    }
+    .k .kv {
+      font-size: 26px;
+    }
+    
+    /* TOP 5 카드 3개 → 세로 1개씩 */
+    .top3-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .top3-card {
+      padding: 14px 16px;
+    }
+    
+    /* 리스트: 가로 스크롤 (테이블이 너무 많은 컬럼) */
+    .tbl-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .lst {
+      font-size: 12px;
+    }
+    .lst thead th {
+      padding: 10px 8px;
+      font-size: 10px;
+    }
+    .lst tbody td {
+      padding: 10px 8px;
+    }
+    
+    /* 브랜드 상세 모달 - 풀스크린에 가깝게 */
+    .bd-modal-bg {
+      padding: 0;
+    }
+    .bd-modal {
+      max-width: 100%;
+      border-radius: 0;
+      min-height: 100vh;
+    }
+    .bd-head {
+      padding: 16px 18px;
+      border-radius: 0;
+    }
+    .bd-head .bd-name { font-size: 18px; }
+    .bd-body { padding: 16px 18px 20px; }
+    
+    /* 상단 KPI 4개 → 2x2 */
+    .bd-kpi {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .bd-k {
+      padding: 12px 14px;
+    }
+    .bd-k .v {
+      font-size: 18px;
+    }
+    
+    /* 차트 영역 */
+    .bd-section {
+      padding: 14px 16px;
+    }
+    .bd-chart-wrap {
+      height: 160px;
+    }
+    
+    /* 트리거 진단 */
+    .bd-trigger {
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    .bd-trigger .lab {
+      min-width: auto;
+    }
+    .bd-trigger .desc {
+      font-size: 11px;
+      flex-basis: 100%;
+      order: 3;
+    }
+    
+    /* 시뮬레이터 */
+    .bd-sim-slider-row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .bd-sim-val {
+      text-align: left;
+      font-size: 26px;
+    }
+    .bd-sim-result {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    
+    /* KPI 카테고리 모달도 풀스크린 */
+    .kpi-modal-bg { padding: 0; }
+    .kpi-modal {
+      max-width: 100%;
+      border-radius: 0;
+      min-height: 100vh;
+    }
+    .kpi-modal .head { padding: 16px 18px; border-radius: 0; }
+    .kpi-list-table { font-size: 11px; }
+    .kpi-list-table thead th { padding: 10px 8px; font-size: 10px; }
+    .kpi-list-table tbody td { padding: 10px 8px; }
+    
+    /* 푸터 */
+    .footer { font-size: 10px; padding: 14px 12px; }
+  }
+  
+  /* ============================================ */
+  /* 반응형 - 모바일 (480px 이하) */
+  /* ============================================ */
+  @media (max-width: 480px) {
+    .container { padding: 14px 10px 50px; }
+    
+    /* 슬라이더 라벨 작게 */
+    .sliders .slider-card .label-row .lbl { font-size: 11px; }
+    .sliders .slider-card .label-row .val { font-size: 16px; }
+    
+    /* KPI 카드 글씨 더 작게 */
+    .k .kl { font-size: 11px; }
+    .k .kv { font-size: 22px; }
+    
+    /* TOP 5 카드 행 글씨 */
+    .top3-bname { font-size: 12px; }
+    .top3-val { font-size: 12px; }
+    
+    /* 브랜드 모달 폰트 약간 더 작게 */
+    .bd-head .bd-name { font-size: 16px; }
+    .bd-k .v { font-size: 16px; }
+    .bd-sim-val { font-size: 22px; }
+    
+    /* 모달 닫기 버튼은 터치 친화적 크기 */
+    .bd-close, .kpi-modal .bd-close {
+      width: 36px;
+      height: 36px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -693,7 +902,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 10 · TOP 5 카드 3종 + 트리거 라벨 정리 + 리스트 정렬 가능 · v1.2
+    Phase 11 · 모바일 PWA + 오프라인 캐시 + 홈 화면 추가 · v1.3
   </div>
 
 </div>
@@ -2026,6 +2235,32 @@
     await loadInitialSga()
     await reloadSeason()
   })()
+</script>
+
+<!-- Service Worker 등록 (PWA + 오프라인 캐시) -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => {
+          console.log('[PWA] Service Worker 등록 성공:', reg.scope)
+          // 새 버전 감지 시 사용자에게 알림
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] 새 버전 발견됨')
+                }
+              })
+            }
+          })
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker 등록 실패:', err)
+        })
+    })
+  }
 </script>
 
 </body>
