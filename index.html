@@ -1180,7 +1180,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 12 · 페이지네이션 안정화 (값 흔들림 수정) · v1.7.4
+    Phase 12 · 종합 점검 · 멀티시즌 합산 + 인덱스 · v1.7.6
   </div>
 
 </div>
@@ -1469,13 +1469,19 @@
     try {
       // 페이지네이션 (Supabase 1000행 제한)
       // 중요: 매번 새 query를 만들고, ORDER BY를 명시해야 일관된 결과
+      // orderBy: 'col' 또는 'col1,col2' (여러 컬럼)
       async function fetchAll(buildQuery, orderBy) {
         let all = []
         let from = 0
         const PAGE = 1000
+        const orderCols = orderBy.split(',').map(s => s.trim())
         while (true) {
           // 매번 새 query 빌드 (같은 객체 재사용 시 페이지네이션 깨짐)
-          const q = buildQuery().order(orderBy, { ascending: true }).range(from, from + PAGE - 1)
+          let q = buildQuery()
+          for (const col of orderCols) {
+            q = q.order(col, { ascending: true })
+          }
+          q = q.range(from, from + PAGE - 1)
           const { data, error } = await q
           if (error) throw error
           if (!data || data.length === 0) break
@@ -1503,11 +1509,11 @@
       
       const [s, i, t, p] = await Promise.all([
         fetchAll(() => applySeasonFilter(supabase.from('sales_daily')
-          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
+          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,sale_date'),
         fetchAll(() => applySeasonFilter(supabase.from('inventory_monthly')
-          .select('id, brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
+          .select('id, brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,year_month'),
         fetchAll(() => applySeasonFilter(supabase.from('sellthrough_daily')
-          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
+          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,trans_date'),
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code')
       ])
@@ -1700,13 +1706,28 @@
     }
     
     // 4. 발주/입고 요약 맵 (브랜드별 시즌 누적 입고액)
+    // 멀티 시즌 선택 시 같은 brand_code가 여러 행 → 합산 처리
     const poMap = {}
     for (const r of poSummary) {
-      poMap[r.brand_code] = {
-        seasonInbound: Number(r.total_inbound_amount) || 0,
-        seasonRealSales: Number(r.total_real_sales) || 0,
-        companySellRate: r.company_cum_sell_rate !== null ? Number(r.company_cum_sell_rate) : null,
-        companyTotalCost: Number(r.total_cost_of_goods) || 0
+      const key = r.brand_code
+      if (!poMap[key]) {
+        poMap[key] = {
+          seasonInbound: 0,
+          seasonRealSales: 0,
+          companySellRate: null,  // 멀티 시즌이면 단순 합산 못 함, null 유지
+          companyTotalCost: 0,
+          _seasonCount: 0
+        }
+      }
+      poMap[key].seasonInbound += Number(r.total_inbound_amount) || 0
+      poMap[key].seasonRealSales += Number(r.total_real_sales) || 0
+      poMap[key].companyTotalCost += Number(r.total_cost_of_goods) || 0
+      poMap[key]._seasonCount++
+      // 단일 시즌일 때만 회사 자체 계산 판매율 사용 (멀티는 의미 없음)
+      if (poMap[key]._seasonCount === 1) {
+        poMap[key].companySellRate = r.company_cum_sell_rate !== null ? Number(r.company_cum_sell_rate) : null
+      } else {
+        poMap[key].companySellRate = null  // 여러 시즌 합쳐지면 NULL
       }
     }
     
