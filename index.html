@@ -153,6 +153,56 @@
   }
   .month-chip-reset:hover { background: rgba(201,161,122,0.15); }
   
+  /* 계절월 멀티 셀렉트 드롭다운 */
+  .month-multi-wrap {
+    position: relative;
+    display: inline-block;
+    flex: 1;
+    max-width: 280px;
+  }
+  .month-multi-btn {
+    background: #1a1410; color: #f2e8d9;
+    border: 1px solid #5c4a3a; border-radius: 6px;
+    padding: 7px 14px; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    width: 100%; min-width: 180px;
+    display: inline-flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    transition: border-color 0.15s;
+  }
+  .month-multi-btn:hover { border-color: #c9a17a; }
+  .month-multi-arrow { font-size: 11px; color: #c9a17a; }
+  .month-multi-menu {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: #2a2018; border: 1px solid #5c4a3a; border-radius: 6px;
+    padding: 6px; z-index: 1000;
+    min-width: 200px; max-height: 360px; overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .month-multi-opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-radius: 4px;
+    color: #f2e8d9; font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .month-multi-opt:hover { background: rgba(201,161,122,0.12); }
+  .month-multi-opt.no-data { opacity: 0.45; }
+  .month-multi-opt.no-data:hover { opacity: 0.7; }
+  .month-multi-opt input[type="checkbox"] {
+    width: 15px; height: 15px;
+    accent-color: #c9a17a;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .month-multi-opt .mo-code {
+    color: #c9a17a; font-weight: 700;
+    min-width: 28px; font-variant-numeric: tabular-nums;
+  }
+  .month-multi-opt .mo-name {
+    color: #a89884; font-size: 12px;
+  }
+  
   /* 상태 필터 바 (리스트 상단) */
   .status-filter-bar {
     display: flex; align-items: center; gap: 12px;
@@ -992,11 +1042,17 @@
     </span>
   </div>
   
-  <!-- 계절월 필터 -->
+  <!-- 계절월 필터 (드롭다운 멀티 선택) -->
   <div class="month-filter-bar" id="month-filter-bar" style="display:none;">
     <span class="label">계절월</span>
-    <div class="month-chips" id="month-chips"></div>
-    <button class="month-chip-reset" id="month-chip-reset">전체</button>
+    <div class="month-multi-wrap">
+      <button id="month-multi-btn" class="month-multi-btn" type="button">
+        <span id="month-multi-label">전체</span>
+        <span class="month-multi-arrow">▾</span>
+      </button>
+      <div id="month-multi-menu" class="month-multi-menu" style="display:none;"></div>
+    </div>
+    <button class="month-chip-reset" id="month-chip-reset">전체 선택</button>
   </div>
 
   <!-- 임계값 슬라이더 -->
@@ -1095,6 +1151,7 @@
               <th>#</th>
               <th class="sortable" data-sort="brand_name">브랜드<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="total_sales">매출액<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="season_inbound_total">입고액<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="daily_avg">일평균<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="op_margin">영업이익률<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="gross_margin">매총율<span class="sort-ind"></span></th>
@@ -1123,7 +1180,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 12 · 시즌 멀티 + 외형매출 + 주판율 TOP 10 + 상태필터 · v1.6
+    Phase 12 · 입고액 컬럼 추가 + 계절월 17개 · v1.7.3
   </div>
 
 </div>
@@ -2167,6 +2224,7 @@
         <td>${idx + 1}</td>
         <td class="bn">${b.brand_name}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
+        <td class="r">${b.season_inbound_total > 0 ? fmtMoney(b.season_inbound_total) : '-'}</td>
         <td class="r">${fmtMoney(b.daily_avg)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
@@ -2183,70 +2241,108 @@
   }
   
   // ============= 계절월 필터 =============
+  // 회사 정책 계절월 카탈로그 (BW 코드 17개)
+  // 캡처 기준: 1~9 (1~9월), T (10월), N (11월(U)), D (12월(U)), A (풀코드), B (봄간절기), F (가을간절기), S (여름), W (겨울)
+  const SEASON_MONTH_CATALOG = [
+    { code: '1', name: '1월' },
+    { code: '2', name: '2월' },
+    { code: '3', name: '3월' },
+    { code: '4', name: '4월' },
+    { code: '5', name: '5월' },
+    { code: '6', name: '6월' },
+    { code: '7', name: '7월' },
+    { code: '8', name: '8월' },
+    { code: '9', name: '9월' },
+    { code: 'T', name: '10월' },
+    { code: 'N', name: '11월(U)' },
+    { code: 'D', name: '12월(U)' },
+    { code: 'A', name: '풀코드' },
+    { code: 'B', name: '봄간절기' },
+    { code: 'F', name: '가을간절기' },
+    { code: 'S', name: '여름' },
+    { code: 'W', name: '겨울' }
+  ]
+  
   function rebuildMonthChips() {
-    // 현재 시즌의 데이터에서 가능한 계절월 추출
-    const set = new Map()  // code → name
-    for (const r of salesData) {
-      if (r.season_month_code && r.season_month_code !== '#') {
-        set.set(r.season_month_code, r.season_month_name || r.season_month_code)
-      }
-    }
+    // 회사 정책 17개 카탈로그를 항상 표시 (데이터에 있든 없든)
+    availableMonths = SEASON_MONTH_CATALOG.slice()
     
-    // 정렬: code 기준 (1, 2, 3, ... 9, A, B, ...)
-    availableMonths = Array.from(set.entries())
-      .map(([code, name]) => ({ code, name }))
-      .sort((a, b) => String(a.code).localeCompare(String(b.code)))
+    // 데이터에 실제로 있는 코드는 별도 추적 (옵션 라벨에 표시 가능)
+    const dataCodes = new Set()
+    for (const r of salesData) {
+      if (r.season_month_code) dataCodes.add(r.season_month_code)
+    }
     
     // 시즌 바뀌면 선택 초기화 (전체)
     selectedMonths = null
     
     const bar = document.getElementById('month-filter-bar')
-    const wrap = document.getElementById('month-chips')
-    if (!bar || !wrap) return
+    const menu = document.getElementById('month-multi-menu')
+    if (!bar || !menu) return
     
-    // 데이터에 계절월이 하나도 없으면 (옛 데이터) 바 숨김
-    if (availableMonths.length === 0) {
-      bar.style.display = 'none'
-      return
-    }
+    // 항상 표시 (17개 카탈로그 고정이므로)
     bar.style.display = ''
     
-    wrap.innerHTML = ''
+    // 드롭다운 메뉴 채우기 - 코드만 표시
+    menu.innerHTML = ''
     for (const m of availableMonths) {
-      const chip = document.createElement('div')
-      chip.className = 'month-chip'
-      chip.dataset.code = m.code
-      chip.textContent = m.name
-      chip.addEventListener('click', () => toggleMonthChip(m.code))
-      wrap.appendChild(chip)
+      const hasData = dataCodes.has(m.code)
+      const lbl = document.createElement('label')
+      lbl.className = 'month-multi-opt' + (hasData ? '' : ' no-data')
+      lbl.innerHTML = `
+        <input type="checkbox" data-code="${m.code}">
+        <span class="mo-code">${m.code}</span>
+      `
+      const cb = lbl.querySelector('input')
+      cb.addEventListener('change', () => onMonthCheckboxChange())
+      menu.appendChild(lbl)
     }
-    updateMonthChipUI()
+    updateMonthDropdownLabel()
   }
   
-  function toggleMonthChip(code) {
-    if (selectedMonths === null) {
-      // 전체 → 처음으로 특정 월 선택
-      selectedMonths = new Set([code])
-    } else if (selectedMonths.has(code)) {
-      selectedMonths.delete(code)
-      if (selectedMonths.size === 0) selectedMonths = null  // 전부 해제 → 전체로
+  function onMonthCheckboxChange() {
+    const checked = document.querySelectorAll('#month-multi-menu input[type="checkbox"]:checked')
+    if (checked.length === 0) {
+      selectedMonths = null  // 전부 해제 → 전체
     } else {
-      selectedMonths.add(code)
+      selectedMonths = new Set(Array.from(checked).map(cb => cb.dataset.code))
     }
-    updateMonthChipUI()
+    updateMonthDropdownLabel()
     computeAndRender()
   }
   
-  function updateMonthChipUI() {
-    const chips = document.querySelectorAll('.month-chip')
-    chips.forEach(chip => {
-      const code = chip.dataset.code
-      if (selectedMonths === null || !selectedMonths.has(code)) {
-        chip.classList.remove('active')
-      } else {
-        chip.classList.add('active')
+  function updateMonthDropdownLabel() {
+    const label = document.getElementById('month-multi-label')
+    if (!label) return
+    if (selectedMonths === null) {
+      label.textContent = '전체'
+    } else if (selectedMonths.size === 1) {
+      label.textContent = Array.from(selectedMonths)[0]
+    } else {
+      label.textContent = `${selectedMonths.size}개 선택`
+    }
+  }
+  
+  // 드롭다운 토글
+  try {
+    const btn = document.getElementById('month-multi-btn')
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const menu = document.getElementById('month-multi-menu')
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none'
+      })
+    }
+    // 외부 클릭 시 닫기
+    document.addEventListener('click', (e) => {
+      const wrap = document.querySelector('.month-multi-wrap')
+      if (wrap && !wrap.contains(e.target)) {
+        const menu = document.getElementById('month-multi-menu')
+        if (menu) menu.style.display = 'none'
       }
     })
+  } catch (err) {
+    console.error('월 드롭다운 등록 실패:', err)
   }
   
   // 전체 버튼
@@ -2255,7 +2351,9 @@
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         selectedMonths = null
-        updateMonthChipUI()
+        // 체크박스 모두 해제
+        document.querySelectorAll('#month-multi-menu input[type="checkbox"]').forEach(cb => cb.checked = false)
+        updateMonthDropdownLabel()
         computeAndRender()
       })
     }
@@ -2511,7 +2609,7 @@
       const pct = (m.total_sales / maxSales * 100).toFixed(1)
       html += `
         <div class="month-row">
-          <div class="month-lab">${m.month_name || m.month_code || '-'}</div>
+          <div class="month-lab">${m.month_code || '-'}</div>
           <div class="month-bar-wrap">
             <div class="month-bar" style="width:${pct}%"></div>
           </div>
