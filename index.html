@@ -81,6 +81,43 @@
   }
   .season-select:focus { outline: none; border-color: #c9a17a; }
   
+  /* 시즌 멀티 셀렉트 드롭다운 */
+  .season-multi-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .season-multi-btn {
+    background: #1a1410; color: #f2e8d9;
+    border: 1px solid #5c4a3a; border-radius: 6px;
+    padding: 8px 14px; font-size: 14px; font-weight: 600;
+    cursor: pointer; min-width: 140px;
+    display: inline-flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    transition: border-color 0.15s;
+  }
+  .season-multi-btn:hover { border-color: #c9a17a; }
+  .season-multi-arrow { font-size: 11px; color: #c9a17a; }
+  .season-multi-menu {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: #2a2018; border: 1px solid #5c4a3a; border-radius: 6px;
+    padding: 6px; z-index: 1000;
+    min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .season-multi-opt {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 4px;
+    color: #f2e8d9; font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .season-multi-opt:hover { background: rgba(201,161,122,0.12); }
+  .season-multi-opt input[type="checkbox"] {
+    width: 15px; height: 15px;
+    accent-color: #c9a17a;
+    cursor: pointer;
+  }
+  
   /* 계절월 필터 */
   .month-filter-bar {
     display: flex; align-items: center; gap: 12px;
@@ -115,6 +152,40 @@
     transition: all 0.12s;
   }
   .month-chip-reset:hover { background: rgba(201,161,122,0.15); }
+  
+  /* 상태 필터 바 (리스트 상단) */
+  .status-filter-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; margin-bottom: 12px;
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .status-filter-bar .label {
+    font-size: 12px; color: #c9a17a; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .status-chips {
+    display: flex; gap: 6px;
+    flex: 1;
+  }
+  .status-chip {
+    padding: 6px 14px; border-radius: 14px;
+    background: rgba(63,51,42,0.4); border: 1px solid #3f332a;
+    color: #a89884; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .status-chip:hover { background: rgba(201,161,122,0.15); color: #c9a17a; }
+  .status-chip.active {
+    background: #c9a17a; color: #1a1410; border-color: #c9a17a;
+  }
+  .status-chip[data-status="ok"].active { background: #6cd9b8; border-color: #6cd9b8; }
+  .status-chip[data-status="warn"].active { background: #f0a93a; border-color: #f0a93a; }
+  .status-chip[data-status="hot"].active { background: #d97878; border-color: #d97878; color: #fff; }
+  .status-count {
+    font-size: 12px; color: #a89884;
+    font-variant-numeric: tabular-nums;
+  }
   .season-info {
     margin-left: auto; font-size: 12px; color: #a89884;
   }
@@ -221,7 +292,7 @@
   
   /* TOP 3 카드 (3개 나란히) */
   .top3-grid {
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px; margin-bottom: 22px;
   }
   .top3-card {
@@ -284,6 +355,10 @@
   }
   .top3-card:nth-child(2) .top3-bar { background: #5bb4e5; }
   .top3-card:nth-child(3) .top3-bar { background: #d97878; }
+  .top3-card:nth-child(4) .top3-bar { background: #b08bd9; }
+  /* 주판율 음수면 빨강 막대 + 빨강 글씨 */
+  .top3-row.neg .top3-bar { background: #d97878 !important; }
+  .top3-row.neg .top3-val { color: #d97878 !important; }
   .top3-empty {
     text-align: center; padding: 40px 12px;
     color: #6b5d4f; font-size: 12px;
@@ -883,15 +958,30 @@
     </div>
   </div>
 
-  <!-- 시즌 셀렉터 -->
+  <!-- 시즌 셀렉터 (멀티 선택 드롭다운) -->
   <div class="season-bar">
     <span class="label">시즌</span>
-    <select id="sel-year" class="season-select">
+    <div class="season-multi-wrap">
+      <button id="season-multi-btn" class="season-multi-btn" type="button">
+        <span id="season-multi-label">2026 S/S</span>
+        <span class="season-multi-arrow">▾</span>
+      </button>
+      <div id="season-multi-menu" class="season-multi-menu" style="display:none;">
+        <label class="season-multi-opt"><input type="checkbox" data-season="2026-SS" checked> 2026 S/S</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2026-FW"> 2026 F/W</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2025-SS"> 2025 S/S</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2025-FW"> 2025 F/W</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2024-SS"> 2024 S/S</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2024-FW"> 2024 F/W</label>
+      </div>
+    </div>
+    <!-- 호환성을 위한 hidden select (기존 코드가 sel-year, sel-season 참조) -->
+    <select id="sel-year" class="season-select" style="display:none;">
       <option value="2026">2026</option>
       <option value="2025">2025</option>
       <option value="2024">2024</option>
     </select>
-    <select id="sel-season" class="season-select">
+    <select id="sel-season" class="season-select" style="display:none;">
       <option value="SS">S/S</option>
       <option value="FW">F/W</option>
     </select>
@@ -919,8 +1009,8 @@
       <div class="sl-sub">초과 시 마크다운 검토 (조건 2)</div>
     </div>
     <div class="sl s2">
-      <div class="sl-head"><span class="sl-l">판매율 비율 기준</span><span class="sl-v"><span id="v2">60</span><span class="u">%</span></span></div>
-      <input type="range" min="30" max="90" value="60" step="5" id="sl-sell">
+      <div class="sl-head"><span class="sl-l">판매율 비율 기준</span><span class="sl-v"><span id="v2">75</span><span class="u">%</span></span></div>
+      <input type="range" min="30" max="90" value="75" step="5" id="sl-sell">
       <div class="sl-rng"><span>30%</span><span>90%</span></div>
       <div class="sl-sub">판매율÷진척도 미만 시 (조건 3)</div>
     </div>
@@ -970,12 +1060,29 @@
         </div>
         <div class="top3-list" id="top3-list-days"></div>
       </div>
+      <div class="top3-card">
+        <div class="top3-head">
+          <span class="top3-title">주판율 TOP 10</span>
+          <span class="top3-meta" id="top3-meta-wk">한 주간 빠른 소진</span>
+        </div>
+        <div class="top3-list" id="top3-list-wk"></div>
+      </div>
     </div>
   </div>
 
   <!-- 전체 리스트 -->
   <div id="list-section" style="display:none;">
     <div class="sec-label" id="list-label">전체 브랜드</div>
+    <div class="status-filter-bar">
+      <span class="label">상태</span>
+      <div class="status-chips" id="status-chips">
+        <button class="status-chip active" data-status="all">전체</button>
+        <button class="status-chip" data-status="ok">정상</button>
+        <button class="status-chip" data-status="warn">검토</button>
+        <button class="status-chip" data-status="hot">적극할인</button>
+      </div>
+      <span class="status-count" id="status-count"></span>
+    </div>
     <div class="tbl">
       <div class="th">
         <span class="tt" id="list-meta">정렬: 매출액 ↓</span>
@@ -1016,7 +1123,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 12 · MC별 표 + TOP 10 + 계절월 필터/차트 + 판매기간 · v1.5
+    Phase 12 · 시즌 멀티 + 외형매출 + 주판율 TOP 10 + 상태필터 · v1.6
   </div>
 
 </div>
@@ -1220,6 +1327,7 @@
   let listSortDir = 'desc'          // 'asc' | 'desc'
   let availableMonths = []          // 현재 시즌의 가능한 계절월 목록
   let selectedMonths = null         // null = 전체, Set이면 그 안의 월만
+  let selectedStatus = 'all'        // 'all' | 'ok' | 'warn' | 'hot'
   
   // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
@@ -1286,7 +1394,16 @@
   supabase.auth.onAuthStateChange((_event, session) => updateAuthUI(session))
   
   // ============= 데이터 로드 =============
-  async function loadDataAll(year, type) {
+  async function loadDataAll(seasons) {
+    // seasons는 [{year, type}, ...] 배열
+    // 호환성: 단일 (year, type)으로도 호출 가능
+    if (typeof seasons === 'number') {
+      seasons = [{ year: arguments[0], type: arguments[1] }]
+    }
+    if (!Array.isArray(seasons) || seasons.length === 0) {
+      seasons = [{ year: 2026, type: 'SS' }]
+    }
+    
     document.getElementById('state-loading').style.display = 'block'
     document.getElementById('state-empty').style.display = 'none'
     document.getElementById('top-section').style.display = 'none'
@@ -1309,19 +1426,23 @@
         return all
       }
       
+      // 멀티 시즌 OR 조건: (year=2026 AND type=SS) OR (year=2025 AND type=FW) ...
+      // Supabase or() 문법: 'and(season_year.eq.2026,season_type.eq.SS),and(...)'
+      const orFilter = seasons.map(s => `and(season_year.eq.${s.year},season_type.eq.${s.type})`).join(',')
+      
       const [s, i, t, p] = await Promise.all([
         fetchAll(supabase.from('sales_daily')
-          .select('brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_month_code, season_month_name')
-          .eq('season_year', year).eq('season_type', type)),
+          .select('brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')
+          .or(orFilter)),
         fetchAll(supabase.from('inventory_monthly')
-          .select('brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_month_code, season_month_name')
-          .eq('season_year', year).eq('season_type', type)),
+          .select('brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')
+          .or(orFilter)),
         fetchAll(supabase.from('sellthrough_daily')
-          .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_month_code, season_month_name')
-          .eq('season_year', year).eq('season_type', type)),
+          .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')
+          .or(orFilter)),
         fetchAll(supabase.from('brand_season_summary')
-          .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate')
-          .eq('season_year', year).eq('season_type', type))
+          .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')
+          .or(orFilter))
       ])
       
       salesData = s
@@ -1329,7 +1450,7 @@
       stData = t
       poSummary = p
       
-      console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}, 발주요약 ${p.length}`)
+      console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}, 발주요약 ${p.length}, 시즌 ${seasons.length}개`)
       
       // 계절월 칩 갱신 (시즌 바뀔 때마다 새로 만듦)
       rebuildMonthChips()
@@ -1346,16 +1467,29 @@
   
   // ============= 계산 엔진 =============
   function computeAndRender() {
-    const year = parseInt(document.getElementById('sel-year').value, 10)
-    const type = document.getElementById('sel-season').value
+    const seasons = (typeof selectedSeasons !== 'undefined' && selectedSeasons.length > 0) 
+      ? selectedSeasons 
+      : [{ year: parseInt(document.getElementById('sel-year').value, 10), type: document.getElementById('sel-season').value }]
+    const isMulti = seasons.length > 1
+    
+    // 시즌 정보: 단일이면 정상 표시, 멀티면 합쳐서 표시
+    const year = seasons[0].year
+    const type = seasons[0].type
     const period = seasonPeriod(year, type)
-    const progress = seasonProgress(period)
-    const remainingDays = seasonRemainingDays(period)
+    const progress = isMulti ? null : seasonProgress(period)
+    const remainingDays = isMulti ? 999 : seasonRemainingDays(period)  // 멀티는 임의로 크게
     
     // 시즌 정보 표시
-    document.getElementById('info-period').textContent = `${period.start} ~ ${period.end}`
-    document.getElementById('info-prog').textContent = progress + '%'
-    document.getElementById('info-prog-bar').style.width = progress + '%'
+    if (isMulti) {
+      const labels = seasons.map(s => `${String(s.year).slice(2)}${s.type}`).join(', ')
+      document.getElementById('info-period').textContent = `${seasons.length}개 시즌 (${labels})`
+      document.getElementById('info-prog').textContent = '—'
+      document.getElementById('info-prog-bar').style.width = '0%'
+    } else {
+      document.getElementById('info-period').textContent = `${period.start} ~ ${period.end}`
+      document.getElementById('info-prog').textContent = progress + '%'
+      document.getElementById('info-prog-bar').style.width = progress + '%'
+    }
     
     // 슬라이더 값
     const thrDays = parseInt(document.getElementById('sl-days').value, 10)
@@ -1395,7 +1529,8 @@
         brandMap[key] = {
           brand_code: r.brand_code,
           brand_name: r.brand_name || r.brand_code,
-          total_sales: 0,
+          total_sales: 0,           // 실매출 (계산용)
+          total_sales_gross: 0,     // 외형매출 (표시용)
           total_cost: 0,
           total_qty: 0,
           total_return: 0,
@@ -1408,11 +1543,13 @@
         }
       }
       const netSales = Number(r.net_sales) || 0
+      const grossSales = Number(r.gross_sales) || 0
       const cog = Number(r.cost_of_goods) || 0
       const qty = Number(r.qty_sold) || 0
       const ret = Number(r.return_amount) || 0
       
       brandMap[key].total_sales += netSales
+      brandMap[key].total_sales_gross += grossSales
       brandMap[key].total_cost += cog
       brandMap[key].total_qty += qty
       brandMap[key].total_return += ret
@@ -1436,11 +1573,12 @@
         brandMap[key].mcSales[mcKey] = {
           mc_code: r.mc_code || null,
           mc_name: r.mc_name || '(미분류)',
-          total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0,
+          total_sales: 0, total_sales_gross: 0, total_cost: 0, total_qty: 0, total_return: 0,
           stock_qty: 0, stock_value: 0
         }
       }
       brandMap[key].mcSales[mcKey].total_sales += netSales
+      brandMap[key].mcSales[mcKey].total_sales_gross += grossSales
       brandMap[key].mcSales[mcKey].total_cost += cog
       brandMap[key].mcSales[mcKey].total_qty += qty
       brandMap[key].mcSales[mcKey].total_return += ret
@@ -1451,36 +1589,32 @@
         brandMap[key].monthSales[monKey] = {
           month_code: r.season_month_code || null,
           month_name: r.season_month_name || '(미분류)',
-          total_sales: 0, total_cost: 0, total_qty: 0
+          total_sales: 0, total_sales_gross: 0, total_cost: 0, total_qty: 0
         }
       }
       brandMap[key].monthSales[monKey].total_sales += netSales
+      brandMap[key].monthSales[monKey].total_sales_gross += grossSales
       brandMap[key].monthSales[monKey].total_cost += cog
       brandMap[key].monthSales[monKey].total_qty += qty
     }
     
-    // 2. 재고 집계 (가장 최근 년월)
-    let latestYM = null
-    for (const r of invFiltered) {
-      if (!latestYM || r.year_month > latestYM) latestYM = r.year_month
-    }
+    // 2. 재고 집계 (시즌 전체 모든 년월 합산)
+    // BW raw가 같은 키를 여러 년월로 분리해서 행을 보내기 때문에
+    // 합산해야 정확한 누적 재고가 나옴 (4월만 보면 음수 나오는 케이스 다수)
     const invMap = {}
     const invMcMap = {}  // {brand_code: {mc_code: {qty, value}}}
-    if (latestYM) {
-      for (const r of invFiltered) {
-        if (r.year_month !== latestYM) continue
-        const key = r.brand_code
-        if (!invMap[key]) invMap[key] = { qty: 0, value: 0 }
-        invMap[key].qty += Number(r.qty_stock) || 0
-        invMap[key].value += Number(r.stock_value_cost) || 0
-        
-        // MC별 재고
-        const mcKey = r.mc_code || '_unknown'
-        if (!invMcMap[key]) invMcMap[key] = {}
-        if (!invMcMap[key][mcKey]) invMcMap[key][mcKey] = { qty: 0, value: 0 }
-        invMcMap[key][mcKey].qty += Number(r.qty_stock) || 0
-        invMcMap[key][mcKey].value += Number(r.stock_value_cost) || 0
-      }
+    for (const r of invFiltered) {
+      const key = r.brand_code
+      if (!invMap[key]) invMap[key] = { qty: 0, value: 0 }
+      invMap[key].qty += Number(r.qty_stock) || 0
+      invMap[key].value += Number(r.stock_value_cost) || 0
+      
+      // MC별 재고
+      const mcKey = r.mc_code || '_unknown'
+      if (!invMcMap[key]) invMcMap[key] = {}
+      if (!invMcMap[key][mcKey]) invMcMap[key][mcKey] = { qty: 0, value: 0 }
+      invMcMap[key][mcKey].qty += Number(r.qty_stock) || 0
+      invMcMap[key][mcKey].value += Number(r.stock_value_cost) || 0
     }
     
     // 3. 정판 집계 (시즌 누적 판매수량 + 일별 입고액)
@@ -1519,31 +1653,35 @@
       const poData = poMap[code] || { seasonInbound: 0, seasonRealSales: 0, companySellRate: null, companyTotalCost: 0 }
       
       // 매출 통계
-      const totalSales = b.total_sales      // 실매출 (외형/1.1)
-      const totalCost = b.total_cost        // 소진재고액 (매출원가)
-      const totalReturn = b.total_return    // 환입액
+      const totalSales = b.total_sales              // 실매출 (외형/1.1) - 계산용
+      const totalSalesGross = b.total_sales_gross   // 외형매출 (VAT 포함) - 표시용
+      const totalCost = b.total_cost                // 소진재고액 (매출원가)
+      const totalReturn = b.total_return            // 환입액
       
-      // 매총율 = 1 - (소진재고액 - 환입액) / 실매출
+      // 매총율 = 1 - (소진재고액 - 환입액) / 실매출 (회사 공식, 실매출 기준)
       const grossMargin = totalSales > 0 
         ? 1 - (totalCost - totalReturn) / totalSales 
         : null
       
       // 일평균 매출 (해당 브랜드가 매출 발생한 날 기준)
+      // 표시용은 외형매출 기준
       const saleDays = b.dates.size || 1
-      const dailyAvg = totalSales / Math.max(saleDays, 1)
+      const dailyAvg = totalSalesGross / Math.max(saleDays, 1)
       
       // 재고일수 = 현재 재고가치 ÷ 일평균 매출원가
       // (재고는 원가 기준이므로 일평균 매출원가로 나눠야 통일됨)
+      // 음수 재고는 0으로 보정 (BW 데이터 특성 대비)
       const dailyAvgCost = totalCost / Math.max(saleDays, 1)
-      const stockValue = inv.value
-      const inventoryDays = (dailyAvgCost > 0 && stockValue > 0)
+      const stockValue = Math.max(0, inv.value)  // 음수 보정
+      const inventoryDays = (dailyAvgCost > 0)
         ? Math.round(stockValue / dailyAvgCost)
         : null
       
       // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)
       // 분자: 누적 매출원가(cost_of_goods) = 소진재고액
       // 분모: 분자 + 현재 재고 원가 = 소진재고액 + 잔여재고액
-      const stockValueCost = inv.value  // stock_value_cost
+      // 음수 재고는 0으로 보정 (BW 데이터 특성 대비, 합산 후에도 혹시 모를 경우)
+      const stockValueCost = Math.max(0, inv.value)  // stock_value_cost
       const sellThrough = (totalCost + stockValueCost > 0)
         ? totalCost / (totalCost + stockValueCost)
         : null
@@ -1606,8 +1744,10 @@
         const sales = b.mcSales[mcKey] || { mc_code: mcKey === '_unknown' ? null : mcKey, mc_name: '(미분류)', total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0 }
         const stk = invMcForBrand[mcKey] || { qty: 0, value: 0 }
         // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액) [회사 공식]
-        const mcSellThrough = (sales.total_cost + stk.value) > 0
-          ? sales.total_cost / (sales.total_cost + stk.value)
+        // 음수 재고는 0으로 보정
+        const stkValueSafe = Math.max(0, stk.value)
+        const mcSellThrough = (sales.total_cost + stkValueSafe) > 0
+          ? sales.total_cost / (sales.total_cost + stkValueSafe)
           : null
         // 매총율
         const mcGrossMargin = sales.total_sales > 0
@@ -1649,7 +1789,8 @@
       
       brands.push({
         ...b,
-        total_sales: totalSales,
+        total_sales: totalSales,           // 실매출 (계산용)
+        total_sales_gross: totalSalesGross, // 외형매출 (표시용)
         total_cost: totalCost,
         total_return: totalReturn,
         gross_margin: grossMargin,
@@ -1897,10 +2038,11 @@
   }
   
   function renderTopCards(period) {
-    // 3개 TOP 5 카드 렌더링: 매출액 / 판매율 / TCR
-    renderOneTop3('sales', '매출액', currentBrands, b => b.total_sales, v => fmtMoney(v), '실매출 기준')
+    // 4개 TOP 10 카드 렌더링: 매출액 / 판매율 / 재고일수 / 주판율
+    renderOneTop3('sales', '매출액', currentBrands, b => b.total_sales_gross || b.total_sales, v => fmtMoney(v), '외형매출 기준')
     renderOneTop3('sell',  '판매율', currentBrands, b => b.sell_through, v => fmtPct(v, 0), '재고 대비')
     renderOneTop3('days',  '재고일수', currentBrands, b => b.inventory_days, v => v + '일', '장기 체류 (검토 필요)')
+    renderOneTop3('wk',    '주판율', currentBrands, b => b.weekly_sell_change, v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%p', '한 주간 빠른 소진')
   }
   
   function renderOneTop3(key, label, brands, valFn, fmtFn, metaText) {
@@ -1908,10 +2050,12 @@
     const metaEl = document.getElementById('top3-meta-' + key)
     if (!listEl) return
     
-    // 유효한 값을 가진 브랜드만 (null/0 제외)
+    // 유효한 값을 가진 브랜드만 (null/NaN 제외)
+    // 주판율(wk)은 음수도 의미 있음 (감소도 보여줄 가치 있음). 다른 카드는 0 초과만
+    const allowNeg = (key === 'wk')
     const filtered = brands
       .map(b => ({ b: b, v: valFn(b) }))
-      .filter(x => x.v !== null && x.v !== undefined && !isNaN(x.v) && x.v > 0)
+      .filter(x => x.v !== null && x.v !== undefined && !isNaN(x.v) && (allowNeg ? x.v !== 0 : x.v > 0))
       .sort((a, b) => b.v - a.v)
       .slice(0, 10)
     
@@ -1922,15 +2066,15 @@
       return
     }
     
-    // 1위 값 = 막대 길이 기준 (100%)
-    const maxV = filtered[0].v
-    
     listEl.innerHTML = ''
+    // 막대 길이 계산용: 절댓값 최대 (음수 포함 케이스 대응)
+    const maxAbs = Math.max(...filtered.map(x => Math.abs(x.v)), 0.0001)
     filtered.forEach((item, idx) => {
       const rank = idx + 1
-      const pct = maxV > 0 ? (item.v / maxV * 100) : 0
+      const pct = (Math.abs(item.v) / maxAbs * 100)
+      const isNeg = item.v < 0
       const row = document.createElement('div')
-      row.className = `top3-row r${rank}`
+      row.className = `top3-row r${rank}` + (isNeg ? ' neg' : '')
       row.dataset.brandCode = item.b.brand_code
       row.addEventListener('click', () => openBrandModal(item.b.brand_code))
       row.innerHTML = `
@@ -1979,7 +2123,6 @@
   function renderList() {
     const tbody = document.getElementById('list-body')
     tbody.innerHTML = ''
-    document.getElementById('list-label').textContent = `전체 브랜드 (${currentBrands.length})`
     
     // 헤더 정렬 표시 갱신
     document.querySelectorAll('.lst thead th.sortable').forEach(th => {
@@ -1990,8 +2133,24 @@
     })
     
     const sorted = getSortedBrandsForList()
+    // 상태 필터 적용
+    const filtered = selectedStatus === 'all' 
+      ? sorted 
+      : sorted.filter(b => b.status === selectedStatus)
     
-    sorted.forEach((b, idx) => {
+    // 라벨 + 카운트 갱신
+    const totalCount = currentBrands.length
+    const showCount = filtered.length
+    document.getElementById('list-label').textContent = 
+      selectedStatus === 'all' ? `전체 브랜드 (${totalCount})` : `${statusLabel(selectedStatus).text} 브랜드 (${showCount})`
+    const countEl = document.getElementById('status-count')
+    if (countEl) {
+      countEl.textContent = selectedStatus === 'all' 
+        ? `${totalCount}개 표시` 
+        : `${showCount} / ${totalCount}개 표시`
+    }
+    
+    filtered.forEach((b, idx) => {
       const sl = statusLabel(b.status)
       const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'op-ok' : (b.op_margin >= 0.10 ? 'op-warn' : 'op-hot'))
       const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'dy-hot' : 'dy-warn'))
@@ -2007,7 +2166,7 @@
       tr.innerHTML = `
         <td>${idx + 1}</td>
         <td class="bn">${b.brand_name}</td>
-        <td class="r sales">${fmtMoney(b.total_sales)}</td>
+        <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r">${fmtMoney(b.daily_avg)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
@@ -2102,6 +2261,20 @@
     }
   } catch (err) {
     console.error('월 리셋 버튼 등록 실패:', err)
+  }
+  
+  // 상태 필터 칩
+  try {
+    document.querySelectorAll('#status-chips .status-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        selectedStatus = chip.dataset.status
+        document.querySelectorAll('#status-chips .status-chip').forEach(c => c.classList.remove('active'))
+        chip.classList.add('active')
+        renderList()  // 리스트만 재렌더링 (전체 재계산 X, 빠름)
+      })
+    })
+  } catch (err) {
+    console.error('상태 칩 등록 실패:', err)
   }
   
   // ============= 리스트 정렬 (헤더 클릭) =============
@@ -2201,7 +2374,7 @@
     statusEl.className = 'bd-status ' + sl.cls
     
     // KPI 4개
-    document.getElementById('bd-sales').textContent = fmtMoney(b.total_sales)
+    document.getElementById('bd-sales').textContent = fmtMoney(b.total_sales_gross || b.total_sales)
     const periodText = b.sales_period_days !== null ? `${b.sales_period_days}일째` : '-'
     document.getElementById('bd-sales-sub').textContent = `일평균 ${fmtMoney(b.daily_avg)} · 판매 ${periodText}`
     
@@ -2623,7 +2796,7 @@
       tr.innerHTML = `
         <td>${idx + 1}</td>
         <td class="bn">${b.brand_name}</td>
-        <td class="r sales">${fmtMoney(b.total_sales)}</td>
+        <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
         <td class="r ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</td>
@@ -2676,15 +2849,79 @@
     })
   })
   
-  // ============= 시즌 변경 시 데이터 다시 로드 =============
-  async function reloadSeason() {
-    const year = parseInt(document.getElementById('sel-year').value, 10)
-    const type = document.getElementById('sel-season').value
-    await loadDataAll(year, type)
+  // ============= 시즌 멀티 선택 =============
+  // selectedSeasons: 선택된 시즌 배열 [{year, type}]
+  let selectedSeasons = [{ year: 2026, type: 'SS' }]  // 기본값
+  
+  function getSelectedSeasons() {
+    const checked = document.querySelectorAll('#season-multi-menu input[type="checkbox"]:checked')
+    const arr = []
+    for (const cb of checked) {
+      const [y, t] = cb.dataset.season.split('-')
+      arr.push({ year: parseInt(y, 10), type: t })
+    }
+    return arr
   }
   
-  document.getElementById('sel-year').addEventListener('change', reloadSeason)
-  document.getElementById('sel-season').addEventListener('change', reloadSeason)
+  function updateSeasonMultiLabel() {
+    const seasons = getSelectedSeasons()
+    const label = document.getElementById('season-multi-label')
+    if (seasons.length === 0) {
+      label.textContent = '시즌 선택'
+    } else if (seasons.length === 1) {
+      label.textContent = `${seasons[0].year} ${seasons[0].type === 'SS' ? 'S/S' : 'F/W'}`
+    } else {
+      label.textContent = `${seasons.length}개 시즌`
+    }
+  }
+  
+  // 토글 메뉴
+  document.getElementById('season-multi-btn').addEventListener('click', (e) => {
+    e.stopPropagation()
+    const menu = document.getElementById('season-multi-menu')
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none'
+  })
+  
+  // 외부 클릭 시 닫기
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.season-multi-wrap')
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('season-multi-menu').style.display = 'none'
+    }
+  })
+  
+  // 체크박스 변경 시 데이터 다시 로드
+  document.querySelectorAll('#season-multi-menu input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const seasons = getSelectedSeasons()
+      if (seasons.length === 0) {
+        // 모두 해제하면 첫 번째 자동 체크
+        const first = document.querySelector('#season-multi-menu input[type="checkbox"]')
+        if (first) first.checked = true
+      }
+      selectedSeasons = getSelectedSeasons()
+      updateSeasonMultiLabel()
+      // 호환성: hidden select에 첫 시즌 반영
+      if (selectedSeasons.length > 0) {
+        document.getElementById('sel-year').value = selectedSeasons[0].year
+        document.getElementById('sel-season').value = selectedSeasons[0].type
+      }
+      reloadSeason()
+    })
+  })
+  
+  // ============= 시즌 변경 시 데이터 다시 로드 =============
+  async function reloadSeason() {
+    const seasons = getSelectedSeasons()
+    if (seasons.length === 0) {
+      seasons.push({ year: 2026, type: 'SS' })
+    }
+    selectedSeasons = seasons
+    // 호환성: hidden select에 첫 시즌 반영 (기존 코드가 sel-year/sel-season 참조)
+    document.getElementById('sel-year').value = seasons[0].year
+    document.getElementById('sel-season').value = seasons[0].type
+    await loadDataAll(seasons)
+  }
   
   // ============= 판관비 초기값 로드 =============
   async function loadInitialSga() {
