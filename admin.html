@@ -697,7 +697,7 @@
     </div>
     
     <div class="footer">
-      Phase 9 · 관리 메뉴 + UPSERT 자동 갱신 · v0.8
+      Phase 9 · UPSERT 자동 갱신 + 계절월/MC 저장 · v0.9
     </div>
   </main>
 
@@ -845,6 +845,8 @@
           season_code: row['계절코드'] || null,
           season_year: season.year,
           season_type: season.type,
+          season_month_code: row['계절월코드'] || null,
+          season_month_name: row['계절월명'] || null,
           gross_sales: toNum(row['총매출액']),
           net_sales: toNum(row['실매출액']),
           cost_of_goods: toNum(row['총매출원가']),
@@ -877,6 +879,8 @@
           season_code: row['계절코드'] || null,
           season_year: season.year,
           season_type: season.type,
+          season_month_code: row['계절월코드'] || null,
+          season_month_name: row['계절월명'] || null,
           qty_stock: toNum(row['재고량']),
           stock_value_cost: toNum(row['재고액_원가']),
           stock_value_initial_price: toNum(row['재고액_최초판매가']),
@@ -903,9 +907,14 @@
           store_code: row['지점코드'] || null,
           store_name: row['지점명'] || null,
           buy_group_code: row['구매그룹코드'] || null,
+          buy_group_name: row['구매그룹명'] || null,
+          mc_code: row['MC코드'] || null,
+          mc_name: row['MC명'] || null,
           season_code: row['계절코드'] || null,
           season_year: season.year,
           season_type: season.type,
+          season_month_code: row['계절월코드'] || null,
+          season_month_name: row['계절월명'] || null,
           vendor_inbound_with_vat: toNum(row['벤더입고액_부가세']),
           qty_sold_total: toNum(row['총판매량']),
           inbound_at_normal_price: toNum(row['총입고액_정상가']),

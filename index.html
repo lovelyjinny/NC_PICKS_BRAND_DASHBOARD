@@ -80,6 +80,41 @@
     font-family: inherit; cursor: pointer; min-width: 90px;
   }
   .season-select:focus { outline: none; border-color: #c9a17a; }
+  
+  /* 계절월 필터 */
+  .month-filter-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; margin-bottom: 16px;
+    background: #2a2018; border: 1px solid #3f332a; border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .month-filter-bar .label {
+    font-size: 12px; color: #c9a17a; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .month-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    flex: 1;
+  }
+  .month-chip {
+    padding: 5px 12px; border-radius: 14px;
+    background: rgba(63,51,42,0.4); border: 1px solid #3f332a;
+    color: #a89884; font-size: 12px; cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+  }
+  .month-chip:hover { background: rgba(201,161,122,0.15); color: #c9a17a; }
+  .month-chip.active {
+    background: #c9a17a; color: #1a1410; border-color: #c9a17a;
+    font-weight: 700;
+  }
+  .month-chip-reset {
+    padding: 5px 14px; border-radius: 14px;
+    background: transparent; border: 1px solid #5c4a3a;
+    color: #c9a17a; font-size: 12px; cursor: pointer;
+    transition: all 0.12s;
+  }
+  .month-chip-reset:hover { background: rgba(201,161,122,0.15); }
   .season-info {
     margin-left: auto; font-size: 12px; color: #a89884;
   }
@@ -316,6 +351,8 @@
   .lst td.dy-hot { color: #d97878; }
   .lst td.sr-warn { color: #f0a93a; }
   .lst td.sr-hot { color: #d97878; }
+  .lst td.wk-up { color: #6cd9b8; font-weight: 700; }
+  .lst td.wk-down { color: #d97878; font-weight: 700; }
   .lst td.bdg { text-align: center; }
   .lst td.bdg span {
     font-size: 11px; padding: 4px 9px; border-radius: 4px; font-weight: 600;
@@ -469,6 +506,52 @@
   }
   .bd-chart-wrap { width: 100%; height: 180px; position: relative; }
   .bd-chart-wrap svg { width: 100%; height: 100%; display: block; }
+  
+  /* 계절월별 매출 바 차트 */
+  .bd-month-bars { display: flex; flex-direction: column; gap: 8px; }
+  .month-row {
+    display: grid; grid-template-columns: 80px 1fr auto;
+    gap: 12px; align-items: center;
+  }
+  .month-lab {
+    font-size: 12px; color: #c9a17a; font-weight: 600;
+    text-align: right; padding-right: 4px;
+  }
+  .month-bar-wrap {
+    height: 14px; background: rgba(63,51,42,0.4); border-radius: 7px;
+    overflow: hidden;
+  }
+  .month-bar {
+    height: 100%; background: linear-gradient(90deg, #5bb4e5, #4cb8a4);
+    border-radius: 7px; transition: width 0.3s ease-out;
+  }
+  .month-val {
+    font-size: 12px; color: #f2e8d9; font-weight: 700;
+    font-variant-numeric: tabular-nums; min-width: 70px; text-align: right;
+  }
+  
+  /* MC별 상세 표 */
+  .bd-mc-wrap { overflow-x: auto; }
+  table.mc-tbl {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    min-width: 480px;
+  }
+  .mc-tbl thead th {
+    padding: 8px 10px; background: rgba(63,51,42,0.3);
+    color: #c9a17a; font-weight: 600; font-size: 10px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    text-align: left;
+  }
+  .mc-tbl th.r { text-align: right; }
+  .mc-tbl tbody td {
+    padding: 9px 10px; border-bottom: 1px solid rgba(63,51,42,0.4);
+    color: #f2e8d9; font-variant-numeric: tabular-nums;
+  }
+  .mc-tbl tbody td.r { text-align: right; }
+  .mc-tbl td.mc-nm { color: #b08bd9; font-weight: 600; }
+  .mc-tbl td.mc-ok { color: #6cd9b8; font-weight: 700; }
+  .mc-tbl td.mc-warn { color: #f0a93a; font-weight: 700; }
+  .mc-tbl td.mc-hot { color: #d97878; font-weight: 700; }
   
   /* 트리거 진단 */
   .bd-triggers { display: flex; flex-direction: column; gap: 10px; }
@@ -725,6 +808,28 @@
     .kpi-list-table thead th { padding: 10px 8px; font-size: 10px; }
     .kpi-list-table tbody td { padding: 10px 8px; }
     
+    /* 계절월 칩 모바일 */
+    .month-filter-bar {
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .month-chips { gap: 5px; }
+    .month-chip { padding: 4px 10px; font-size: 11px; }
+    .month-chip-reset { padding: 4px 12px; font-size: 11px; }
+    
+    /* 계절월 막대 차트 모바일 */
+    .month-row {
+      grid-template-columns: 60px 1fr auto;
+      gap: 8px;
+    }
+    .month-lab { font-size: 11px; }
+    .month-val { font-size: 11px; min-width: 60px; }
+    
+    /* MC 표 모바일 */
+    .mc-tbl { font-size: 11px; min-width: 380px; }
+    .mc-tbl thead th { padding: 6px 8px; font-size: 9px; }
+    .mc-tbl tbody td { padding: 7px 8px; }
+    
     /* 푸터 */
     .footer { font-size: 10px; padding: 14px 12px; }
   }
@@ -796,6 +901,13 @@
       진척도 <b id="info-prog">-</b>
     </span>
   </div>
+  
+  <!-- 계절월 필터 -->
+  <div class="month-filter-bar" id="month-filter-bar" style="display:none;">
+    <span class="label">계절월</span>
+    <div class="month-chips" id="month-chips"></div>
+    <button class="month-chip-reset" id="month-chip-reset">전체</button>
+  </div>
 
   <!-- 임계값 슬라이더 -->
   <div class="sec-label">임계값 조정 · 슬라이더를 움직이면 결과 즉시 재계산</div>
@@ -839,21 +951,21 @@
     <div class="top3-grid">
       <div class="top3-card">
         <div class="top3-head">
-          <span class="top3-title">매출액 TOP 5</span>
+          <span class="top3-title">매출액 TOP 10</span>
           <span class="top3-meta" id="top3-meta-sales">-</span>
         </div>
         <div class="top3-list" id="top3-list-sales"></div>
       </div>
       <div class="top3-card">
         <div class="top3-head">
-          <span class="top3-title">판매율 TOP 5</span>
+          <span class="top3-title">판매율 TOP 10</span>
           <span class="top3-meta" id="top3-meta-sell">-</span>
         </div>
         <div class="top3-list" id="top3-list-sell"></div>
       </div>
       <div class="top3-card">
         <div class="top3-head">
-          <span class="top3-title">재고일수 TOP 5</span>
+          <span class="top3-title">재고일수 TOP 10</span>
           <span class="top3-meta" id="top3-meta-days">장기 체류 (검토 필요)</span>
         </div>
         <div class="top3-list" id="top3-list-days"></div>
@@ -879,8 +991,10 @@
               <th class="r sortable" data-sort="daily_avg">일평균<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="op_margin">영업이익률<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="gross_margin">매총율<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="sales_period_days">판매기간<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="inventory_days">재고일수<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_through">판매율<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="weekly_sell_change">주판율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_progress_ratio">판매율÷진척도<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="rec_discount">권장 할인<span class="sort-ind"></span></th>
               <th>상태</th>
@@ -902,7 +1016,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 11 · 모바일 PWA + 오프라인 캐시 + 홈 화면 추가 · v1.3
+    Phase 12 · MC별 표 + TOP 10 + 계절월 필터/차트 + 판매기간 · v1.5
   </div>
 
 </div>
@@ -939,7 +1053,7 @@
         <div class="bd-k k4">
           <div class="l">판매율</div>
           <div class="v" id="bd-sell">-</div>
-          <div class="sub" id="bd-sell-sub">진척도 대비 -</div>
+          <div class="sub" id="bd-sell-sub">진척도 대비 - · 주판율 -</div>
         </div>
       </div>
       
@@ -950,6 +1064,24 @@
           <span class="meta" id="bd-chart-meta">-</span>
         </div>
         <div class="bd-chart-wrap" id="bd-chart"></div>
+      </div>
+      
+      <!-- 계절월별 매출 추이 -->
+      <div class="bd-section" id="bd-month-section">
+        <div class="bd-section-title">
+          <span>계절월별 매출</span>
+          <span class="meta">현재 시즌</span>
+        </div>
+        <div class="bd-month-bars" id="bd-month-bars"></div>
+      </div>
+      
+      <!-- MC별 상세 -->
+      <div class="bd-section" id="bd-mc-section">
+        <div class="bd-section-title">
+          <span>MC별 상세</span>
+          <span class="meta">매출 순</span>
+        </div>
+        <div class="bd-mc-wrap" id="bd-mc-wrap"></div>
       </div>
       
       <!-- 트리거 진단 -->
@@ -1086,6 +1218,8 @@
   let currentBrands = []
   let listSortKey = 'total_sales'   // 현재 정렬 컬럼
   let listSortDir = 'desc'          // 'asc' | 'desc'
+  let availableMonths = []          // 현재 시즌의 가능한 계절월 목록
+  let selectedMonths = null         // null = 전체, Set이면 그 안의 월만
   
   // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
@@ -1177,13 +1311,13 @@
       
       const [s, i, t, p] = await Promise.all([
         fetchAll(supabase.from('sales_daily')
-          .select('brand_code, brand_name, sale_date, net_sales, cost_of_goods, qty_sold, return_amount')
+          .select('brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_month_code, season_month_name')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('inventory_monthly')
-          .select('brand_code, year_month, qty_stock, stock_value_cost')
+          .select('brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_month_code, season_month_name')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('sellthrough_daily')
-          .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat')
+          .select('brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_month_code, season_month_name')
           .eq('season_year', year).eq('season_type', type)),
         fetchAll(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate')
@@ -1196,6 +1330,9 @@
       poSummary = p
       
       console.log(`로드 완료: 매출 ${s.length}, 재고 ${i.length}, 정판 ${t.length}, 발주요약 ${p.length}`)
+      
+      // 계절월 칩 갱신 (시즌 바뀔 때마다 새로 만듦)
+      rebuildMonthChips()
       
       computeAndRender()
     } catch (err) {
@@ -1239,9 +1376,20 @@
       return
     }
     
+    // 계절월 필터: selectedMonths가 있으면 그 월만 사용
+    // 재고는 월별로 분리되지 않은 누적 데이터라 필터 안 함 (의미 모호)
+    const filterByMonth = (arr) => {
+      if (selectedMonths === null) return arr
+      return arr.filter(r => r.season_month_code && selectedMonths.has(r.season_month_code))
+    }
+    const salesFiltered = filterByMonth(salesData)
+    const stFiltered = filterByMonth(stData)
+    // 재고는 항상 전체 (필터 적용 시 잘못된 판매율 나옴)
+    const invFiltered = invData
+    
     // 1. 매출 집계 (브랜드 단위)
     const brandMap = {}
-    for (const r of salesData) {
+    for (const r of salesFiltered) {
       const key = r.brand_code
       if (!brandMap[key]) {
         brandMap[key] = {
@@ -1253,40 +1401,92 @@
           total_return: 0,
           dates: new Set(),
           dailySales: {},  // {date: net_sales sum}
-          dailyCost: {}    // {date: cost_of_goods sum}
+          dailyCost: {},   // {date: cost_of_goods sum}
+          mcSales: {},     // {mc_code: {mc_name, total_sales, total_cost, total_qty, total_return}}
+          monthSales: {},  // {season_month_code: {month_name, total_sales, total_cost}}
+          firstSaleDate: null  // 첫 매출 발생일 (cost_of_goods > 0인 첫 날)
         }
       }
-      brandMap[key].total_sales += Number(r.net_sales) || 0
-      brandMap[key].total_cost += Number(r.cost_of_goods) || 0
-      brandMap[key].total_qty += Number(r.qty_sold) || 0
-      brandMap[key].total_return += Number(r.return_amount) || 0
+      const netSales = Number(r.net_sales) || 0
+      const cog = Number(r.cost_of_goods) || 0
+      const qty = Number(r.qty_sold) || 0
+      const ret = Number(r.return_amount) || 0
+      
+      brandMap[key].total_sales += netSales
+      brandMap[key].total_cost += cog
+      brandMap[key].total_qty += qty
+      brandMap[key].total_return += ret
+      
       if (r.sale_date) {
         brandMap[key].dates.add(r.sale_date)
-        brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + (Number(r.net_sales) || 0)
-        brandMap[key].dailyCost[r.sale_date] = (brandMap[key].dailyCost[r.sale_date] || 0) + (Number(r.cost_of_goods) || 0)
+        brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + netSales
+        brandMap[key].dailyCost[r.sale_date] = (brandMap[key].dailyCost[r.sale_date] || 0) + cog
+        
+        // 첫 매출일 (실제로 판매가 있었던 날)
+        if (cog > 0 || netSales > 0) {
+          if (!brandMap[key].firstSaleDate || r.sale_date < brandMap[key].firstSaleDate) {
+            brandMap[key].firstSaleDate = r.sale_date
+          }
+        }
       }
+      
+      // MC별 집계
+      const mcKey = r.mc_code || '_unknown'
+      if (!brandMap[key].mcSales[mcKey]) {
+        brandMap[key].mcSales[mcKey] = {
+          mc_code: r.mc_code || null,
+          mc_name: r.mc_name || '(미분류)',
+          total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0,
+          stock_qty: 0, stock_value: 0
+        }
+      }
+      brandMap[key].mcSales[mcKey].total_sales += netSales
+      brandMap[key].mcSales[mcKey].total_cost += cog
+      brandMap[key].mcSales[mcKey].total_qty += qty
+      brandMap[key].mcSales[mcKey].total_return += ret
+      
+      // 계절월별 집계
+      const monKey = r.season_month_code || '_unknown'
+      if (!brandMap[key].monthSales[monKey]) {
+        brandMap[key].monthSales[monKey] = {
+          month_code: r.season_month_code || null,
+          month_name: r.season_month_name || '(미분류)',
+          total_sales: 0, total_cost: 0, total_qty: 0
+        }
+      }
+      brandMap[key].monthSales[monKey].total_sales += netSales
+      brandMap[key].monthSales[monKey].total_cost += cog
+      brandMap[key].monthSales[monKey].total_qty += qty
     }
     
     // 2. 재고 집계 (가장 최근 년월)
     let latestYM = null
-    for (const r of invData) {
+    for (const r of invFiltered) {
       if (!latestYM || r.year_month > latestYM) latestYM = r.year_month
     }
     const invMap = {}
+    const invMcMap = {}  // {brand_code: {mc_code: {qty, value}}}
     if (latestYM) {
-      for (const r of invData) {
+      for (const r of invFiltered) {
         if (r.year_month !== latestYM) continue
         const key = r.brand_code
         if (!invMap[key]) invMap[key] = { qty: 0, value: 0 }
         invMap[key].qty += Number(r.qty_stock) || 0
         invMap[key].value += Number(r.stock_value_cost) || 0
+        
+        // MC별 재고
+        const mcKey = r.mc_code || '_unknown'
+        if (!invMcMap[key]) invMcMap[key] = {}
+        if (!invMcMap[key][mcKey]) invMcMap[key][mcKey] = { qty: 0, value: 0 }
+        invMcMap[key][mcKey].qty += Number(r.qty_stock) || 0
+        invMcMap[key][mcKey].value += Number(r.stock_value_cost) || 0
       }
     }
     
     // 3. 정판 집계 (시즌 누적 판매수량 + 일별 입고액)
     const stMap = {}
     const inboundMap = {}  // {brand: {date: vendor_inbound_with_vat}}
-    for (const r of stData) {
+    for (const r of stFiltered) {
       const key = r.brand_code
       if (!stMap[key]) stMap[key] = 0
       stMap[key] += Number(r.qty_sold_total) || 0
@@ -1398,6 +1598,55 @@
         recDiscount = 0.10  // 10% 시작
       }
       
+      // MC별 통계 만들기 (매출 + 재고 결합)
+      const mcStatsArr = []
+      const invMcForBrand = invMcMap[code] || {}
+      const allMcKeys = new Set([...Object.keys(b.mcSales), ...Object.keys(invMcForBrand)])
+      for (const mcKey of allMcKeys) {
+        const sales = b.mcSales[mcKey] || { mc_code: mcKey === '_unknown' ? null : mcKey, mc_name: '(미분류)', total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0 }
+        const stk = invMcForBrand[mcKey] || { qty: 0, value: 0 }
+        // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액) [회사 공식]
+        const mcSellThrough = (sales.total_cost + stk.value) > 0
+          ? sales.total_cost / (sales.total_cost + stk.value)
+          : null
+        // 매총율
+        const mcGrossMargin = sales.total_sales > 0
+          ? 1 - (sales.total_cost - sales.total_return) / sales.total_sales
+          : null
+        mcStatsArr.push({
+          mc_code: sales.mc_code,
+          mc_name: sales.mc_name,
+          total_sales: sales.total_sales,
+          total_cost: sales.total_cost,
+          total_qty: sales.total_qty,
+          stock_qty: stk.qty,
+          stock_value: stk.value,
+          sell_through: mcSellThrough,
+          gross_margin: mcGrossMargin
+        })
+      }
+      mcStatsArr.sort((a, b2) => b2.total_sales - a.total_sales)  // 매출순
+      
+      // 계절월별 통계 (정렬: 계절월코드 순서)
+      const monthStatsArr = Object.values(b.monthSales)
+        .filter(m => m.month_code !== null && m.month_code !== '#')
+        .sort((a, b2) => {
+          const ka = String(a.month_code || '')
+          const kb = String(b2.month_code || '')
+          return ka.localeCompare(kb)
+        })
+      
+      // 판매기간: 첫 매출일부터 오늘(또는 최근 매출일)까지
+      let salesPeriodDays = null
+      if (b.firstSaleDate) {
+        const sortedDates = Object.keys(b.dailyCost).sort()
+        const lastDate = sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null
+        if (lastDate) {
+          const ms = new Date(lastDate) - new Date(b.firstSaleDate)
+          salesPeriodDays = Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1)  // 첫날 포함
+        }
+      }
+      
       brands.push({
         ...b,
         total_sales: totalSales,
@@ -1420,12 +1669,22 @@
         season_inbound_total: poData.seasonInbound,  // 시즌 누적 입고액 (purchase_orders)
         season_real_sales: poData.seasonRealSales,   // 시즌 누적 실매출액 (TCR 분자)
         tcr: poData.seasonInbound > 0 ? poData.seasonRealSales / poData.seasonInbound : null,  // TCR = 누적실매출 / 누적입고
-        company_sell_rate: poData.companySellRate    // 회사 자체 계산 누적판매율
+        company_sell_rate: poData.companySellRate,   // 회사 자체 계산 누적판매율
+        weekly_sell_change: null,  // 주판율 (나중에 계산)
+        mcStats: mcStatsArr,       // MC별 매출/재고/판매율
+        monthStats: monthStatsArr, // 계절월별 매출
+        first_sale_date: b.firstSaleDate,
+        sales_period_days: salesPeriodDays
       })
     }
     
     // 매출 0인 브랜드 제외
     currentBrands = brands.filter(b => b.total_sales > 0)
+    
+    // 주판율 계산 (누적판매율 - 7일 전 누적판매율)
+    for (const b of currentBrands) {
+      b.weekly_sell_change = calcWeeklySellChange(b)
+    }
     
     // 매출액 내림차순 정렬
     currentBrands.sort((a, b) => b.total_sales - a.total_sales)
@@ -1524,6 +1783,51 @@
     return { dir: 'flat', icon: '→' }
   }
   
+  // 주판율 계산: 누적판매율(오늘) - 누적판매율(7일 전)
+  // 회사 공식: 누적판매율 = 누적매출원가 ÷ 누적입고액
+  // 반환값: 비율 (0.023 = 2.3%p), 데이터 부족 시 null
+  function calcWeeklySellChange(brand) {
+    const dailyCost = brand.dailyCost || {}
+    const totalInbound = brand.season_inbound_total || 0
+    if (totalInbound === 0) return null
+    
+    const sortedDates = Object.keys(dailyCost).sort()
+    if (sortedDates.length === 0) return null
+    
+    // 일별 누적 매출원가 만들기
+    const cumByDate = {}
+    let runningCost = 0
+    for (const dt of sortedDates) {
+      runningCost += dailyCost[dt]
+      cumByDate[dt] = runningCost
+    }
+    
+    // 가장 마지막 매출 날짜 = "오늘" 기준
+    const lastDateStr = sortedDates[sortedDates.length - 1]
+    const lastCum = cumByDate[lastDateStr]
+    
+    // 7일 전 날짜
+    const lastDate = new Date(lastDateStr)
+    const weekAgoDate = new Date(lastDate)
+    weekAgoDate.setDate(weekAgoDate.getDate() - 7)
+    const weekAgoStr = weekAgoDate.toISOString().slice(0, 10)
+    
+    // 7일 전 시점까지의 누적 (그 날짜까지 데이터가 있다면 사용, 없으면 그 이전 가장 가까운 날 사용)
+    let weekAgoCum = 0
+    for (const dt of sortedDates) {
+      if (dt <= weekAgoStr) weekAgoCum = cumByDate[dt]
+      else break
+    }
+    
+    // 시즌 시작 직후라 7일 데이터가 안 쌓였으면 null (오해 소지 줄임)
+    const firstDate = new Date(sortedDates[0])
+    const daysSinceStart = (lastDate - firstDate) / (1000 * 60 * 60 * 24)
+    if (daysSinceStart < 7) return null
+    
+    // 주판율 = (이번 누적원가 - 전주 누적원가) / 누적입고액
+    return (lastCum - weekAgoCum) / totalInbound
+  }
+  
   // 누적판매율 라인 차트 SVG
   function renderCumLine(points, status) {
     if (points.length < 2) {
@@ -1609,7 +1913,7 @@
       .map(b => ({ b: b, v: valFn(b) }))
       .filter(x => x.v !== null && x.v !== undefined && !isNaN(x.v) && x.v > 0)
       .sort((a, b) => b.v - a.v)
-      .slice(0, 5)
+      .slice(0, 10)
     
     if (metaEl) metaEl.textContent = metaText
     
@@ -1692,6 +1996,10 @@
       const opCls = b.op_margin === null ? '' : (b.op_margin >= 0.17 ? 'op-ok' : (b.op_margin >= 0.10 ? 'op-warn' : 'op-hot'))
       const dyCls = b.inventory_days === null ? '' : (b.inventory_days <= 60 ? '' : (b.inventory_days > 90 ? 'dy-hot' : 'dy-warn'))
       const srCls = b.sell_progress_ratio === null ? '' : (b.sell_progress_ratio >= 1.0 ? '' : (b.sell_progress_ratio < 0.6 ? 'sr-hot' : 'sr-warn'))
+      // 주판율 색상: + 양수면 청록, - 음수면 빨강 (양수가 클수록 좋음)
+      const wkCls = b.weekly_sell_change === null ? '' : (b.weekly_sell_change >= 0.01 ? 'wk-up' : (b.weekly_sell_change < -0.005 ? 'wk-down' : ''))
+      const wkText = b.weekly_sell_change === null ? '—' : 
+                     ((b.weekly_sell_change >= 0 ? '+' : '') + (b.weekly_sell_change * 100).toFixed(1) + '%p')
       
       const tr = document.createElement('tr')
       tr.dataset.brandCode = b.brand_code
@@ -1703,14 +2011,97 @@
         <td class="r">${fmtMoney(b.daily_avg)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
+        <td class="r">${b.sales_period_days !== null ? b.sales_period_days + '일' : '-'}</td>
         <td class="r ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</td>
         <td class="r">${fmtPct(b.sell_through, 0)}</td>
+        <td class="r ${wkCls}">${wkText}</td>
         <td class="r ${srCls}">${fmtPct(b.sell_progress_ratio, 0)}</td>
         <td class="r">${b.rec_discount !== null ? Math.round(b.rec_discount * 100) + '%' : '—'}</td>
         <td class="bdg"><span class="${sl.cls}">${sl.text}</span></td>
       `
       tbody.appendChild(tr)
     })
+  }
+  
+  // ============= 계절월 필터 =============
+  function rebuildMonthChips() {
+    // 현재 시즌의 데이터에서 가능한 계절월 추출
+    const set = new Map()  // code → name
+    for (const r of salesData) {
+      if (r.season_month_code && r.season_month_code !== '#') {
+        set.set(r.season_month_code, r.season_month_name || r.season_month_code)
+      }
+    }
+    
+    // 정렬: code 기준 (1, 2, 3, ... 9, A, B, ...)
+    availableMonths = Array.from(set.entries())
+      .map(([code, name]) => ({ code, name }))
+      .sort((a, b) => String(a.code).localeCompare(String(b.code)))
+    
+    // 시즌 바뀌면 선택 초기화 (전체)
+    selectedMonths = null
+    
+    const bar = document.getElementById('month-filter-bar')
+    const wrap = document.getElementById('month-chips')
+    if (!bar || !wrap) return
+    
+    // 데이터에 계절월이 하나도 없으면 (옛 데이터) 바 숨김
+    if (availableMonths.length === 0) {
+      bar.style.display = 'none'
+      return
+    }
+    bar.style.display = ''
+    
+    wrap.innerHTML = ''
+    for (const m of availableMonths) {
+      const chip = document.createElement('div')
+      chip.className = 'month-chip'
+      chip.dataset.code = m.code
+      chip.textContent = m.name
+      chip.addEventListener('click', () => toggleMonthChip(m.code))
+      wrap.appendChild(chip)
+    }
+    updateMonthChipUI()
+  }
+  
+  function toggleMonthChip(code) {
+    if (selectedMonths === null) {
+      // 전체 → 처음으로 특정 월 선택
+      selectedMonths = new Set([code])
+    } else if (selectedMonths.has(code)) {
+      selectedMonths.delete(code)
+      if (selectedMonths.size === 0) selectedMonths = null  // 전부 해제 → 전체로
+    } else {
+      selectedMonths.add(code)
+    }
+    updateMonthChipUI()
+    computeAndRender()
+  }
+  
+  function updateMonthChipUI() {
+    const chips = document.querySelectorAll('.month-chip')
+    chips.forEach(chip => {
+      const code = chip.dataset.code
+      if (selectedMonths === null || !selectedMonths.has(code)) {
+        chip.classList.remove('active')
+      } else {
+        chip.classList.add('active')
+      }
+    })
+  }
+  
+  // 전체 버튼
+  try {
+    const resetBtn = document.getElementById('month-chip-reset')
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        selectedMonths = null
+        updateMonthChipUI()
+        computeAndRender()
+      })
+    }
+  } catch (err) {
+    console.error('월 리셋 버튼 등록 실패:', err)
   }
   
   // ============= 리스트 정렬 (헤더 클릭) =============
@@ -1811,7 +2202,8 @@
     
     // KPI 4개
     document.getElementById('bd-sales').textContent = fmtMoney(b.total_sales)
-    document.getElementById('bd-sales-sub').textContent = `일평균 ${fmtMoney(b.daily_avg)} · ${b.sale_days}일 판매`
+    const periodText = b.sales_period_days !== null ? `${b.sales_period_days}일째` : '-'
+    document.getElementById('bd-sales-sub').textContent = `일평균 ${fmtMoney(b.daily_avg)} · 판매 ${periodText}`
     
     document.getElementById('bd-op').textContent = fmtPct(b.op_margin)
     document.getElementById('bd-op-sub').textContent = `매총율 ${fmtPct(b.gross_margin)} - 판관비 ${(sgaRate*100).toFixed(0)}%`
@@ -1821,10 +2213,18 @@
     
     document.getElementById('bd-sell').textContent = fmtPct(b.sell_through, 0)
     const ratio = b.sell_progress_ratio
-    document.getElementById('bd-sell-sub').textContent = ratio !== null ? `진척도 대비 ${(ratio*100).toFixed(0)}%` : '진척도 대비 -'
+    const ratioText = ratio !== null ? `진척도 대비 ${(ratio*100).toFixed(0)}%` : '진척도 대비 -'
+    const wkText = b.weekly_sell_change !== null
+      ? '주판율 ' + (b.weekly_sell_change >= 0 ? '+' : '') + (b.weekly_sell_change * 100).toFixed(1) + '%p'
+      : '주판율 -'
+    document.getElementById('bd-sell-sub').textContent = `${ratioText} · ${wkText}`
     
     // 큰 차트 그리기
     renderBrandModalChart(b, period)
+    
+    // 계절월별 + MC별 렌더링
+    renderMonthBars(b)
+    renderMcTable(b)
     
     // 트리거 진단
     renderBrandTriggers(b, period, remainingDays, progress)
@@ -1916,6 +2316,80 @@
       <text x="${padL + innerW/2}" y="${h-10}" text-anchor="middle" font-size="10" fill="#6b5d4f">${fmt(xLabelMid)}</text>
       <text x="${padL + innerW}" y="${h-10}" text-anchor="end" font-size="10" fill="#6b5d4f">${fmt(xLabelEnd)}</text>
     </svg>`
+  }
+  
+  // 계절월별 매출 막대 차트
+  function renderMonthBars(brand) {
+    const wrap = document.getElementById('bd-month-bars')
+    const section = document.getElementById('bd-month-section')
+    if (!wrap || !section) return
+    
+    const months = brand.monthStats || []
+    if (months.length === 0) {
+      section.style.display = 'none'
+      return
+    }
+    section.style.display = ''
+    
+    const maxSales = Math.max(...months.map(m => m.total_sales || 0), 1)
+    
+    let html = ''
+    for (const m of months) {
+      const pct = (m.total_sales / maxSales * 100).toFixed(1)
+      html += `
+        <div class="month-row">
+          <div class="month-lab">${m.month_name || m.month_code || '-'}</div>
+          <div class="month-bar-wrap">
+            <div class="month-bar" style="width:${pct}%"></div>
+          </div>
+          <div class="month-val">${fmtMoney(m.total_sales)}</div>
+        </div>
+      `
+    }
+    wrap.innerHTML = html
+  }
+  
+  // MC별 상세 표
+  function renderMcTable(brand) {
+    const wrap = document.getElementById('bd-mc-wrap')
+    const section = document.getElementById('bd-mc-section')
+    if (!wrap || !section) return
+    
+    const mcs = (brand.mcStats || []).filter(m => m.total_sales > 0 || m.stock_value > 0)
+    if (mcs.length === 0) {
+      section.style.display = 'none'
+      return
+    }
+    section.style.display = ''
+    
+    let html = `
+      <table class="mc-tbl">
+        <thead>
+          <tr>
+            <th>MC</th>
+            <th class="r">매출액</th>
+            <th class="r">매총율</th>
+            <th class="r">재고액</th>
+            <th class="r">판매율</th>
+          </tr>
+        </thead>
+        <tbody>
+    `
+    for (const m of mcs) {
+      const stCls = m.sell_through === null ? '' : 
+                    (m.sell_through >= 0.6 ? 'mc-ok' : (m.sell_through < 0.3 ? 'mc-hot' : 'mc-warn'))
+      html += `
+        <tr>
+          <td class="mc-nm">${m.mc_name || '(미분류)'}</td>
+          <td class="r">${fmtMoney(m.total_sales)}</td>
+          <td class="r">${fmtPct(m.gross_margin)}</td>
+          <td class="r">${fmtMoney(m.stock_value)}</td>
+          <td class="r ${stCls}">${fmtPct(m.sell_through, 0)}</td>
+        </tr>
+      `
+    }
+    html += '</tbody></table>'
+    wrap.innerHTML = html
   }
   
   function renderBrandTriggers(brand, period, remainingDays, progress) {
