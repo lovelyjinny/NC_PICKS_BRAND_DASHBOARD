@@ -1180,7 +1180,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 12 · 종합 점검 · 멀티시즌 합산 + 인덱스 · v1.7.6
+    Phase 13 · 재고 집계 수정 (월말 스냅샷 방식) · v1.8.0
   </div>
 
 </div>
@@ -1511,7 +1511,7 @@
         fetchAll(() => applySeasonFilter(supabase.from('sales_daily')
           .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,sale_date'),
         fetchAll(() => applySeasonFilter(supabase.from('inventory_monthly')
-          .select('id, brand_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,year_month'),
+          .select('id, brand_code, store_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_code, season_month_code, season_month_name')), 'brand_code,year_month'),
         fetchAll(() => applySeasonFilter(supabase.from('sellthrough_daily')
           .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,trans_date'),
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
@@ -1671,23 +1671,52 @@
       brandMap[key].monthSales[monKey].total_qty += qty
     }
     
-    // 2. 재고 집계 (시즌 전체 모든 년월 합산)
-    // BW raw가 같은 키를 여러 년월로 분리해서 행을 보내기 때문에
-    // 합산해야 정확한 누적 재고가 나옴 (4월만 보면 음수 나오는 케이스 다수)
+    // 2. 재고 집계 — 월말 스냅샷 방식 (v1.8.0 수정)
+    // BW raw inventory_monthly는 "각 월말 시점의 잔량 스냅샷"
+    // → 시즌 합산하면 같은 재고를 여러 번 더하는 버그 발생
+    //
+    // 정답: 각 (brand, store, mc, season_code) 그룹에서
+    //       가장 최근의 정상 month (잔량 >= 0) 잔량만 사용
+    // 음수 month는 BW 마감 처리 중일 가능성 → skip하고 직전 양수 month로 fallback
+    // 모두 음수면 → 그 그룹은 0 (재고 없음으로 간주)
     const invMap = {}
     const invMcMap = {}  // {brand_code: {mc_code: {qty, value}}}
+    
+    // Step 1: 그룹별 행 모으기
+    const invGroups = {}  // key: brand|store|mc|season_code
     for (const r of invFiltered) {
-      const key = r.brand_code
-      if (!invMap[key]) invMap[key] = { qty: 0, value: 0 }
-      invMap[key].qty += Number(r.qty_stock) || 0
-      invMap[key].value += Number(r.stock_value_cost) || 0
+      const gKey = (r.brand_code || '') + '|' + (r.store_code || '') + '|' + (r.mc_code || '') + '|' + (r.season_code || '')
+      if (!invGroups[gKey]) invGroups[gKey] = []
+      invGroups[gKey].push(r)
+    }
+    
+    // Step 2: 각 그룹의 latest 양수/0 month 선택 + 브랜드별 합산
+    for (const gKey in invGroups) {
+      // 최신순 정렬
+      const rows = invGroups[gKey].sort((a, b) => (b.year_month || '').localeCompare(a.year_month || ''))
+      // 최신부터 거꾸로 양수/0인 첫 row 선택 (음수는 시스템 마감 중일 가능성 → skip)
+      let chosen = null
+      for (const r of rows) {
+        const v = Number(r.stock_value_cost) || 0
+        const q = Number(r.qty_stock) || 0
+        if (v >= 0 && q >= 0) {
+          chosen = r
+          break
+        }
+      }
+      if (!chosen) continue  // 모두 음수 → 0 처리 (skip)
+      
+      const brand = chosen.brand_code
+      if (!invMap[brand]) invMap[brand] = { qty: 0, value: 0 }
+      invMap[brand].qty += Number(chosen.qty_stock) || 0
+      invMap[brand].value += Number(chosen.stock_value_cost) || 0
       
       // MC별 재고
-      const mcKey = r.mc_code || '_unknown'
-      if (!invMcMap[key]) invMcMap[key] = {}
-      if (!invMcMap[key][mcKey]) invMcMap[key][mcKey] = { qty: 0, value: 0 }
-      invMcMap[key][mcKey].qty += Number(r.qty_stock) || 0
-      invMcMap[key][mcKey].value += Number(r.stock_value_cost) || 0
+      const mcKey = chosen.mc_code || '_unknown'
+      if (!invMcMap[brand]) invMcMap[brand] = {}
+      if (!invMcMap[brand][mcKey]) invMcMap[brand][mcKey] = { qty: 0, value: 0 }
+      invMcMap[brand][mcKey].qty += Number(chosen.qty_stock) || 0
+      invMcMap[brand][mcKey].value += Number(chosen.stock_value_cost) || 0
     }
     
     // 3. 정판 집계 (시즌 누적 판매수량 + 일별 입고액)
