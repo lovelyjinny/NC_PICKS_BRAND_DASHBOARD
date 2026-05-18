@@ -1180,7 +1180,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 13 · 재고 집계 수정 (월말 스냅샷 방식) · v1.8.0
+    Phase 13 · 재고 집계 수정 (최신 스냅샷 · 소진 보정) · v1.8.1
   </div>
 
 </div>
@@ -1671,14 +1671,15 @@
       brandMap[key].monthSales[monKey].total_qty += qty
     }
     
-    // 2. 재고 집계 — 월말 스냅샷 방식 (v1.8.0 수정)
+    // 2. 재고 집계 — 월말 스냅샷 방식 (v1.8.1 수정)
     // BW raw inventory_monthly는 "각 월말 시점의 잔량 스냅샷"
     // → 시즌 합산하면 같은 재고를 여러 번 더하는 버그 발생
     //
     // 정답: 각 (brand, store, mc, season_code) 그룹에서
-    //       가장 최근의 정상 month (잔량 >= 0) 잔량만 사용
-    // 음수 month는 BW 마감 처리 중일 가능성 → skip하고 직전 양수 month로 fallback
-    // 모두 음수면 → 그 그룹은 0 (재고 없음으로 간주)
+    //       가장 최근 month(year_month)의 스냅샷을 그대로 사용
+    // 최신 달이 음수면 = 소진 완료 → 그 그룹만 0으로 보정
+    // ⚠️ v1.8.0 버그: 음수 달을 skip하고 옛날 양수 달로 fallback →
+    //    다 팔린 재고가 되살아나 남은재고가 부풀고 판매율이 낮게 나옴
     const invMap = {}
     const invMcMap = {}  // {brand_code: {mc_code: {qty, value}}}
     
@@ -1690,33 +1691,28 @@
       invGroups[gKey].push(r)
     }
     
-    // Step 2: 각 그룹의 latest 양수/0 month 선택 + 브랜드별 합산
+    // Step 2: 각 그룹의 최신 month 스냅샷 사용 + 브랜드별 합산
     for (const gKey in invGroups) {
-      // 최신순 정렬
+      // 최신순 정렬 → 첫 row가 가장 최근 month 스냅샷 (= 현재 재고)
       const rows = invGroups[gKey].sort((a, b) => (b.year_month || '').localeCompare(a.year_month || ''))
-      // 최신부터 거꾸로 양수/0인 첫 row 선택 (음수는 시스템 마감 중일 가능성 → skip)
-      let chosen = null
-      for (const r of rows) {
-        const v = Number(r.stock_value_cost) || 0
-        const q = Number(r.qty_stock) || 0
-        if (v >= 0 && q >= 0) {
-          chosen = r
-          break
-        }
-      }
-      if (!chosen) continue  // 모두 음수 → 0 처리 (skip)
-      
+      const chosen = rows[0]
+      if (!chosen) continue
+
+      // 최신 스냅샷이 음수면 소진 완료 → 그룹 단위로 0 보정
+      const gQty = Math.max(0, Number(chosen.qty_stock) || 0)
+      const gValue = Math.max(0, Number(chosen.stock_value_cost) || 0)
+
       const brand = chosen.brand_code
       if (!invMap[brand]) invMap[brand] = { qty: 0, value: 0 }
-      invMap[brand].qty += Number(chosen.qty_stock) || 0
-      invMap[brand].value += Number(chosen.stock_value_cost) || 0
-      
+      invMap[brand].qty += gQty
+      invMap[brand].value += gValue
+
       // MC별 재고
       const mcKey = chosen.mc_code || '_unknown'
       if (!invMcMap[brand]) invMcMap[brand] = {}
       if (!invMcMap[brand][mcKey]) invMcMap[brand][mcKey] = { qty: 0, value: 0 }
-      invMcMap[brand][mcKey].qty += Number(chosen.qty_stock) || 0
-      invMcMap[brand][mcKey].value += Number(chosen.stock_value_cost) || 0
+      invMcMap[brand][mcKey].qty += gQty
+      invMcMap[brand][mcKey].value += gValue
     }
     
     // 3. 정판 집계 (시즌 누적 판매수량 + 일별 입고액)
