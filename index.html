@@ -1111,8 +1111,8 @@
       </div>
       <div class="top3-card">
         <div class="top3-head">
-          <span class="top3-title">재고일수 TOP 10</span>
-          <span class="top3-meta" id="top3-meta-days">장기 체류 (검토 필요)</span>
+          <span class="top3-title">묶인 재고 TOP 10</span>
+          <span class="top3-meta" id="top3-meta-days">묶인 재고 큰 순 (검토 필요)</span>
         </div>
         <div class="top3-list" id="top3-list-days"></div>
       </div>
@@ -1180,7 +1180,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 15 · 상태·재고일수 로직 개편 (소진×이익, 최근 속도) · v1.9.0
+    Phase 15 · 상태·재고일수 개편 + 묶인재고 TOP · v1.9.1
   </div>
 
 </div>
@@ -1943,6 +1943,7 @@
         sale_days: saleDays,
         inventory_days: inventoryDays,
         stock_value: stockValue,
+        po_stock: poStock,          // 발주관리 전사재고액 (묶인 재고 = 마크다운 대상 금액)
         stock_qty: inv.qty,
         sell_through: sellThrough,
         op_margin: opMargin,
@@ -2186,7 +2187,7 @@
     // 4개 TOP 10 카드 렌더링: 매출액 / 판매율 / 재고일수 / 주판율
     renderOneTop3('sales', '매출액', currentBrands, b => b.total_sales_gross || b.total_sales, v => fmtMoney(v), '외형매출 기준')
     renderOneTop3('sell',  '판매율', currentBrands, b => b.sell_through, v => fmtPct(v, 0), '재고 대비')
-    renderOneTop3('days',  '재고일수', currentBrands, b => b.inventory_days, v => v + '일', '장기 체류 (검토 필요)')
+    renderOneTop3('days',  '묶인 재고', currentBrands, b => b.po_stock, v => fmtMoney(v), '묶인 재고 큰 순 (검토 필요)')
     renderOneTop3('wk',    '주판율', currentBrands, b => b.weekly_sell_change, v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%p', '한 주간 빠른 소진')
   }
   
