@@ -656,7 +656,7 @@
   }
   
   /* MC별 상세 표 */
-  .bd-mc-wrap { overflow-x: auto; }
+  .bd-mc-wrap, .bd-cohort-wrap { overflow-x: auto; }
   table.mc-tbl {
     width: 100%; border-collapse: collapse; font-size: 12px;
     min-width: 480px;
@@ -1157,6 +1157,7 @@
               <th class="r sortable" data-sort="gross_margin">매총율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sales_period_days">판매기간<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="inventory_days">재고일수<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="target_sell_through">목표 판매율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_through">판매율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="weekly_sell_change">주판율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_progress_ratio">판매율÷진척도<span class="sort-ind"></span></th>
@@ -1180,7 +1181,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 15 · 상태·재고일수 개편 + 묶인재고 TOP · v1.9.1
+    Phase 17 · 브랜드 모달에 입고월별 코호트 분석 추가 · v1.9.3
   </div>
 
 </div>
@@ -1247,7 +1248,16 @@
         </div>
         <div class="bd-mc-wrap" id="bd-mc-wrap"></div>
       </div>
-      
+
+      <!-- 입고월별 분석 (발주관리 데이터 기준) -->
+      <div class="bd-section" id="bd-cohort-section">
+        <div class="bd-section-title">
+          <span>입고월별 분석</span>
+          <span class="meta">발주관리 기준 (반품·이고 포함, 메인 리스트와 다를 수 있음)</span>
+        </div>
+        <div class="bd-cohort-wrap" id="bd-cohort-wrap"></div>
+      </div>
+
       <!-- 트리거 진단 -->
       <div class="bd-section">
         <div class="bd-section-title">마크다운 트리거 진단</div>
@@ -1518,7 +1528,7 @@
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
         fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
-          .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, season_year, season_type')), 'id')
+          .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, season_year, season_type')), 'id')
       ])
 
       salesData = s
@@ -1931,7 +1941,18 @@
           salesPeriodDays = Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1)  // 첫날 포함
         }
       }
-      
+
+      // 목표 판매율: 판매기간 기반 벤치마크 (60일=75%, 120일=100%, 그 후 100% 유지)
+      //   0~60일  : (판매기간/60) × 75%
+      //   60~120일: 75% + (판매기간-60)/60 × 25%
+      //   120일+  : 100%
+      let targetSellThrough = null
+      if (salesPeriodDays !== null) {
+        if (salesPeriodDays <= 60)       targetSellThrough = (salesPeriodDays / 60) * 0.75
+        else if (salesPeriodDays <= 120) targetSellThrough = 0.75 + ((salesPeriodDays - 60) / 60) * 0.25
+        else                              targetSellThrough = 1.0
+      }
+
       brands.push({
         ...b,
         total_sales: totalSales,           // 실매출 (계산용)
@@ -1961,7 +1982,8 @@
         mcStats: mcStatsArr,       // MC별 매출/재고/판매율
         monthStats: monthStatsArr, // 계절월별 매출
         first_sale_date: b.firstSaleDate,
-        sales_period_days: salesPeriodDays
+        sales_period_days: salesPeriodDays,
+        target_sell_through: targetSellThrough   // 판매기간 기반 목표(벤치마크) 판매율
       })
     }
     
@@ -2319,6 +2341,7 @@
         <td class="r">${fmtPct(b.gross_margin)}</td>
         <td class="r">${b.sales_period_days !== null ? b.sales_period_days + '일' : '-'}</td>
         <td class="r ${dyCls}">${b.inventory_days !== null ? b.inventory_days + '일' : '-'}</td>
+        <td class="r">${fmtPct(b.target_sell_through, 0)}</td>
         <td class="r">${fmtPct(b.sell_through, 0)}</td>
         <td class="r ${wkCls}">${wkText}</td>
         <td class="r ${srCls}">${fmtPct(b.sell_progress_ratio, 0)}</td>
@@ -2585,7 +2608,10 @@
     // 계절월별 + MC별 렌더링
     renderMonthBars(b)
     renderMcTable(b)
-    
+
+    // 입고월별 분석 (발주관리 코호트)
+    renderInboundCohorts(b)
+
     // 트리거 진단
     renderBrandTriggers(b, period, remainingDays, progress)
     
@@ -2751,7 +2777,89 @@
     html += '</tbody></table>'
     wrap.innerHTML = html
   }
-  
+
+  // 입고월별 코호트 분석 (발주관리 데이터 기준)
+  // 판매율 = (입고액 − 잔여재고) / 입고액  ← 발주관리 기준 (반품·이고 포함, 메인 리스트와 다를 수 있음)
+  // 재고일수 = 잔여재고 / 일평균소진속도, 일평균 = (입고-재고) / 코호트 평균경과일
+  // ※ 메인 리스트의 판매율(매출 파일 기반)·재고일수(최근30일 매출속도)와는 산정 방식이 달라 값이 다를 수 있음
+  function renderInboundCohorts(brand) {
+    const wrap = document.getElementById('bd-cohort-wrap')
+    const section = document.getElementById('bd-cohort-section')
+    if (!wrap || !section) return
+
+    const styles = (typeof poDetail !== 'undefined' ? poDetail : []).filter(r => r.brand_code === brand.brand_code && r.first_inbound_date)
+    if (styles.length === 0) {
+      section.style.display = 'none'
+      return
+    }
+    section.style.display = ''
+
+    const today = new Date()
+    // 코호트 그룹: YYYY-MM 입고월
+    const cohorts = {}
+    for (const s of styles) {
+      const inb = Number(s.cum_inbound_amount) || 0
+      const stk = Number(s.total_stock_amount) || 0
+      if (inb <= 0) continue
+      const month = String(s.first_inbound_date).slice(0, 7)
+      if (!cohorts[month]) cohorts[month] = { count: 0, inbound: 0, stock: 0, daysWeighted: 0 }
+      const c = cohorts[month]
+      c.count++
+      c.inbound += inb
+      c.stock += stk
+      const days = Math.max(0, Math.round((today - new Date(s.first_inbound_date)) / 86400000))
+      c.daysWeighted += days * inb  // 입고액 가중 평균 경과일용
+    }
+
+    const months = Object.keys(cohorts).sort().reverse()  // 최신 입고월부터
+    if (months.length === 0) {
+      section.style.display = 'none'
+      return
+    }
+
+    let html = `
+      <table class="mc-tbl">
+        <thead>
+          <tr>
+            <th>입고월</th>
+            <th class="r">스타일수</th>
+            <th class="r">입고액</th>
+            <th class="r">잔여재고</th>
+            <th class="r">판매율</th>
+            <th class="r">평균경과일</th>
+            <th class="r">재고일수</th>
+          </tr>
+        </thead>
+        <tbody>
+    `
+    for (const m of months) {
+      const c = cohorts[m]
+      const sellRate = c.inbound > 0 ? (1 - c.stock / c.inbound) : null
+      const avgDays = c.inbound > 0 ? Math.round(c.daysWeighted / c.inbound) : 0
+      const drained = c.inbound - c.stock
+      let invDays = null
+      if (drained > 0 && avgDays > 0) {
+        const dailyDrain = drained / avgDays
+        invDays = Math.min(999, Math.round(c.stock / dailyDrain))
+      } else if (c.stock > 0) {
+        invDays = 999
+      }
+      html += `
+        <tr>
+          <td>${m}</td>
+          <td class="r">${c.count.toLocaleString()}</td>
+          <td class="r">${fmtMoney(c.inbound)}</td>
+          <td class="r">${fmtMoney(c.stock)}</td>
+          <td class="r">${sellRate !== null ? (sellRate*100).toFixed(1) + '%' : '-'}</td>
+          <td class="r">${avgDays}일</td>
+          <td class="r">${invDays !== null ? invDays + '일' : '-'}</td>
+        </tr>
+      `
+    }
+    html += '</tbody></table>'
+    wrap.innerHTML = html
+  }
+
   function renderBrandTriggers(brand, period, remainingDays, progress) {
     const thrDays = parseInt(document.getElementById('sl-days').value, 10)
     const thrSell = parseInt(document.getElementById('sl-sell').value, 10) / 100
