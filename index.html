@@ -1181,7 +1181,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 18 · Keyset 페이지네이션 (큰 시즌 타임아웃 해결) · v1.9.4
+    Phase 19 · 시즌 변경 race condition 방어 (세대 토큰) · v1.9.5
   </div>
 
 </div>
@@ -1391,6 +1391,7 @@
   let poSummary = []  // 발주/입고 브랜드별 시즌 요약
   let poDetail = []   // 발주/입고 스타일별 원본 (브랜드·MC별 판매율 계산용)
   let currentBrands = []
+  let loadGen = 0     // 시즌 빨리 바꿀 때 옛 로드가 새 로드 덮어쓰는 race 방지용 세대 토큰
   let listSortKey = 'total_sales'   // 현재 정렬 컬럼
   let listSortDir = 'desc'          // 'asc' | 'desc'
   let availableMonths = []          // 현재 시즌의 가능한 계절월 목록
@@ -1463,6 +1464,10 @@
   
   // ============= 데이터 로드 =============
   async function loadDataAll(seasons) {
+    // 세대 토큰: 동시에 여러 로드 진행 시 가장 마지막 호출만 결과 반영
+    // (시즌 체크박스 빨리 바꾸면 옛 로드가 새 로드 덮어쓰는 race condition 방지)
+    const myGen = ++loadGen
+
     // seasons는 [{year, type}, ...] 배열
     // 호환성: 단일 (year, type)으로도 호출 가능
     if (typeof seasons === 'number') {
@@ -1471,7 +1476,7 @@
     if (!Array.isArray(seasons) || seasons.length === 0) {
       seasons = [{ year: 2026, type: 'SS' }]
     }
-    
+
     document.getElementById('state-loading').style.display = 'block'
     document.getElementById('state-empty').style.display = 'none'
     document.getElementById('top-section').style.display = 'none'
@@ -1533,6 +1538,13 @@
           .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, season_year, season_type')), 'id')
       ])
 
+      // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
+      // (옛 로드 결과가 새 로드 결과를 덮어쓰는 race condition 방지)
+      if (myGen !== loadGen) {
+        console.log(`[loadDataAll] 폐기: gen ${myGen} (현재 ${loadGen})`)
+        return
+      }
+
       salesData = s
       invData = i
       stData = t
@@ -1546,6 +1558,11 @@
       
       computeAndRender()
     } catch (err) {
+      // 옛 로드 에러도 새 로드 진행 중이면 무시 (사용자에게 잘못된 에러 표시 안 함)
+      if (myGen !== loadGen) {
+        console.log(`[loadDataAll] 옛 로드 에러 무시: gen ${myGen}`)
+        return
+      }
       console.error('데이터 로드 실패:', err)
       document.getElementById('state-loading').style.display = 'none'
       document.getElementById('state-empty').style.display = 'block'
