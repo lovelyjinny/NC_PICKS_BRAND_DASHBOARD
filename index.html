@@ -1181,7 +1181,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 17 · 브랜드 모달에 입고월별 코호트 분석 추가 · v1.9.3
+    Phase 18 · Keyset 페이지네이션 (큰 시즌 타임아웃 해결) · v1.9.4
   </div>
 
 </div>
@@ -1478,28 +1478,29 @@
     document.getElementById('list-section').style.display = 'none'
     
     try {
-      // 페이지네이션 (Supabase 1000행 제한)
-      // 중요: 매번 새 query를 만들고, ORDER BY를 명시해야 일관된 결과
-      // orderBy: 'col' 또는 'col1,col2' (여러 컬럼)
-      async function fetchAll(buildQuery, orderBy) {
+      // Keyset 페이지네이션 (v1.9.4~)
+      // cursorCol(보통 PK 'id') 기준으로 점진 이동 → OFFSET 깊이로 인한
+      // 타임아웃 회피. 데이터 더 커져도 일정한 속도 유지.
+      // ⚠️ cursorCol은 정렬 가능 + 결과 내 유일해야 함 (PK 'id' 권장).
+      //   PK 없는 MV는 결과 한 페이지 내에 다 들어오는 작은 표만 안전.
+      async function fetchAll(buildQuery, cursorCol) {
         let all = []
-        let from = 0
+        let lastVal = null
         const PAGE = 1000
-        const orderCols = orderBy.split(',').map(s => s.trim())
         while (true) {
           // 매번 새 query 빌드 (같은 객체 재사용 시 페이지네이션 깨짐)
-          let q = buildQuery()
-          for (const col of orderCols) {
-            q = q.order(col, { ascending: true })
+          let q = buildQuery().order(cursorCol, { ascending: true }).limit(PAGE)
+          if (lastVal !== null) {
+            q = q.gt(cursorCol, lastVal)
           }
-          q = q.range(from, from + PAGE - 1)
           const { data, error } = await q
           if (error) throw error
           if (!data || data.length === 0) break
           all = all.concat(data)
           if (data.length < PAGE) break
-          from += PAGE
-          if (from > 5000000) break  // 안전장치 (500만 행 한계)
+          lastVal = data[data.length - 1][cursorCol]
+          if (lastVal === undefined || lastVal === null) break  // 안전장치
+          if (all.length > 5000000) break                       // 500만 행 한계
         }
         return all
       }
@@ -1520,11 +1521,12 @@
       
       const [s, i, t, p, pd] = await Promise.all([
         fetchAll(() => applySeasonFilter(supabase.from('sales_daily')
-          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,sale_date'),
+          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
         fetchAll(() => applySeasonFilter(supabase.from('inventory_monthly')
-          .select('id, brand_code, store_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_code, season_month_code, season_month_name')), 'brand_code,year_month'),
+          .select('id, brand_code, store_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_code, season_month_code, season_month_name')), 'id'),
         fetchAll(() => applySeasonFilter(supabase.from('sellthrough_daily')
-          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'brand_code,trans_date'),
+          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
+        // brand_season_summary는 MV라 PK 없음. 작은 표(브랜드×시즌 ~수백 행)라 brand_code 커서로 충분.
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
         fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
