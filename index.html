@@ -229,6 +229,17 @@
   .status-chip.active {
     background: #c9a17a; color: #1a1410; border-color: #c9a17a;
   }
+  /* 엑셀 다운로드 버튼 */
+  .dl-btn {
+    padding: 6px 12px; border-radius: 8px;
+    background: rgba(76,184,164,0.15); border: 1px solid #4cb8a4;
+    color: #4cb8a4; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    margin-left: auto;
+  }
+  .dl-btn:hover { background: rgba(76,184,164,0.25); }
+  .dl-btn:active { transform: scale(0.97); }
   .status-chip[data-status="ok"].active { background: #6cd9b8; border-color: #6cd9b8; }
   .status-chip[data-status="warn"].active { background: #f0a93a; border-color: #f0a93a; }
   .status-chip[data-status="hot"].active { background: #d97878; border-color: #d97878; color: #fff; }
@@ -1138,6 +1149,7 @@
         <button class="status-chip" data-status="hot">적극할인</button>
       </div>
       <span class="status-count" id="status-count"></span>
+      <button id="btn-download-csv" class="dl-btn" title="현재 정렬·필터 그대로 엑셀(.xlsx)로 다운로드">📥 엑셀 다운로드</button>
     </div>
     <div class="tbl">
       <div class="th">
@@ -1181,7 +1193,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 19 · 시즌 변경 race condition 방어 (세대 토큰) · v1.9.5
+    Phase 21 · 브랜드 리스트 .xlsx 다운로드 (SheetJS) · v1.9.7
   </div>
 
 </div>
@@ -1351,6 +1363,9 @@
     </div>
   </div>
 </div>
+
+<!-- SheetJS (xlsx 다운로드용, v1.9.7~) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -2303,10 +2318,96 @@
       // 숫자
       return (va - vb) * dir
     })
-    
+
     return arr
   }
-  
+
+  // ============= 엑셀(XLSX) 다운로드 =============
+  // 현재 정렬+필터 그대로 .xlsx로 내보냄 (SheetJS 사용, v1.9.7~).
+  // 숫자/퍼센트는 numeric으로 저장 → 엑셀에서 정렬·필터·계산 그대로 가능.
+  function downloadBrandListXlsx() {
+    if (typeof XLSX === 'undefined') {
+      alert('엑셀 라이브러리(SheetJS)가 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.')
+      return
+    }
+    const sorted = getSortedBrandsForList()
+    const filtered = selectedStatus === 'all'
+      ? sorted
+      : sorted.filter(b => b.status === selectedStatus)
+
+    if (filtered.length === 0) {
+      alert('다운로드할 브랜드가 없습니다.')
+      return
+    }
+
+    const statusMap = { ok: '정상', warn: '검토', hot: '적극 할인', up: '초과 달성' }
+    // 숫자 그대로 (엑셀에서 정렬·계산 가능). null/undefined → '' (빈 셀)
+    const numv = (v) => (v === null || v === undefined || isNaN(v)) ? '' : Math.round(v)
+    const pct1v = (v) => (v === null || v === undefined || isNaN(v)) ? '' : parseFloat((v * 100).toFixed(1))
+    const pct0v = (v) => (v === null || v === undefined || isNaN(v)) ? '' : parseFloat((v * 100).toFixed(0))
+
+    const headers = [
+      '순번', '브랜드코드', '브랜드명',
+      '매출액(외형,원)', '입고액(원)', '일평균(원)',
+      '영업이익률(%)', '매총율(%)',
+      '판매기간(일)', '재고일수(일)',
+      '목표판매율(%)', '판매율(%)',
+      '주판율(%p)', '판매율÷진척도(%)',
+      '권장할인(%)', '상태'
+    ]
+
+    const rows = filtered.map((b, i) => [
+      i + 1,
+      b.brand_code || '',
+      b.brand_name || '',
+      numv(b.total_sales_gross || b.total_sales),
+      numv(b.season_inbound_total),
+      numv(b.daily_avg),
+      pct1v(b.op_margin),
+      pct1v(b.gross_margin),
+      b.sales_period_days || '',
+      (b.inventory_days !== null && b.inventory_days !== undefined) ? b.inventory_days : '',
+      pct0v(b.target_sell_through),
+      pct0v(b.sell_through),
+      pct1v(b.weekly_sell_change),
+      pct0v(b.sell_progress_ratio),
+      (b.rec_discount !== null && b.rec_discount !== undefined) ? Math.round(b.rec_discount * 100) : '',
+      statusMap[b.status] || (b.status || '')
+    ])
+
+    // 시트 생성
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
+    // 컬럼 너비 (보기 편하게)
+    ws['!cols'] = [
+      { wch: 5 },   // 순번
+      { wch: 10 },  // 브랜드코드
+      { wch: 28 },  // 브랜드명
+      { wch: 16 }, { wch: 14 }, { wch: 12 },  // 매출/입고/일평균
+      { wch: 12 }, { wch: 12 },                // 영익/매총
+      { wch: 11 }, { wch: 11 },                // 판매기간/재고일수
+      { wch: 12 }, { wch: 11 },                // 목표판매율/판매율
+      { wch: 11 }, { wch: 14 },                // 주판율/판매율÷진척
+      { wch: 11 }, { wch: 12 }                 // 권장할인/상태
+    ]
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '브랜드 리스트')
+
+    // 파일명: 브랜드_리스트_시즌라벨_YYYYMMDD.xlsx
+    const seasonLabel = (selectedSeasons && selectedSeasons.length > 0)
+      ? selectedSeasons.map(s => `${s.year}${s.type}`).join('+')
+      : '시즌선택안함'
+    const d = new Date()
+    const dateStr = d.getFullYear() +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      String(d.getDate()).padStart(2, '0')
+    const statusSuffix = selectedStatus === 'all' ? '' : '_' + (statusMap[selectedStatus] || selectedStatus)
+    const filename = `브랜드_리스트_${seasonLabel}${statusSuffix}_${dateStr}.xlsx`
+
+    XLSX.writeFile(wb, filename)
+  }
+
+
   function renderList() {
     const tbody = document.getElementById('list-body')
     tbody.innerHTML = ''
@@ -2504,6 +2605,14 @@
     })
   } catch (err) {
     console.error('상태 칩 등록 실패:', err)
+  }
+
+  // 엑셀(XLSX) 다운로드 버튼
+  try {
+    const dlBtn = document.getElementById('btn-download-csv')
+    if (dlBtn) dlBtn.addEventListener('click', downloadBrandListXlsx)
+  } catch (err) {
+    console.error('다운로드 버튼 등록 실패:', err)
   }
   
   // ============= 리스트 정렬 (헤더 클릭) =============
