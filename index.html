@@ -229,6 +229,25 @@
   .status-chip.active {
     background: #c9a17a; color: #1a1410; border-color: #c9a17a;
   }
+  /* 브랜드 검색창 */
+  .brand-search-wrap {
+    position: relative; margin-left: auto; display: flex; align-items: center;
+  }
+  .brand-search {
+    padding: 6px 26px 6px 12px; border-radius: 8px;
+    background: rgba(63,51,42,0.5); border: 1px solid #3f332a;
+    color: #eae0d5; font-size: 12px; font-weight: 500;
+    width: 160px; outline: none; transition: all 0.12s;
+  }
+  .brand-search::placeholder { color: #8a7a68; }
+  .brand-search:focus { border-color: #c9a17a; background: rgba(63,51,42,0.75); width: 200px; }
+  .brand-search-clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #8a7a68; font-size: 12px;
+    cursor: pointer; padding: 2px 4px; display: none;
+  }
+  .brand-search-clear:hover { color: #d97878; }
+  .brand-search-clear.show { display: block; }
   /* 엑셀 다운로드 버튼 */
   .dl-btn {
     padding: 6px 12px; border-radius: 8px;
@@ -236,7 +255,7 @@
     color: #4cb8a4; font-size: 12px; font-weight: 600;
     cursor: pointer;
     transition: all 0.12s;
-    margin-left: auto;
+    margin-left: 8px;
   }
   .dl-btn:hover { background: rgba(76,184,164,0.25); }
   .dl-btn:active { transform: scale(0.97); }
@@ -1149,6 +1168,10 @@
         <button class="status-chip" data-status="hot">적극할인</button>
       </div>
       <span class="status-count" id="status-count"></span>
+      <div class="brand-search-wrap">
+        <input type="text" id="brand-search" class="brand-search" placeholder="🔍 브랜드 검색" autocomplete="off">
+        <button id="brand-search-clear" class="brand-search-clear" title="검색 지우기">✕</button>
+      </div>
       <button id="btn-download-csv" class="dl-btn" title="현재 정렬·필터 그대로 엑셀(.xlsx)로 다운로드">📥 엑셀 다운로드</button>
     </div>
     <div class="tbl">
@@ -1193,7 +1216,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 21 · 브랜드 리스트 .xlsx 다운로드 (SheetJS) · v1.9.7
+    Phase 22 · 브랜드 검색창 추가 · v1.9.8
   </div>
 
 </div>
@@ -1412,7 +1435,8 @@
   let availableMonths = []          // 현재 시즌의 가능한 계절월 목록
   let selectedMonths = null         // null = 전체, Set이면 그 안의 월만
   let selectedStatus = 'all'        // 'all' | 'ok' | 'warn' | 'hot'
-  
+  let brandSearchText = ''          // 브랜드 이름 검색어 (소문자)
+
   // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -2331,9 +2355,16 @@
       return
     }
     const sorted = getSortedBrandsForList()
-    const filtered = selectedStatus === 'all'
-      ? sorted
-      : sorted.filter(b => b.status === selectedStatus)
+    // 화면 리스트와 동일하게 상태 + 검색 필터 적용
+    const filtered = sorted.filter(b => {
+      if (selectedStatus !== 'all' && b.status !== selectedStatus) return false
+      if (brandSearchText) {
+        const name = (b.brand_name || '').toLowerCase()
+        const code = (b.brand_code || '').toLowerCase()
+        if (!name.includes(brandSearchText) && !code.includes(brandSearchText)) return false
+      }
+      return true
+    })
 
     if (filtered.length === 0) {
       alert('다운로드할 브랜드가 없습니다.')
@@ -2421,20 +2452,27 @@
     })
     
     const sorted = getSortedBrandsForList()
-    // 상태 필터 적용
-    const filtered = selectedStatus === 'all' 
-      ? sorted 
-      : sorted.filter(b => b.status === selectedStatus)
-    
+    // 상태 필터 + 브랜드 검색 필터 적용
+    const filtered = sorted.filter(b => {
+      if (selectedStatus !== 'all' && b.status !== selectedStatus) return false
+      if (brandSearchText) {
+        const name = (b.brand_name || '').toLowerCase()
+        const code = (b.brand_code || '').toLowerCase()
+        if (!name.includes(brandSearchText) && !code.includes(brandSearchText)) return false
+      }
+      return true
+    })
+
     // 라벨 + 카운트 갱신
     const totalCount = currentBrands.length
     const showCount = filtered.length
-    document.getElementById('list-label').textContent = 
-      selectedStatus === 'all' ? `전체 브랜드 (${totalCount})` : `${statusLabel(selectedStatus).text} 브랜드 (${showCount})`
+    let labelText = selectedStatus === 'all' ? `전체 브랜드 (${totalCount})` : `${statusLabel(selectedStatus).text} 브랜드 (${showCount})`
+    if (brandSearchText) labelText = `'${brandSearchText}' 검색 (${showCount})`
+    document.getElementById('list-label').textContent = labelText
     const countEl = document.getElementById('status-count')
     if (countEl) {
-      countEl.textContent = selectedStatus === 'all' 
-        ? `${totalCount}개 표시` 
+      countEl.textContent = (selectedStatus === 'all' && !brandSearchText)
+        ? `${totalCount}개 표시`
         : `${showCount} / ${totalCount}개 표시`
     }
     
@@ -2605,6 +2643,30 @@
     })
   } catch (err) {
     console.error('상태 칩 등록 실패:', err)
+  }
+
+  // 브랜드 검색창
+  try {
+    const searchInput = document.getElementById('brand-search')
+    const clearBtn = document.getElementById('brand-search-clear')
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        brandSearchText = searchInput.value.trim().toLowerCase()
+        if (clearBtn) clearBtn.classList.toggle('show', brandSearchText.length > 0)
+        renderList()  // 리스트만 재렌더링 (빠름)
+      })
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = ''
+        brandSearchText = ''
+        clearBtn.classList.remove('show')
+        renderList()
+        searchInput.focus()
+      })
+    }
+  } catch (err) {
+    console.error('브랜드 검색 등록 실패:', err)
   }
 
   // 엑셀(XLSX) 다운로드 버튼
