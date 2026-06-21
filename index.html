@@ -498,6 +498,12 @@
   .lst tbody tr:nth-child(even) { background: rgba(163,108,46,0.08); }
   .lst tbody tr:hover { background: #e7ddcd; }
   .lst td.bn { color: #7a4ec2; font-weight: 700; font-size: 14px; }
+  .new-badge {
+    display: inline-block; margin-left: 6px; padding: 1px 6px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+    color: #fff; background: #2380bf; border-radius: 6px;
+    vertical-align: middle;
+  }
   .lst td.sales { color: #198d78; }
   .lst td.op-ok { color: #1f9d78; }
   .lst td.op-warn { color: #cc8210; }
@@ -1216,7 +1222,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 23 · 라이트 테마 (흰 배경) 전환 · v1.9.9
+    Phase 27 · 비매출 출고(물류·외형0) 판매율서 제외 · v1.9.13
   </div>
 
 </div>
@@ -1574,7 +1580,7 @@
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
         fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
-          .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, season_year, season_type')), 'id')
+          .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
       ])
 
       // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
@@ -1689,7 +1695,11 @@
       }
       const netSales = Number(r.net_sales) || 0
       const grossSales = Number(r.gross_sales) || 0
-      const cog = Number(r.cost_of_goods) || 0
+      const cogRaw = Number(r.cost_of_goods) || 0
+      // 비매출 출고 보정: 외형매출 0인데 매출원가만 있는 행은 '판매'가 아님
+      // (물류센타 이고·평가감·폐기 등 — 판매수량 0). 판매율 분자가 부풀려지므로 제외.
+      // → cog를 0으로 두면 판매율·매총율·재고일수·MC별 집계 모두에서 자동 제외됨.
+      const cog = (grossSales === 0 && cogRaw > 0) ? 0 : cogRaw
       const qty = Number(r.qty_sold) || 0
       const ret = Number(r.return_amount) || 0
       
@@ -1843,9 +1853,15 @@
       if (!bk) continue
       const inbound = Number(r.cum_inbound_amount) || 0
       const stock = Number(r.total_stock_amount) || 0
-      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0 }
+      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0, firstOutbound: null }
       poAmtMap[bk].inbound += inbound
       poAmtMap[bk].stock += stock
+      // 최초 출고일(브랜드 내 가장 이른 날) — 재고일수 분모용
+      if (r.first_outbound_date) {
+        if (!poAmtMap[bk].firstOutbound || r.first_outbound_date < poAmtMap[bk].firstOutbound) {
+          poAmtMap[bk].firstOutbound = r.first_outbound_date
+        }
+      }
       const mk = r.mc_code || '_unknown'
       if (!poMcAmtMap[bk]) poMcAmtMap[bk] = {}
       if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0 }
@@ -1887,16 +1903,33 @@
       const dailyAvg = totalSalesGross / Math.max(saleDays, 1)
       
       // 발주관리 집계 (판매율 분모 = 누적입고액, 재고일수 = 전사재고액)
-      const poAmt = poAmtMap[code] || { inbound: 0, stock: 0 }
+      const poAmt = poAmtMap[code] || { inbound: 0, stock: 0, firstOutbound: null }
 
-      // 재고일수 = 현재 재고(발주관리 전사재고액) ÷ 최근 30일 일평균 매출원가
+      // 재고일수 = 현재 재고(발주관리 전사재고액) ÷ 하루 평균 소진액(최근)
       // 정의: 현 재고를 '지금 판매 속도'로 다 파는 데 걸리는 일수
-      // (구버전: 재고파일 + 시즌 전체평균 → 잘 팔려도 과대평가됐음)
+      //
+      // 분모(나누는 일수) = 판매 시작 후 경과일 (최대 30일)
+      //   판매 시작일 = 출고일 / 첫 매출일 중 더 이른 날
+      //   (출고일 데이터가 일부 누락돼 4월부터 판 브랜드가 6월 출고로만 잡히는
+      //    경우가 있어, 실제 팔린 첫날과 비교해 이른 날을 씀)
+      //   → 판매 30일 미만 신상품은 그 짧은 기간으로 나눠 속도를 정확히 산출
+      //     (구버전: 무조건 30으로 나눠 신상품 재고일수가 과대평가됐음)
+      let saleStart = b.firstSaleDate || null
+      if (poAmt.firstOutbound && (!saleStart || poAmt.firstOutbound < saleStart)) {
+        saleStart = poAmt.firstOutbound
+      }
+      let saleElapsed = null  // 판매 시작 후 경과일
+      if (saleStart && asOfDate) {
+        saleElapsed = Math.round((new Date(asOfDate) - new Date(saleStart)) / 86400000) + 1
+      }
+      const denomDays = (saleElapsed !== null) ? Math.min(30, Math.max(1, saleElapsed)) : 30
+      // 신상 판정: 판매 시작 14일 미만 → 재고일수 등 지표가 불안정(데이터 부족)
+      const isNew = (saleElapsed !== null && saleElapsed < 14)
       let recentCost = 0
       for (const dt in b.dailyCost) {
         if (dt > recentCutoff) recentCost += b.dailyCost[dt]
       }
-      const recentDailyCost = recentCost / 30
+      const recentDailyCost = recentCost / denomDays
       const poStock = Math.max(0, poAmt.stock || 0)
       let inventoryDays = null
       if (recentDailyCost > 0) inventoryDays = Math.min(999, Math.round(poStock / recentDailyCost))
@@ -1939,12 +1972,15 @@
       }
       const triggered = (status === 'warn' || status === 'hot')
       
-      // 권장 할인율 = 영업이익률 기준. 목표 영익(thrOp)을 지키며 가능한 최대 할인.
+      // 권장 할인율 = 영업이익률 기준. 가능한 최대 할인.
       //   d = 1 − (1 − 매총율) ÷ (1 − 판관비율 − 목표영익)   (0~50%로 제한)
-      //   영업이익률(매총율) 높을수록 할인 여력 큼. 검토·적극할인 브랜드에 표시.
+      //   ▸ 검토(warn): 목표영익(thrOp, 17%)을 지키며 할인 (이익 받쳐주니 여력 내에서)
+      //   ▸ 적극할인(hot): 손익분기(이익 0%)까지 할인 (이미 목표 미달이라
+      //       17% 기준이면 0%만 나옴 → 손익분기까지 여력을 보여줘야 의미 있음)
       let recDiscount = null
       if ((status === 'hot' || status === 'warn') && grossMargin !== null) {
-        const denom = 1 - sgaRate - thrOp
+        const targetOp = (status === 'hot') ? 0 : thrOp   // 적극할인은 손익분기(0%)
+        const denom = 1 - sgaRate - targetOp
         recDiscount = denom > 0
           ? Math.max(0, Math.min(0.5, 1 - (1 - grossMargin) / denom))
           : 0
@@ -2041,7 +2077,9 @@
         monthStats: monthStatsArr, // 계절월별 매출
         first_sale_date: b.firstSaleDate,
         sales_period_days: salesPeriodDays,
-        target_sell_through: targetSellThrough   // 판매기간 기반 목표(벤치마크) 판매율
+        target_sell_through: targetSellThrough,  // 판매기간 기반 목표(벤치마크) 판매율
+        is_new: isNew,                           // 판매 14일 미만 신상 (지표 불안정)
+        sale_elapsed: saleElapsed                // 판매 시작 후 경과일
       })
     }
     
@@ -2491,7 +2529,7 @@
       tr.addEventListener('click', () => openBrandModal(b.brand_code))
       tr.innerHTML = `
         <td>${idx + 1}</td>
-        <td class="bn">${b.brand_name}</td>
+        <td class="bn">${b.brand_name}${b.is_new ? '<span class="new-badge" title="판매 14일 미만 신상 · 재고일수 등 지표가 아직 불안정">NEW</span>' : ''}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r">${b.season_inbound_total > 0 ? fmtMoney(b.season_inbound_total) : '-'}</td>
         <td class="r">${fmtMoney(b.daily_avg)}</td>
@@ -3279,7 +3317,7 @@
       })
       tr.innerHTML = `
         <td>${idx + 1}</td>
-        <td class="bn">${b.brand_name}</td>
+        <td class="bn">${b.brand_name}${b.is_new ? '<span class="new-badge" title="판매 14일 미만 신상 · 재고일수 등 지표가 아직 불안정">NEW</span>' : ''}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
