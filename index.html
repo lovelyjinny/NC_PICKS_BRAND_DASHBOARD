@@ -229,6 +229,24 @@
   .status-chip.active {
     background: #a36c2e; color: #ffffff; border-color: #a36c2e;
   }
+  /* MD별 요약 표 */
+  #md-summary-section { margin-bottom: 22px; }
+  .md-summary-wrap { overflow-x: auto; background: #f7f3ec; border: 1px solid #e2d8c8; border-radius: 12px; padding: 6px 12px; }
+  .md-summary-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .md-summary-tbl th { color: #8c5f33; font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2d8c8; white-space: nowrap; }
+  .md-summary-tbl th.r, .md-summary-tbl td.r { text-align: right; }
+  .md-summary-tbl td { padding: 11px 12px; border-bottom: 1px solid #efe8dd; color: #2a2018; }
+  .md-summary-tbl tr:last-child td { border-bottom: none; }
+  .md-summary-tbl .md-name { font-weight: 700; color: #7a4ec2; font-size: 15px; }
+  .md-summary-tbl .sales { color: #1f9d78; font-weight: 700; }
+  /* MD 필터 */
+  .md-filter {
+    padding: 5px 10px; border-radius: 8px;
+    background: rgba(63,51,42,0.5); border: 1px solid #3f332a;
+    color: #2a2018; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
+  }
+  .md-filter:focus { border-color: #a36c2e; }
+  .lst td.md-cell { color: #8c5f33; font-weight: 600; font-size: 12px; white-space: nowrap; }
   /* 브랜드 검색창 */
   .brand-search-wrap {
     position: relative; margin-left: auto; display: flex; align-items: center;
@@ -1162,6 +1180,27 @@
     </div>
   </div>
 
+  <!-- MD별 요약 -->
+  <div id="md-summary-section" style="display:none;">
+    <div class="sec-label">MD별 사입·판매 성과</div>
+    <div class="md-summary-wrap">
+      <table class="md-summary-tbl">
+        <thead>
+          <tr>
+            <th>MD</th>
+            <th class="r">담당 브랜드</th>
+            <th class="r">입고액</th>
+            <th class="r">매출액(외형)</th>
+            <th class="r">판매율</th>
+            <th class="r">판매율÷진척도</th>
+            <th class="r">영업이익률</th>
+          </tr>
+        </thead>
+        <tbody id="md-summary-body"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- 전체 리스트 -->
   <div id="list-section" style="display:none;">
     <div class="sec-label" id="list-label">전체 브랜드</div>
@@ -1173,6 +1212,8 @@
         <button class="status-chip" data-status="warn">검토</button>
         <button class="status-chip" data-status="hot">적극할인</button>
       </div>
+      <span class="label" style="margin-left:8px;">MD</span>
+      <select id="md-filter" class="md-filter"><option value="all">전체 MD</option></select>
       <span class="status-count" id="status-count"></span>
       <div class="brand-search-wrap">
         <input type="text" id="brand-search" class="brand-search" placeholder="🔍 브랜드 검색" autocomplete="off">
@@ -1191,6 +1232,7 @@
             <tr>
               <th>#</th>
               <th class="sortable" data-sort="brand_name">브랜드<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="md">MD<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="total_sales">매출액<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="season_inbound_total">입고액<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="daily_avg">일평균<span class="sort-ind"></span></th>
@@ -1222,7 +1264,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 27 · 비매출 출고(물류·외형0) 판매율서 제외 · v1.9.13
+    Phase 29 · MD별 요약 표 추가 · v1.9.16
   </div>
 
 </div>
@@ -1442,6 +1484,48 @@
   let selectedMonths = null         // null = 전체, Set이면 그 안의 월만
   let selectedStatus = 'all'        // 'all' | 'ok' | 'warn' | 'hot'
   let brandSearchText = ''          // 브랜드 이름 검색어 (소문자)
+  let selectedMD = 'all'            // MD 필터 ('all' 또는 MD명)
+
+  // MD(해결사) 매핑: '정규화브랜드명|구매그룹' → MD명 (OPR 브랜드판 기준, 2026 SS)
+  // 정규화 = 괄호·영문·공백 제거. 부문(구매그룹)별로 담당 MD가 다를 수 있음.
+  const MD_MAP = {
+    "자라|OIA":"백서현","아디다스|OJA":"한정훈","아디다스|OIA":"백서현","래핑차일드|OFA":"조한익",
+    "블루독|OFA":"조한익","밍크뮤|OFA":"조한익","알로봇|OFA":"조한익","블루독베이비|OFA":"조한익",
+    "에이티피코|OBA":"한정훈","47브랜드|OJA":"한정훈","몽벨|OJA":"한정훈","마시모두띠|OIA":"백서현",
+    "김영주골프|OJA":"한정훈","핏플랍|OJA":"한정훈","자라키즈|OFA":"조한익","오클리|OJA":"한정훈",
+    "뉴발란스|OJB":"한정훈","뉴에라|OJA":"한정훈","삠뽀요|OFA":"조한익","룰라비|OFA":"조한익",
+    "해피버스|OFA":"조한익","르까프|OJA":"한정훈","아웃도어프로덕츠|OFA":"조한익","테일스쿱|OFA":"조한익",
+    "자라|OBA":"조한익","빈스|OIA":"백서현","코인코즈|OIA":"백서현","몽벨|OIA":"한정훈",
+    "메종키츠네|OIA":"백서현","엠제이|OIA":"백서현","GFORE|OEA":"한정훈","이벳필드|OAY":"한정훈",
+    "루즈페|OFA":"조한익","위켄드하우스키즈|OFA":"조한익","유에스폴로|OIA":"백서현","마시모두띠|OBA":"조한익",
+    "캘빈클라인|OBA":"한정훈","띠어리|OIA":"백서현","랩플러스|OIA":"백서현","페리엘리스|OJA":"한정훈",
+    "마담4060|OIA":"백서현","머렐|OIA":"백서현","자라홈|OCA":"조한익","커터앤벅|OBA":"한정훈",
+    "타미힐피거|OAY":"백서현","세인트페인|OIA":"백서현","아가타|OIA":"백서현","디즈니캐릭터|OFA":"조한익",
+    "문페어리|OIA":"백서현","프라이|OIA":"백서현","리|OAY":"한정훈","예쎄|OIA":"백서현",
+    "인트렌드|OIA":"백서현","메종키츠네|OBA":"백서현","비지트인뉴욕|OIA":"백서현","플라밍고|OIA":"백서현",
+    "미스페라|OIA":"백서현","이자벨마랑|OIA":"백서현","유스크루|OIA":"백서현","벨레로즈|OFA":"조한익",
+    "소고|OIA":"백서현","미샤앤퍼프|OFA":"조한익","컬럼비아|OIA":"백서현","프라이노크|OIA":"백서현",
+    "팔라디움|OJA":"한정훈","시크폭스|OIA":"백서현","헬무트랭|OIA":"백서현","케이스위스|OJA":"한정훈",
+    "페리엘리스|OIA":"한정훈","나이키|OJA":"한정훈","엠제이|OAY":"한정훈","뉴발란스|OJA":"한정훈",
+    "미스페라|OBA":"백서현","예일|OAY":"한정훈","머렐|OJA":"백서현","아스페시|OFA":"조한익",
+    "숲|OIA":"백서현","피쉬앤키즈|OFA":"조한익","아워스코프|OAY":"한정훈"
+  }
+  // 구매그룹(부문)별 기본 담당 MD — 브랜드판 해결사에 없는 브랜드의 fallback
+  // (OPR 브랜드판 개별 매핑이 우선, 없으면 이 부문 디폴트 적용)
+  const GROUP_DEFAULT_MD = {
+    OAY: '한정훈',  // 제화
+    OBA: '한정훈',  // 남성
+    OIA: '백서현',  // 여성
+    OFA: '조한익',  // 아동
+    OJA: '한정훈',  // 스포츠
+    OJB: '한정훈'   // 스포츠(직매입 대리점)
+  }
+  // 브랜드명 정규화 (괄호 이후 전부 + 공백 제거 → 한글 핵심)
+  // DB brand_name이 잘려 닫는 괄호가 없는 경우(예: '아웃도어 프로덕츠(OUTDOOR PR')도
+  // 매칭되도록, 여는 괄호부터 끝까지 제거
+  function normBrand(s) {
+    return String(s || '').replace(/[(（].*$/, '').replace(/\s+/g, '').trim()
+  }
 
   // ============= 로딩 / 인증 / UI 헬퍼 =============
   async function checkAuth() {
@@ -1580,7 +1664,7 @@
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
         fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
-          .select('id, brand_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
+          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
       ])
 
       // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
@@ -1853,9 +1937,13 @@
       if (!bk) continue
       const inbound = Number(r.cum_inbound_amount) || 0
       const stock = Number(r.total_stock_amount) || 0
-      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0, firstOutbound: null }
+      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0, firstOutbound: null, brandName: '', byGroup: {} }
       poAmtMap[bk].inbound += inbound
       poAmtMap[bk].stock += stock
+      if (r.brand_name && !poAmtMap[bk].brandName) poAmtMap[bk].brandName = r.brand_name
+      // 구매그룹(부문)별 입고액 — MD 매핑·주부문 판정용
+      const grp = r.buy_group_code || ''
+      if (grp) poAmtMap[bk].byGroup[grp] = (poAmtMap[bk].byGroup[grp] || 0) + inbound
       // 최초 출고일(브랜드 내 가장 이른 날) — 재고일수 분모용
       if (r.first_outbound_date) {
         if (!poAmtMap[bk].firstOutbound || r.first_outbound_date < poAmtMap[bk].firstOutbound) {
@@ -1903,7 +1991,21 @@
       const dailyAvg = totalSalesGross / Math.max(saleDays, 1)
       
       // 발주관리 집계 (판매율 분모 = 누적입고액, 재고일수 = 전사재고액)
-      const poAmt = poAmtMap[code] || { inbound: 0, stock: 0, firstOutbound: null }
+      const poAmt = poAmtMap[code] || { inbound: 0, stock: 0, firstOutbound: null, brandName: '', byGroup: {} }
+
+      // MD(해결사) 부여: 정규화 브랜드명 + 구매그룹 → MD_MAP 조회
+      // 한 브랜드가 여러 부문이면 입고액 최대 부문의 MD를 '주담당', 전체는 mds 배열
+      const nb = normBrand(poAmt.brandName || b.brand_name || '')
+      const groups = Object.keys(poAmt.byGroup || {})
+      const mdSet = new Set()
+      let mainGroup = '', mainInb = -1
+      for (const g of groups) {
+        const md = MD_MAP[nb + '|' + g] || GROUP_DEFAULT_MD[g]  // 해결사 우선, 없으면 부문 디폴트
+        if (md) mdSet.add(md)
+        if (poAmt.byGroup[g] > mainInb) { mainInb = poAmt.byGroup[g]; mainGroup = g }
+      }
+      const brandMd = MD_MAP[nb + '|' + mainGroup] || GROUP_DEFAULT_MD[mainGroup] || (mdSet.size ? [...mdSet][0] : null)
+      const brandMds = [...mdSet]
 
       // 재고일수 = 현재 재고(발주관리 전사재고액) ÷ 하루 평균 소진액(최근)
       // 정의: 현 재고를 '지금 판매 속도'로 다 파는 데 걸리는 일수
@@ -2079,7 +2181,9 @@
         sales_period_days: salesPeriodDays,
         target_sell_through: targetSellThrough,  // 판매기간 기반 목표(벤치마크) 판매율
         is_new: isNew,                           // 판매 14일 미만 신상 (지표 불안정)
-        sale_elapsed: saleElapsed                // 판매 시작 후 경과일
+        sale_elapsed: saleElapsed,               // 판매 시작 후 경과일
+        md: brandMd,                             // 주담당 MD (입고 최대 부문 기준)
+        mds: brandMds                            // 담당 MD 전체 (복수 부문이면 여러명)
       })
     }
     
@@ -2094,13 +2198,16 @@
     // 매출액 내림차순 정렬
     currentBrands.sort((a, b) => b.total_sales - a.total_sales)
     
+    populateMdFilter()
     renderKPIs()
     renderTopCards(period)
+    renderMdSummary(progress)
     renderList()
-    
+
     document.getElementById('state-loading').style.display = 'none'
     document.getElementById('state-empty').style.display = currentBrands.length === 0 ? 'block' : 'none'
     document.getElementById('top-section').style.display = currentBrands.length > 0 ? 'block' : 'none'
+    document.getElementById('md-summary-section').style.display = currentBrands.length > 0 ? 'block' : 'none'
     document.getElementById('list-section').style.display = currentBrands.length > 0 ? 'block' : 'none'
   }
   
@@ -2396,6 +2503,7 @@
     // 화면 리스트와 동일하게 상태 + 검색 필터 적용
     const filtered = sorted.filter(b => {
       if (selectedStatus !== 'all' && b.status !== selectedStatus) return false
+      if (selectedMD !== 'all' && !(b.mds && b.mds.includes(selectedMD))) return false
       if (brandSearchText) {
         const name = (b.brand_name || '').toLowerCase()
         const code = (b.brand_code || '').toLowerCase()
@@ -2476,6 +2584,60 @@
     XLSX.writeFile(wb, filename)
   }
 
+  // MD 필터 드롭다운 채우기 (현재 시즌 브랜드들의 담당 MD 목록)
+  function populateMdFilter() {
+    const sel = document.getElementById('md-filter')
+    if (!sel) return
+    const mds = [...new Set(currentBrands.flatMap(b => b.mds || []))]
+      .filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'ko'))
+    const cur = selectedMD
+    sel.innerHTML = '<option value="all">전체 MD</option>' +
+      mds.map(m => `<option value="${m}">${m}</option>`).join('')
+    if (cur === 'all' || mds.includes(cur)) {
+      sel.value = cur
+    } else {
+      sel.value = 'all'; selectedMD = 'all'
+    }
+  }
+
+  // MD별 요약 표: 주담당 MD 기준으로 담당 브랜드 묶어 입고·판매 집계
+  function renderMdSummary(progress) {
+    const tbody = document.getElementById('md-summary-body')
+    if (!tbody) return
+    const sgaEl = document.getElementById('sl-sga')
+    const sga = sgaEl ? parseInt(sgaEl.value, 10) / 100 : 0.30
+    const agg = {}
+    for (const b of currentBrands) {
+      const md = b.md
+      if (!md) continue
+      if (!agg[md]) agg[md] = { count: 0, inbound: 0, gross: 0, net: 0, cost: 0, ret: 0 }
+      const a = agg[md]
+      a.count++
+      a.inbound += b.season_inbound_total || 0
+      a.gross += b.total_sales_gross || b.total_sales || 0
+      a.net += b.total_sales || 0
+      a.cost += b.total_cost || 0
+      a.ret += b.total_return || 0
+    }
+    const rows = Object.entries(agg).map(([md, a]) => {
+      const sellRate = a.inbound > 0 ? a.cost / a.inbound : null
+      const gm = a.net > 0 ? 1 - (a.cost - a.ret) / a.net : null
+      const op = gm !== null ? gm - sga : null
+      const spr = (sellRate !== null && progress > 0) ? sellRate / (progress / 100) : null
+      return { md, count: a.count, inbound: a.inbound, gross: a.gross, sellRate, op, spr }
+    }).sort((x, y) => y.inbound - x.inbound)
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td class="md-name">${r.md}</td>
+        <td class="r">${r.count}개</td>
+        <td class="r">${fmtMoney(r.inbound)}</td>
+        <td class="r sales">${fmtMoney(r.gross)}</td>
+        <td class="r">${fmtPct(r.sellRate, 0)}</td>
+        <td class="r">${r.spr !== null ? fmtPct(r.spr, 0) : '—'}</td>
+        <td class="r">${fmtPct(r.op, 1)}</td>
+      </tr>
+    `).join('')
+  }
 
   function renderList() {
     const tbody = document.getElementById('list-body')
@@ -2493,6 +2655,7 @@
     // 상태 필터 + 브랜드 검색 필터 적용
     const filtered = sorted.filter(b => {
       if (selectedStatus !== 'all' && b.status !== selectedStatus) return false
+      if (selectedMD !== 'all' && !(b.mds && b.mds.includes(selectedMD))) return false
       if (brandSearchText) {
         const name = (b.brand_name || '').toLowerCase()
         const code = (b.brand_code || '').toLowerCase()
@@ -2530,6 +2693,7 @@
       tr.innerHTML = `
         <td>${idx + 1}</td>
         <td class="bn">${b.brand_name}${b.is_new ? '<span class="new-badge" title="판매 14일 미만 신상 · 재고일수 등 지표가 아직 불안정">NEW</span>' : ''}</td>
+        <td class="md-cell" title="${b.mds && b.mds.length > 1 ? '담당: ' + b.mds.join(', ') : ''}">${b.md ? b.md + (b.mds && b.mds.length > 1 ? ' 외' : '') : '—'}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r">${b.season_inbound_total > 0 ? fmtMoney(b.season_inbound_total) : '-'}</td>
         <td class="r">${fmtMoney(b.daily_avg)}</td>
@@ -2701,6 +2865,14 @@
         clearBtn.classList.remove('show')
         renderList()
         searchInput.focus()
+      })
+    }
+    // MD 필터 드롭다운
+    const mdSel = document.getElementById('md-filter')
+    if (mdSel) {
+      mdSel.addEventListener('change', () => {
+        selectedMD = mdSel.value
+        renderList()
       })
     }
   } catch (err) {
