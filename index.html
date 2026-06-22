@@ -1271,7 +1271,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 30 · MD요약 매총율·재고일수·주판율 + 카드 테두리 강조 · v1.9.17
+    Phase 31 · 판매율 회사 공식(소진÷(소진+잔여))으로 정정 · v1.9.18
   </div>
 
 </div>
@@ -2045,11 +2045,13 @@
       else if (poStock > 0) inventoryDays = 999  // 재고는 있는데 최근 판매 없음 = 사실상 무한
       const stockValue = Math.max(0, inv.value)  // 재고파일 기준 (표시/기타용 유지)
 
-      // 판매율(금액) = 매출원가 ÷ 누적입고액
-      //   분자 totalCost = 매출 파일(sales_daily) cost_of_goods 합 = 실제 팔린 원가
-      //   분모 poAmt.inbound = 발주관리 누적입고액
-      const sellThrough = (poAmt.inbound > 0)
-        ? totalCost / poAmt.inbound
+      // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식, v1.9.18]
+      //   소진재고액 = totalCost (매출 파일 매출원가, 비매출 출고 제외됨)
+      //   잔여재고액 = poStock (발주관리 전사재고액)
+      //   ※ 구버전(v1.8.2~): 매출원가÷누적입고액. 분모가 입고라 반품·이고 갭이 큰
+      //     브랜드(자라키즈 등)가 회사 공식보다 낮게 나왔음.
+      const sellThrough = (totalCost + poStock > 0)
+        ? totalCost / (totalCost + poStock)
         : null
       
       // 영업이익률 = (매총익 - 판관비) / 매출 = 매총율 - 판관비율
@@ -2102,10 +2104,11 @@
       for (const mcKey of allMcKeys) {
         const sales = b.mcSales[mcKey] || { mc_code: mcKey === '_unknown' ? null : mcKey, mc_name: '(미분류)', total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0 }
         const stk = invMcForBrand[mcKey] || { qty: 0, value: 0 }
-        // 판매율(금액) = 매출원가(매출 파일) ÷ 누적입고액(발주관리)
-        const mcPo = (poMcAmtMap[code] || {})[mcKey] || { inbound: 0 }
-        const mcSellThrough = (mcPo.inbound > 0)
-          ? sales.total_cost / mcPo.inbound
+        // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식, v1.9.18]
+        //   소진=MC 매출원가, 잔여=MC 재고(재고파일). 브랜드와 동일 공식.
+        const mcStkSafe = Math.max(0, stk.value)
+        const mcSellThrough = (sales.total_cost + mcStkSafe > 0)
+          ? sales.total_cost / (sales.total_cost + mcStkSafe)
           : null
         // 매총율
         const mcGrossMargin = sales.total_sales > 0
