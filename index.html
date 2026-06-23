@@ -246,6 +246,11 @@
     color: #2a2018; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
   }
   .md-filter:focus { border-color: #a36c2e; }
+  .cat-toggle { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px;
+    font-size: 12px; font-weight: 600; color: #6b4f33; cursor: pointer; user-select: none; }
+  .cat-toggle input { cursor: pointer; accent-color: #a36c2e; }
+  .md-cat { display: inline-block; margin-left: 5px; padding: 1px 6px; border-radius: 7px;
+    background: rgba(163,108,46,0.14); color: #8c5f33; font-size: 10px; font-weight: 700; vertical-align: middle; }
   .lst td.md-cell { color: #8c5f33; font-weight: 600; font-size: 12px; white-space: nowrap; }
   /* 브랜드 검색창 */
   .brand-search-wrap {
@@ -1221,6 +1226,7 @@
       </div>
       <span class="label" style="margin-left:8px;">MD</span>
       <select id="md-filter" class="md-filter"><option value="all">전체 MD</option></select>
+      <label class="cat-toggle"><input type="checkbox" id="cat-split-toggle"> 카테고리 분리</label>
       <span class="status-count" id="status-count"></span>
       <div class="brand-search-wrap">
         <input type="text" id="brand-search" class="brand-search" placeholder="🔍 브랜드 검색" autocomplete="off">
@@ -1271,7 +1277,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 35 · 판매율 소진기준을 회사 발주관리 누적매출원가로 교체 (회사 점수판과 정합) · v1.9.22
+    Phase 37 · 브랜드 리스트 '카테고리 분리' 토글 — 한 브랜드를 여성/남성/아동/잡화 행으로 쪼개기 · v1.9.24
   </div>
 
 </div>
@@ -1484,6 +1490,8 @@
   let poSummary = []  // 발주/입고 브랜드별 시즌 요약
   let poDetail = []   // 발주/입고 스타일별 원본 (브랜드·MC별 판매율 계산용)
   let currentBrands = []
+  let currentCatRows = []        // 카테고리별 분리 행(가짜 브랜드) [v1.9.24]
+  let splitByCategory = false    // '카테고리 분리' 토글 상태
   let loadGen = 0     // 시즌 빨리 바꿀 때 옛 로드가 새 로드 덮어쓰는 race 방지용 세대 토큰
   let listSortKey = 'total_sales'   // 현재 정렬 컬럼
   let listSortDir = 'desc'          // 'asc' | 'desc'
@@ -1526,6 +1534,26 @@
     OFA: '조한익',  // 아동
     OJA: '한정훈',  // 스포츠
     OJB: '한정훈'   // 스포츠(직매입 대리점)
+  }
+
+  // ===== 카테고리(여성/남성/아동/잡화) 분류 + MD 매칭 [v1.9.23] =====
+  // 브랜드 부문이 아니라 '상품(MC) 단위'로 분류 → 한 브랜드가 여러 카테고리/MD로 쪼개짐.
+  // MC코드 구조: ①1/2 ②성별(W/M/K) ③④중분류 ⑤⑥소분류  (예: 1WCAHH=여성·캐쥬얼·반팔티)
+  const CATEGORY_MD = { '여성': '백서현', '남성': '한정훈', '아동': '조한익', '잡화': '지연홍' }
+  function classifyCategory(mcCode, buyGroupCode) {
+    const c = String(mcCode || '')
+    if (c.substring(2, 4) === 'AC') return '잡화'        // ③④=AC → 액세서리
+    const g = c.charAt(1)                                // ②번째 = 성별
+    if (g === 'L' || g === 'C') return '잡화'            // 자라 의류믹스·바지·니트류 비표준코드
+    if (g === 'W') return '여성'
+    if (g === 'M') return '남성'
+    if (g === 'K') return '아동'
+    // MC 성별 없으면 구매그룹(부문)으로 보정
+    if (buyGroupCode === 'OIA') return '여성'
+    if (buyGroupCode === 'OBA') return '남성'
+    if (buyGroupCode === 'OFA') return '아동'
+    if (buyGroupCode === 'OCA') return '잡화'
+    return null  // 미분류 (스포츠·제화 비표준 극소량)
   }
   // 브랜드명 정규화 (괄호 이후 전부 + 공백 제거 → 한글 핵심)
   // DB brand_name이 잘려 닫는 괄호가 없는 경우(예: '아웃도어 프로덕츠(OUTDOOR PR')도
@@ -1779,6 +1807,7 @@
           dates: new Set(),
           dailySales: {},  // {date: net_sales sum}
           dailyCost: {},   // {date: cost_of_goods sum}
+          dailyCostByCat: {}, // {category: {date: cost_of_goods}} — 카테고리별 일별 소진 [v1.9.23]
           mcSales: {},     // {mc_code: {mc_name, total_sales, total_cost, total_qty, total_return}}
           monthSales: {},  // {season_month_code: {month_name, total_sales, total_cost}}
           firstSaleDate: null  // 첫 매출 발생일 (cost_of_goods > 0인 첫 날)
@@ -1804,6 +1833,12 @@
         brandMap[key].dates.add(r.sale_date)
         brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + netSales
         brandMap[key].dailyCost[r.sale_date] = (brandMap[key].dailyCost[r.sale_date] || 0) + cog
+        // 카테고리별 일별 소진 (MD 요약의 카테고리별 재고일수·주판율용) [v1.9.23]
+        const _cat = classifyCategory(r.mc_code, null)
+        if (_cat) {
+          if (!brandMap[key].dailyCostByCat[_cat]) brandMap[key].dailyCostByCat[_cat] = {}
+          brandMap[key].dailyCostByCat[_cat][r.sale_date] = (brandMap[key].dailyCostByCat[_cat][r.sale_date] || 0) + cog
+        }
         
         // 첫 매출일 (실제로 판매가 있었던 날)
         if (cog > 0 || netSales > 0) {
@@ -1962,7 +1997,7 @@
       }
       const mk = r.mc_code || '_unknown'
       if (!poMcAmtMap[bk]) poMcAmtMap[bk] = {}
-      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0, stock: 0, cog: 0 }
+      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0, stock: 0, cog: 0, buyGroup: grp }
       poMcAmtMap[bk][mk].inbound += inbound
       poMcAmtMap[bk][mk].stock += stock
       poMcAmtMap[bk][mk].cog += cog
@@ -1979,6 +2014,7 @@
 
     // 5. 브랜드별 지표 계산
     const brands = []
+    const catRowsAll = []   // 카테고리 분리 행 (가짜 브랜드) [v1.9.24]
     for (const code in brandMap) {
       const b = brandMap[code]
       const inv = invMap[code] || { qty: 0, value: 0 }
@@ -2005,19 +2041,45 @@
       // 발주관리 집계 (판매율 분모 = 누적입고액, 재고일수 = 전사재고액)
       const poAmt = poAmtMap[code] || { inbound: 0, stock: 0, firstOutbound: null, brandName: '', byGroup: {} }
 
-      // MD(해결사) 부여: 정규화 브랜드명 + 구매그룹 → MD_MAP 조회
-      // 한 브랜드가 여러 부문이면 입고액 최대 부문의 MD를 '주담당', 전체는 mds 배열
-      const nb = normBrand(poAmt.brandName || b.brand_name || '')
-      const groups = Object.keys(poAmt.byGroup || {})
-      const mdSet = new Set()
-      let mainGroup = '', mainInb = -1
-      for (const g of groups) {
-        const md = MD_MAP[nb + '|' + g] || GROUP_DEFAULT_MD[g]  // 해결사 우선, 없으면 부문 디폴트
-        if (md) mdSet.add(md)
-        if (poAmt.byGroup[g] > mainInb) { mainInb = poAmt.byGroup[g]; mainGroup = g }
+      // ===== 카테고리(여성/남성/아동/잡화) 분해 + MD 매칭 [v1.9.23] =====
+      // 상품(MC) 단위로 분류 → 한 브랜드가 여러 카테고리/MD로 쪼개짐. (구버전: 브랜드별 MD_MAP)
+      const poMcB = poMcAmtMap[code] || {}
+      const dccB = b.dailyCostByCat || {}
+      const weekAgoStr = asOfDate
+        ? new Date(new Date(asOfDate).getTime() - 7 * 86400000).toISOString().slice(0, 10) : ''
+      const catBreak = {}  // cat → {cog,stock,inbound,salesGross,salesNet,cost,ret,recentCost,weeklyCost}
+      const ensureCat = (cat) => {
+        if (!catBreak[cat]) catBreak[cat] = { cog: 0, stock: 0, inbound: 0, salesGross: 0, salesNet: 0, cost: 0, ret: 0, recentCost: 0, weeklyCost: 0 }
+        return catBreak[cat]
       }
-      const brandMd = MD_MAP[nb + '|' + mainGroup] || GROUP_DEFAULT_MD[mainGroup] || (mdSet.size ? [...mdSet][0] : null)
-      const brandMds = [...mdSet]
+      for (const mk in poMcB) {                 // 발주: 소진·재고·입고 (MC 단위 분류)
+        const pm = poMcB[mk]
+        const cat = classifyCategory(mk, pm.buyGroup)
+        if (!cat) continue
+        const cb = ensureCat(cat)
+        cb.cog += pm.cog || 0; cb.stock += pm.stock || 0; cb.inbound += pm.inbound || 0
+      }
+      for (const mk in b.mcSales) {             // 매출: 외형·실매출·원가·환입 (MC 단위)
+        const sm = b.mcSales[mk]
+        const cat = classifyCategory(mk, (poMcB[mk] && poMcB[mk].buyGroup) || '')
+        if (!cat) continue
+        const cb = ensureCat(cat)
+        cb.salesGross += sm.total_sales_gross || 0; cb.salesNet += sm.total_sales || 0
+        cb.cost += sm.total_cost || 0; cb.ret += sm.total_return || 0
+      }
+      for (const cat in dccB) {                 // 카테고리별 최근30일·7일 소진 (재고일수·주판율)
+        if (!catBreak[cat]) continue
+        const dc = dccB[cat]; let rc = 0, wc = 0
+        for (const dt in dc) {
+          if (recentCutoff && dt > recentCutoff) rc += dc[dt]
+          if (weekAgoStr && dt > weekAgoStr && dt <= asOfDate) wc += dc[dt]
+        }
+        catBreak[cat].recentCost = rc; catBreak[cat].weeklyCost = wc
+      }
+      let mainCat = null, mainCog = -1          // 주담당 MD = 소진 최대 카테고리
+      for (const cat in catBreak) { if (catBreak[cat].cog > mainCog) { mainCog = catBreak[cat].cog; mainCat = cat } }
+      const brandMd = mainCat ? CATEGORY_MD[mainCat] : null
+      const brandMds = [...new Set(Object.keys(catBreak).map(c => CATEGORY_MD[c]).filter(Boolean))]
 
       // 재고일수 = 현재 재고(발주관리 전사재고액) ÷ 하루 평균 소진액(최근)
       // 정의: 현 재고를 '지금 판매 속도'로 다 파는 데 걸리는 일수
@@ -2202,14 +2264,57 @@
         target_sell_through: targetSellThrough,  // 판매기간 기반 목표(벤치마크) 판매율
         is_new: isNew,                           // 판매 14일 미만 신상 (지표 불안정)
         sale_elapsed: saleElapsed,               // 판매 시작 후 경과일
-        md: brandMd,                             // 주담당 MD (입고 최대 부문 기준)
-        mds: brandMds,                           // 담당 MD 전체 (복수 부문이면 여러명)
+        md: brandMd,                             // 주담당 MD (소진 최대 카테고리 기준) [v1.9.23]
+        mds: brandMds,                           // 담당 MD 전체 (여러 카테고리면 여러명)
+        cat_breakdown: catBreak,                 // 카테고리별 소진·재고·매출 분해 (MD 요약용)
         recent_cost: recentCost                  // 최근 30일 소진(매출원가) — MD별 재고일수용
       })
+
+      // ===== 카테고리 분리 행(가짜 브랜드) 생성 [v1.9.24] =====
+      // 한 브랜드를 여성/남성/아동/잡화 행으로 쪼갬. 같은 임계값·로직으로 재계산.
+      for (const cat in catBreak) {
+        const d = catBreak[cat]
+        const cGM = d.salesNet > 0 ? 1 - (d.cost - d.ret) / d.salesNet : null
+        const cOp = (cGM !== null) ? cGM - sgaRate : null
+        const cSell = (d.cog + d.stock > 0) ? d.cog / (d.cog + d.stock) : null
+        const cRecentDaily = d.recentCost / denomDays
+        let cInvDays = null
+        if (cRecentDaily > 0) cInvDays = Math.min(999, Math.round(d.stock / cRecentDaily))
+        else if (d.stock > 0) cInvDays = 999
+        const cWeekly = (d.cog + d.stock > 0) ? d.weeklyCost / (d.cog + d.stock) : null
+        const cSpr = (cSell !== null && progress > 0) ? cSell / (progress / 100) : null
+        const cSojinBad = (cSpr !== null) && (cSpr < thrSell)
+        const cOpGood = (cOp !== null) && (cOp >= thrOp + 0.05)
+        const cOpShort = (cOp !== null) && (cOp < thrOp)
+        let cStatus = 'ok'
+        if (cSojinBad && cOpShort) cStatus = 'hot'
+        else if (cSojinBad) cStatus = 'warn'
+        else if ((cSpr !== null && cSpr >= thrSell) && cOpGood) cStatus = 'up'
+        if (cInvDays !== null && cInvDays > thrDays && (cStatus === 'up' || cStatus === 'ok')) cStatus = 'warn'
+        let cDisc = null
+        if ((cStatus === 'hot' || cStatus === 'warn') && cGM !== null) {
+          const tOp = (cStatus === 'hot') ? 0 : thrOp
+          const dn = 1 - sgaRate - tOp
+          cDisc = dn > 0 ? Math.max(0, Math.min(0.5, 1 - (1 - cGM) / dn)) : 0
+        }
+        const cmd = CATEGORY_MD[cat]
+        catRowsAll.push({
+          brand_code: code, brand_name: b.brand_name, _category: cat,
+          is_new: isNew, md: cmd, mds: [cmd],
+          total_sales: d.salesNet, total_sales_gross: d.salesGross,
+          season_inbound_total: d.inbound, daily_avg: d.salesGross / Math.max(saleDays, 1),
+          op_margin: cOp, gross_margin: cGM, sales_period_days: salesPeriodDays,
+          inventory_days: cInvDays, target_sell_through: targetSellThrough,
+          sell_through: cSell, weekly_sell_change: cWeekly, sell_progress_ratio: cSpr,
+          rec_discount: cDisc, status: cStatus, po_stock: d.stock, po_cost_of_goods: d.cog
+        })
+      }
     }
-    
+
     // 매출 0인 브랜드 제외
     currentBrands = brands.filter(b => b.total_sales > 0)
+    // 카테고리 분리 행: 소진 또는 매출이 있는 것만 [v1.9.24]
+    currentCatRows = catRowsAll.filter(r => (r.po_cost_of_goods > 0) || (r.total_sales_gross > 0))
     
     // 주판율 계산 (오늘=데이터 최신일 asOfDate 기준 최근 7일, 전 브랜드 공통)
     for (const b of currentBrands) {
@@ -2496,7 +2601,7 @@
   
   // 사용자 선택 정렬을 적용한 브랜드 배열 반환
   function getSortedBrandsForList() {
-    const arr = currentBrands.slice()  // 복제
+    const arr = (splitByCategory ? currentCatRows : currentBrands).slice()  // 복제 (토글 시 카테고리 행)
     const key = listSortKey
     const dir = listSortDir === 'asc' ? 1 : -1
     
@@ -2638,42 +2743,46 @@
     if (!tbody) return
     const sgaEl = document.getElementById('sl-sga')
     const sga = sgaEl ? parseInt(sgaEl.value, 10) / 100 : 0.30
+    // 카테고리(여성/남성/아동/잡화) → MD 단위로 집계. 한 브랜드가 여러 MD로 쪼개짐. [v1.9.23]
     const agg = {}
+    const brandSetByMd = {}
     for (const b of currentBrands) {
-      const md = b.md
-      if (!md) continue
-      if (!agg[md]) agg[md] = { count: 0, inbound: 0, gross: 0, net: 0, cost: 0, poCog: 0, ret: 0, stock: 0, recent: 0, wkAmt: 0 }
-      const a = agg[md]
-      a.count++
-      a.inbound += b.season_inbound_total || 0
-      a.gross += b.total_sales_gross || b.total_sales || 0
-      a.net += b.total_sales || 0
-      a.cost += b.total_cost || 0           // 매출 파일 소진 (매총율·영업이익용)
-      a.poCog += b.po_cost_of_goods || 0    // 회사 누적매출원가 (판매율·주판율용) [v1.9.22]
-      a.ret += b.total_return || 0
-      a.stock += b.po_stock || 0
-      a.recent += b.recent_cost || 0
-      // 이번 주 소진액 누계 (주판율 × 분모(소진+잔여) = 그 브랜드의 최근7일 소진) [v1.9.22]
-      if (b.weekly_sell_change !== null) {
-        a.wkAmt += b.weekly_sell_change * ((b.po_cost_of_goods || 0) + (b.po_stock || 0))
+      const cb = b.cat_breakdown || {}
+      for (const cat in cb) {
+        const md = CATEGORY_MD[cat]
+        if (!md) continue
+        const d = cb[cat]
+        if (!agg[md]) agg[md] = { cat, inbound: 0, gross: 0, net: 0, cost: 0, poCog: 0, ret: 0, stock: 0, recent: 0, weekCost: 0 }
+        const a = agg[md]
+        a.inbound += d.inbound || 0
+        a.gross += d.salesGross || 0
+        a.net += d.salesNet || 0
+        a.cost += d.cost || 0          // 매출 파일 소진 (매총율·영업이익용)
+        a.poCog += d.cog || 0          // 회사 누적매출원가 (판매율용)
+        a.ret += d.ret || 0
+        a.stock += d.stock || 0
+        a.recent += d.recentCost || 0
+        a.weekCost += d.weeklyCost || 0
+        if (!brandSetByMd[md]) brandSetByMd[md] = new Set()
+        if ((d.cog || 0) > 0 || (d.salesGross || 0) > 0) brandSetByMd[md].add(b.brand_code)
       }
     }
     const rows = Object.entries(agg).map(([md, a]) => {
-      // 판매율·주판율 분모 = 회사 공식 (회사소진 + 잔여) [v1.9.22]. 매총율만 매출 소진 사용.
+      // 판매율·주판율 분모 = 회사 공식 (회사소진 + 잔여). 매총율만 매출 소진 사용.
       const denom = a.poCog + a.stock
       const sellRate = denom > 0 ? a.poCog / denom : null
       const gm = a.net > 0 ? 1 - (a.cost - a.ret) / a.net : null
       const op = gm !== null ? gm - sga : null
       const spr = (sellRate !== null && progress > 0) ? sellRate / (progress / 100) : null
-      // 재고일수 = 전사재고액 합 ÷ 최근30일 일평균 소진
       const dailyRecent = a.recent / 30
       const invDays = dailyRecent > 0 ? Math.min(999, Math.round(a.stock / dailyRecent)) : (a.stock > 0 ? 999 : null)
-      const weekly = denom > 0 ? a.wkAmt / denom : null  // 주판율 = Σ이번주소진 ÷ Σ(회사소진+잔여)
-      return { md, count: a.count, inbound: a.inbound, gross: a.gross, sellRate, gm, op, spr, invDays, weekly }
+      const weekly = denom > 0 ? a.weekCost / denom : null  // 주판율 = Σ이번주 카테고리소진 ÷ Σ(소진+재고)
+      const count = brandSetByMd[md] ? brandSetByMd[md].size : 0
+      return { md, cat: a.cat, count, inbound: a.inbound, gross: a.gross, sellRate, gm, op, spr, invDays, weekly }
     }).sort((x, y) => y.inbound - x.inbound)
     tbody.innerHTML = rows.map(r => `
       <tr>
-        <td class="md-name">${r.md}</td>
+        <td class="md-name">${r.md} <span class="md-cat">${r.cat}</span></td>
         <td class="r">${r.count}개</td>
         <td class="r">${fmtMoney(r.inbound)}</td>
         <td class="r sales">${fmtMoney(r.gross)}</td>
@@ -2713,7 +2822,7 @@
     })
 
     // 라벨 + 카운트 갱신
-    const totalCount = currentBrands.length
+    const totalCount = (splitByCategory ? currentCatRows : currentBrands).length
     const showCount = filtered.length
     let labelText = selectedStatus === 'all' ? `전체 브랜드 (${totalCount})` : `${statusLabel(selectedStatus).text} 브랜드 (${showCount})`
     if (brandSearchText) labelText = `'${brandSearchText}' 검색 (${showCount})`
@@ -2740,7 +2849,7 @@
       tr.addEventListener('click', () => openBrandModal(b.brand_code))
       tr.innerHTML = `
         <td>${idx + 1}</td>
-        <td class="bn">${b.brand_name}${b.is_new ? '<span class="new-badge" title="판매 14일 미만 신상 · 재고일수 등 지표가 아직 불안정">NEW</span>' : ''}</td>
+        <td class="bn">${b.brand_name}${b._category ? '<span class="md-cat">' + b._category + '</span>' : ''}${b.is_new ? '<span class="new-badge" title="판매 14일 미만 신상 · 재고일수 등 지표가 아직 불안정">NEW</span>' : ''}</td>
         <td class="md-cell" title="${b.mds && b.mds.length > 1 ? '담당: ' + b.mds.join(', ') : ''}">${b.md ? b.md + (b.mds && b.mds.length > 1 ? ' 외' : '') : '—'}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r">${b.season_inbound_total > 0 ? fmtMoney(b.season_inbound_total) : '-'}</td>
@@ -2920,6 +3029,14 @@
     if (mdSel) {
       mdSel.addEventListener('change', () => {
         selectedMD = mdSel.value
+        renderList()
+      })
+    }
+    // 카테고리 분리 토글 [v1.9.24]
+    const catToggle = document.getElementById('cat-split-toggle')
+    if (catToggle) {
+      catToggle.addEventListener('change', () => {
+        splitByCategory = catToggle.checked
         renderList()
       })
     }
