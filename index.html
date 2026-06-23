@@ -1271,7 +1271,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 31 · 판매율 회사 공식(소진÷(소진+잔여))으로 정정 · v1.9.18
+    Phase 35 · 판매율 소진기준을 회사 발주관리 누적매출원가로 교체 (회사 점수판과 정합) · v1.9.22
   </div>
 
 </div>
@@ -1671,7 +1671,7 @@
         fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
         fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
-          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
+          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, cum_cost_of_goods, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
       ])
 
       // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
@@ -1933,20 +1933,23 @@
       }
     }
 
-    // 4-2. 발주/입고 상세 → 판매율 분모(누적입고액) + 재고일수용 전사재고액.
-    // 판매율(금액) = 매출원가(매출 파일 cost_of_goods) ÷ 누적입고액(발주관리)
-    // 재고일수 = 전사재고액(발주관리 total_stock_amount) ÷ 최근30일 일평균 매출원가
-    // ※ 발주관리 cum_cost_of_goods는 '입고−재고'=유출 전체값이라 분자로 안 씀
-    const poAmtMap = {}    // {brand: {inbound, stock}}
-    const poMcAmtMap = {}  // {brand: {mc: {inbound}}}
+    // 4-2. 발주/입고 상세 → 판매율(회사 기준) + 재고일수용 전사재고액.
+    // 판매율(금액) = 누적매출원가(발주관리 cum_cost_of_goods) ÷ (누적매출원가 + 전사재고액)
+    //   ★v1.9.22: 회사 점수판과 정합. 소진=발주관리 누적매출원가(입고−재고, 이고 포함).
+    //   (구버전은 매출 파일 cost_of_goods를 소진으로 써서 이고 큰 브랜드가 회사값보다 낮게 나옴)
+    // 재고일수 = 전사재고액(발주관리 total_stock_amount) ÷ 최근30일 일평균 매출원가(매출 파일)
+    const poAmtMap = {}    // {brand: {inbound, stock, cog}}
+    const poMcAmtMap = {}  // {brand: {mc: {inbound, stock, cog}}}
     for (const r of poDetail) {
       const bk = r.brand_code
       if (!bk) continue
       const inbound = Number(r.cum_inbound_amount) || 0
       const stock = Number(r.total_stock_amount) || 0
-      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0, firstOutbound: null, brandName: '', byGroup: {} }
+      const cog = Number(r.cum_cost_of_goods) || 0   // 회사 누적매출원가(소진재고액)
+      if (!poAmtMap[bk]) poAmtMap[bk] = { inbound: 0, stock: 0, cog: 0, firstOutbound: null, brandName: '', byGroup: {} }
       poAmtMap[bk].inbound += inbound
       poAmtMap[bk].stock += stock
+      poAmtMap[bk].cog += cog
       if (r.brand_name && !poAmtMap[bk].brandName) poAmtMap[bk].brandName = r.brand_name
       // 구매그룹(부문)별 입고액 — MD 매핑·주부문 판정용
       const grp = r.buy_group_code || ''
@@ -1959,8 +1962,10 @@
       }
       const mk = r.mc_code || '_unknown'
       if (!poMcAmtMap[bk]) poMcAmtMap[bk] = {}
-      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0 }
+      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0, stock: 0, cog: 0 }
       poMcAmtMap[bk][mk].inbound += inbound
+      poMcAmtMap[bk][mk].stock += stock
+      poMcAmtMap[bk][mk].cog += cog
     }
 
     // 재고일수용: 최근 30일 기준일 = 데이터의 가장 최근 매출일
@@ -1984,7 +1989,7 @@
       // 매출 통계
       const totalSales = b.total_sales              // 실매출 (외형/1.1) - 계산용
       const totalSalesGross = b.total_sales_gross   // 외형매출 (VAT 포함) - 표시용
-      const totalCost = b.total_cost                // 소진재고액 (매출원가)
+      const totalCost = b.total_cost                // 매출 파일 매출원가 (매총율·재고일수속도·주판율비중용. 판매율 분자 아님-v1.9.22)
       const totalReturn = b.total_return            // 환입액
       
       // 매총율 = 1 - (소진재고액 - 환입액) / 실매출 (회사 공식, 실매출 기준)
@@ -2040,18 +2045,19 @@
       }
       const recentDailyCost = recentCost / denomDays
       const poStock = Math.max(0, poAmt.stock || 0)
+      const poCog = Math.max(0, poAmt.cog || 0)   // 회사 누적매출원가 (소진재고액, 이고 포함)
       let inventoryDays = null
       if (recentDailyCost > 0) inventoryDays = Math.min(999, Math.round(poStock / recentDailyCost))
       else if (poStock > 0) inventoryDays = 999  // 재고는 있는데 최근 판매 없음 = 사실상 무한
       const stockValue = Math.max(0, inv.value)  // 재고파일 기준 (표시/기타용 유지)
 
-      // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식, v1.9.18]
-      //   소진재고액 = totalCost (매출 파일 매출원가, 비매출 출고 제외됨)
+      // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식]
+      //   ★v1.9.22: 소진재고액 = 발주관리 누적매출원가(poCog) — 회사 점수판과 정확히 일치.
+      //     (구버전은 totalCost=매출파일 매출원가를 썼는데, 이고 큰 브랜드가 회사값보다 낮았음)
       //   잔여재고액 = poStock (발주관리 전사재고액)
-      //   ※ 구버전(v1.8.2~): 매출원가÷누적입고액. 분모가 입고라 반품·이고 갭이 큰
-      //     브랜드(자라키즈 등)가 회사 공식보다 낮게 나왔음.
-      const sellThrough = (totalCost + poStock > 0)
-        ? totalCost / (totalCost + poStock)
+      //   ⚠️ 발주관리 데이터 없는 브랜드(위탁 등, poAmt.inbound=0)는 판매율 계산 불가('—').
+      const sellThrough = (poAmt.inbound > 0 && poCog + poStock > 0)
+        ? poCog / (poCog + poStock)
         : null
       
       // 영업이익률 = (매총익 - 판관비) / 매출 = 매총율 - 판관비율
@@ -2100,15 +2106,18 @@
       // MC별 통계 만들기 (매출 + 재고 결합)
       const mcStatsArr = []
       const invMcForBrand = invMcMap[code] || {}
-      const allMcKeys = new Set([...Object.keys(b.mcSales), ...Object.keys(invMcForBrand)])
+      const poMcForBrand = poMcAmtMap[code] || {}
+      const allMcKeys = new Set([...Object.keys(b.mcSales), ...Object.keys(invMcForBrand), ...Object.keys(poMcForBrand)])
       for (const mcKey of allMcKeys) {
         const sales = b.mcSales[mcKey] || { mc_code: mcKey === '_unknown' ? null : mcKey, mc_name: '(미분류)', total_sales: 0, total_cost: 0, total_qty: 0, total_return: 0 }
         const stk = invMcForBrand[mcKey] || { qty: 0, value: 0 }
-        // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식, v1.9.18]
-        //   소진=MC 매출원가, 잔여=MC 재고(재고파일). 브랜드와 동일 공식.
-        const mcStkSafe = Math.max(0, stk.value)
-        const mcSellThrough = (sales.total_cost + mcStkSafe > 0)
-          ? sales.total_cost / (sales.total_cost + mcStkSafe)
+        const poMc = poMcForBrand[mcKey] || { inbound: 0, stock: 0, cog: 0 }
+        // 판매율 = 소진재고액 ÷ (소진재고액 + 잔여재고액)  [회사 공식, v1.9.22 발주 기준]
+        //   소진=발주관리 누적매출원가(MC), 잔여=발주관리 전사재고액(MC). 브랜드와 동일.
+        const mcCog = Math.max(0, poMc.cog || 0)
+        const mcStk = Math.max(0, poMc.stock || 0)
+        const mcSellThrough = (poMc.inbound > 0 && mcCog + mcStk > 0)
+          ? mcCog / (mcCog + mcStk)
           : null
         // 매총율
         const mcGrossMargin = sales.total_sales > 0
@@ -2121,7 +2130,7 @@
           total_cost: sales.total_cost,
           total_qty: sales.total_qty,
           stock_qty: stk.qty,
-          stock_value: stk.value,
+          stock_value: mcStk,          // 발주관리 전사재고액(MC) — 판매율과 동일 기준 [v1.9.22]
           sell_through: mcSellThrough,
           gross_margin: mcGrossMargin
         })
@@ -2171,6 +2180,7 @@
         inventory_days: inventoryDays,
         stock_value: stockValue,
         po_stock: poStock,          // 발주관리 전사재고액 (묶인 재고 = 마크다운 대상 금액)
+        po_cost_of_goods: poCog,    // 발주관리 누적매출원가 (회사 소진재고액 = 판매율 분자)
         stock_qty: inv.qty,
         sell_through: sellThrough,
         op_margin: opMargin,
@@ -2201,9 +2211,9 @@
     // 매출 0인 브랜드 제외
     currentBrands = brands.filter(b => b.total_sales > 0)
     
-    // 주판율 계산 (누적판매율 - 7일 전 누적판매율)
+    // 주판율 계산 (오늘=데이터 최신일 asOfDate 기준 최근 7일, 전 브랜드 공통)
     for (const b of currentBrands) {
-      b.weekly_sell_change = calcWeeklySellChange(b)
+      b.weekly_sell_change = calcWeeklySellChange(b, asOfDate)
     }
     
     // 매출액 내림차순 정렬
@@ -2230,9 +2240,9 @@
     return { text: '적극 할인', cls: 'b-hot' }
   }
   
-  // 시즌 시작부터 오늘까지 누적판매율 라인 데이터 계산
-  // 누적판매율 = 그날까지 누적 cost_of_goods ÷ 시즌 누적 입고액 (purchase_orders)
-  // 회사 공식: 누적판매율 = 누적매출원가 ÷ 누적입고액
+  // 시즌 시작부터 오늘까지 누적판매율 라인 데이터 계산 [v1.9.22]
+  //   누적판매율 = 회사 판매율(발주 기준) × (그날까지 매출소진 ÷ 누적 매출소진)
+  //   level은 회사 판매율, shape는 매출 파일 일별 소진 → 마지막 점 = 헤드라인 판매율.
   function getCumulativeSellThrough(brand, period) {
     const startDate = new Date(period.start)
     const endDate = new Date(period.end)
@@ -2240,10 +2250,15 @@
     const lastDate = today < endDate ? today : endDate
     
     const dailyCost = brand.dailyCost || {}
-    // 시즌 입고액 = purchase_orders의 시즌 합계 (스칼라)
+    // 시즌 입고액 = purchase_orders의 시즌 합계 (스칼라) — 표시용으로만 유지
     const totalInbound = brand.season_inbound_total || 0
-    
-    if (totalInbound === 0) return { points: [], finalRate: 0, totalInbound: 0 }
+    // 누적판매율(level)=회사 판매율, 시점별 비중(shape)=매출 파일 일별 소진 [v1.9.22]
+    //   → 마지막 점이 헤드라인 판매율과 일치. (구버전은 매출누적÷분모라 회사값과 어긋남)
+    const sellRate = brand.sell_through
+    const totalSalesCost = brand.total_cost || 0
+
+    if (sellRate === null || sellRate === undefined || totalSalesCost <= 0)
+      return { points: [], finalRate: sellRate || 0, totalInbound }
     
     // 매출 데이터의 첫 날을 X축 시작점으로 사용 (시즌 시작 전 매출이 있을 수 있음)
     const sortedDates = Object.keys(dailyCost).sort()
@@ -2279,7 +2294,7 @@
         else break
       }
       
-      const rate = acc / totalInbound
+      const rate = sellRate * (acc / totalSalesCost)
       points.push({ date: key, rate: rate })
     }
     
@@ -2306,49 +2321,55 @@
     return { dir: 'flat', icon: '→' }
   }
   
-  // 주판율 계산: 누적판매율(오늘) - 누적판매율(7일 전)
-  // 회사 공식: 누적판매율 = 누적매출원가 ÷ 누적입고액
-  // 반환값: 비율 (0.023 = 2.3%p), 데이터 부족 시 null
-  function calcWeeklySellChange(brand) {
+  // 주판율 = 이번 주 누적판매율 증가분 [v1.9.22]
+  //   = 회사판매율(발주 기준) × (이번주 매출소진 ÷ 누적 매출소진)
+  //   판매율 수준은 회사 발주값, 주간 비중은 매출 파일 일별 소진으로 스케일.
+  //   → 주판율 합 = 판매율(정합). 이고 없는 브랜드는 회사 점수판 주판율과 정확히 일치.
+  //   (회사 주판율 = 주간 BI 매출원가÷(소진+잔여)인데 우리 DB엔 주간 BI값이 없어 매출파일로 근사)
+  // ⚠️ 기준일은 '전체 데이터 최신일(asOfDate)' — 전 브랜드 공통 윈도우 (v1.9.20).
+  // 반환값: 비율 (0.023 = 2.3%p), 데이터 부족/발주관리 없음 시 null
+  function calcWeeklySellChange(brand, asOfDate) {
     const dailyCost = brand.dailyCost || {}
-    const totalInbound = brand.season_inbound_total || 0
-    if (totalInbound === 0) return null
-    
+    // 주판율 = 회사판매율 × (이번주 소진 ÷ 누적 소진)  [v1.9.22]
+    //   판매율(level)은 회사 발주 기준, 주간 '비중(shape)'은 매출 파일 일별 소진으로 산출.
+    //   → 주판율을 다 더하면 판매율이 되고(정합), 이고 없는 브랜드는 회사 주판율과 정확히 일치.
+    const sellRate = brand.sell_through              // 회사 기준 판매율 (level)
+    const totalSalesCost = brand.total_cost || 0     // 매출 파일 누적 소진 (주간 비중 분모)
+    // 발주관리 데이터 없는 브랜드(판매율 '—')는 주판율도 계산 불가
+    if (sellRate === null || sellRate === undefined || totalSalesCost <= 0 || !asOfDate) return null
+
     const sortedDates = Object.keys(dailyCost).sort()
     if (sortedDates.length === 0) return null
-    
-    // 일별 누적 매출원가 만들기
+
     const cumByDate = {}
     let runningCost = 0
     for (const dt of sortedDates) {
       runningCost += dailyCost[dt]
       cumByDate[dt] = runningCost
     }
-    
-    // 가장 마지막 매출 날짜 = "오늘" 기준
-    const lastDateStr = sortedDates[sortedDates.length - 1]
-    const lastCum = cumByDate[lastDateStr]
-    
-    // 7일 전 날짜
-    const lastDate = new Date(lastDateStr)
-    const weekAgoDate = new Date(lastDate)
-    weekAgoDate.setDate(weekAgoDate.getDate() - 7)
-    const weekAgoStr = weekAgoDate.toISOString().slice(0, 10)
-    
-    // 7일 전 시점까지의 누적 (그 날짜까지 데이터가 있다면 사용, 없으면 그 이전 가장 가까운 날 사용)
+
+    // 기준일 = asOfDate(전체 최신일)까지 누적
+    let lastCum = 0
+    for (const dt of sortedDates) {
+      if (dt <= asOfDate) lastCum = cumByDate[dt]
+      else break
+    }
+    // 7일 전까지 누적
+    const weekAgoStr = new Date(new Date(asOfDate).getTime() - 7 * 86400000).toISOString().slice(0, 10)
     let weekAgoCum = 0
     for (const dt of sortedDates) {
       if (dt <= weekAgoStr) weekAgoCum = cumByDate[dt]
       else break
     }
-    
-    // 시즌 시작 직후라 7일 데이터가 안 쌓였으면 null (오해 소지 줄임)
+
+    // 판매 시작 7일 미만 신상은 null (오해 소지)
     const firstDate = new Date(sortedDates[0])
-    const daysSinceStart = (lastDate - firstDate) / (1000 * 60 * 60 * 24)
+    const daysSinceStart = (new Date(asOfDate) - firstDate) / 86400000
     if (daysSinceStart < 7) return null
-    
-    // 주판율 = (이번 누적원가 - 전주 누적원가) / 누적입고액
-    return (lastCum - weekAgoCum) / totalInbound
+
+    // 주판율 = 회사판매율 × (이번주 소진 ÷ 누적 소진) = 이번 주 판매율 증가분(%p)
+    const weeklyFrac = (lastCum - weekAgoCum) / totalSalesCost
+    return sellRate * weeklyFrac
   }
   
   // 누적판매율 라인 차트 SVG
@@ -2621,30 +2642,33 @@
     for (const b of currentBrands) {
       const md = b.md
       if (!md) continue
-      if (!agg[md]) agg[md] = { count: 0, inbound: 0, gross: 0, net: 0, cost: 0, ret: 0, stock: 0, recent: 0, wkInb: 0 }
+      if (!agg[md]) agg[md] = { count: 0, inbound: 0, gross: 0, net: 0, cost: 0, poCog: 0, ret: 0, stock: 0, recent: 0, wkAmt: 0 }
       const a = agg[md]
       a.count++
       a.inbound += b.season_inbound_total || 0
       a.gross += b.total_sales_gross || b.total_sales || 0
       a.net += b.total_sales || 0
-      a.cost += b.total_cost || 0
+      a.cost += b.total_cost || 0           // 매출 파일 소진 (매총율·영업이익용)
+      a.poCog += b.po_cost_of_goods || 0    // 회사 누적매출원가 (판매율·주판율용) [v1.9.22]
       a.ret += b.total_return || 0
       a.stock += b.po_stock || 0
       a.recent += b.recent_cost || 0
-      // 주판율 입고 가중합 (weekly_sell_change × 입고 = 최근7일 소진)
-      if (b.weekly_sell_change !== null && b.season_inbound_total > 0) {
-        a.wkInb += b.weekly_sell_change * b.season_inbound_total
+      // 이번 주 소진액 누계 (주판율 × 분모(소진+잔여) = 그 브랜드의 최근7일 소진) [v1.9.22]
+      if (b.weekly_sell_change !== null) {
+        a.wkAmt += b.weekly_sell_change * ((b.po_cost_of_goods || 0) + (b.po_stock || 0))
       }
     }
     const rows = Object.entries(agg).map(([md, a]) => {
-      const sellRate = a.inbound > 0 ? a.cost / a.inbound : null
+      // 판매율·주판율 분모 = 회사 공식 (회사소진 + 잔여) [v1.9.22]. 매총율만 매출 소진 사용.
+      const denom = a.poCog + a.stock
+      const sellRate = denom > 0 ? a.poCog / denom : null
       const gm = a.net > 0 ? 1 - (a.cost - a.ret) / a.net : null
       const op = gm !== null ? gm - sga : null
       const spr = (sellRate !== null && progress > 0) ? sellRate / (progress / 100) : null
       // 재고일수 = 전사재고액 합 ÷ 최근30일 일평균 소진
       const dailyRecent = a.recent / 30
       const invDays = dailyRecent > 0 ? Math.min(999, Math.round(a.stock / dailyRecent)) : (a.stock > 0 ? 999 : null)
-      const weekly = a.inbound > 0 ? a.wkInb / a.inbound : null  // 입고 가중평균 주판율
+      const weekly = denom > 0 ? a.wkAmt / denom : null  // 주판율 = Σ이번주소진 ÷ Σ(회사소진+잔여)
       return { md, count: a.count, inbound: a.inbound, gross: a.gross, sellRate, gm, op, spr, invDays, weekly }
     }).sort((x, y) => y.inbound - x.inbound)
     tbody.innerHTML = rows.map(r => `
