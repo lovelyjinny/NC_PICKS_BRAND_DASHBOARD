@@ -1258,6 +1258,7 @@
               <th class="r sortable" data-sort="target_sell_through">목표 판매율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_through">판매율<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="weekly_sell_change">주판율<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="tcr" title="TCR = 누적실매출 ÷ 누적입고 (발주관리 기준)">TCR<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="sell_progress_ratio">판매율÷진척도<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="rec_discount">권장 할인<span class="sort-ind"></span></th>
               <th>상태</th>
@@ -1279,7 +1280,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 42 · 색 대비 개선 — 베이지 바탕 + 순백 카드 + 그림자 (구분 잘 되게) · v1.9.29
+    Phase 43 · 브랜드 리스트에 TCR 컬럼 추가 (주판율 다음, 카테고리 분리·엑셀 포함) · v1.9.30
   </div>
 
 </div>
@@ -1731,7 +1732,7 @@
         fetchAllSeasons(() => supabase.from('brand_season_summary')
           .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type'), 'brand_code'),
         fetchAllSeasons(() => supabase.from('purchase_orders')
-          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, cum_cost_of_goods, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type'), 'id')
+          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, cum_cost_of_goods, cum_real_sales, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type'), 'id')
       ])
 
       // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
@@ -2029,10 +2030,11 @@
       }
       const mk = r.mc_code || '_unknown'
       if (!poMcAmtMap[bk]) poMcAmtMap[bk] = {}
-      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0, stock: 0, cog: 0, buyGroup: grp }
+      if (!poMcAmtMap[bk][mk]) poMcAmtMap[bk][mk] = { inbound: 0, stock: 0, cog: 0, realSales: 0, buyGroup: grp }
       poMcAmtMap[bk][mk].inbound += inbound
       poMcAmtMap[bk][mk].stock += stock
       poMcAmtMap[bk][mk].cog += cog
+      poMcAmtMap[bk][mk].realSales += Number(r.cum_real_sales) || 0   // TCR 분자 (발주 누적실매출)
     }
 
     // 재고일수용: 최근 30일 기준일 = 데이터의 가장 최근 매출일
@@ -2081,15 +2083,16 @@
         ? new Date(new Date(asOfDate).getTime() - 7 * 86400000).toISOString().slice(0, 10) : ''
       const catBreak = {}  // cat → {cog,stock,inbound,salesGross,salesNet,cost,ret,recentCost,weeklyCost}
       const ensureCat = (cat) => {
-        if (!catBreak[cat]) catBreak[cat] = { cog: 0, stock: 0, inbound: 0, salesGross: 0, salesNet: 0, cost: 0, ret: 0, recentCost: 0, weeklyCost: 0 }
+        if (!catBreak[cat]) catBreak[cat] = { cog: 0, stock: 0, inbound: 0, realSales: 0, salesGross: 0, salesNet: 0, cost: 0, ret: 0, recentCost: 0, weeklyCost: 0 }
         return catBreak[cat]
       }
-      for (const mk in poMcB) {                 // 발주: 소진·재고·입고 (MC 단위 분류)
+      for (const mk in poMcB) {                 // 발주: 소진·재고·입고·실매출 (MC 단위 분류)
         const pm = poMcB[mk]
         const cat = classifyCategory(mk, pm.buyGroup, (b.mcSales[mk] && b.mcSales[mk].mc_name) || '', b.brand_name)
         if (!cat) continue
         const cb = ensureCat(cat)
         cb.cog += pm.cog || 0; cb.stock += pm.stock || 0; cb.inbound += pm.inbound || 0
+        cb.realSales += pm.realSales || 0       // TCR 분자 (발주 누적실매출)
       }
       for (const mk in b.mcSales) {             // 매출: 외형·실매출·원가·환입 (MC 단위)
         const sm = b.mcSales[mk]
@@ -2338,6 +2341,7 @@
           op_margin: cOp, gross_margin: cGM, sales_period_days: salesPeriodDays,
           inventory_days: cInvDays, target_sell_through: targetSellThrough,
           sell_through: cSell, weekly_sell_change: cWeekly, sell_progress_ratio: cSpr,
+          tcr: (d.inbound > 0 && d.realSales > 0) ? d.realSales / d.inbound : null,  // TCR (발주 실매출÷입고)
           rec_discount: cDisc, status: cStatus, po_stock: d.stock, po_cost_of_goods: d.cog
         })
       }
@@ -2698,7 +2702,7 @@
       '영업이익률(%)', '매총율(%)',
       '판매기간(일)', '재고일수(일)',
       '목표판매율(%)', '판매율(%)',
-      '주판율(%p)', '판매율÷진척도(%)',
+      '주판율(%p)', 'TCR', '판매율÷진척도(%)',
       '권장할인(%)', '상태'
     ]
 
@@ -2716,6 +2720,7 @@
       pct0v(b.target_sell_through),
       pct0v(b.sell_through),
       pct1v(b.weekly_sell_change),
+      (b.tcr !== null && b.tcr !== undefined) ? Math.round(b.tcr * 10) / 10 : '',
       pct0v(b.sell_progress_ratio),
       (b.rec_discount !== null && b.rec_discount !== undefined) ? Math.round(b.rec_discount * 100) : '',
       statusMap[b.status] || (b.status || '')
@@ -2732,7 +2737,7 @@
       { wch: 12 }, { wch: 12 },                // 영익/매총
       { wch: 11 }, { wch: 11 },                // 판매기간/재고일수
       { wch: 12 }, { wch: 11 },                // 목표판매율/판매율
-      { wch: 11 }, { wch: 14 },                // 주판율/판매율÷진척
+      { wch: 11 }, { wch: 10 }, { wch: 14 },   // 주판율/TCR/판매율÷진척
       { wch: 11 }, { wch: 12 }                 // 권장할인/상태
     ]
 
@@ -2893,6 +2898,7 @@
         <td class="r">${fmtPct(b.target_sell_through, 0)}</td>
         <td class="r">${fmtPct(b.sell_through, 0)}</td>
         <td class="r ${wkCls}">${wkText}</td>
+        <td class="r">${(b.tcr !== null && b.tcr !== undefined) ? b.tcr.toFixed(1) : '—'}</td>
         <td class="r ${srCls}">${fmtPct(b.sell_progress_ratio, 0)}</td>
         <td class="r">${b.rec_discount !== null ? Math.round(b.rec_discount * 100) + '%' : '—'}</td>
         <td class="bdg"><span class="${sl.cls}">${sl.text}</span></td>
