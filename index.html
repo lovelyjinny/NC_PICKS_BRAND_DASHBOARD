@@ -25,12 +25,13 @@
   
   body {
     font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-    background: #ffffff;
+    /* 바탕을 은은한 베이지-그레이로: 흰 카드가 또렷하게 떠 보이도록 [v1.9.29] */
+    background: #eee8db;
     color: #2a2018;
     min-height: 100vh;
-    background-image: 
-      radial-gradient(ellipse at 10% 0%, rgba(163,108,46,0.07) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 100%, rgba(204,130,16,0.06) 0%, transparent 50%);
+    background-image:
+      radial-gradient(ellipse at 10% 0%, rgba(163,108,46,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(204,130,16,0.07) 0%, transparent 50%);
     padding: 24px;
   }
   
@@ -66,7 +67,7 @@
   
   /* 시즌 셀렉터 */
   .season-bar {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     padding: 14px 18px; margin-bottom: 18px;
     display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   }
@@ -99,7 +100,7 @@
   .season-multi-arrow { font-size: 11px; color: #a36c2e; }
   .season-multi-menu {
     position: absolute; top: 100%; left: 0; margin-top: 4px;
-    background: #f7f3ec; border: 1px solid #d3c6b3; border-radius: 6px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 6px;
     padding: 6px; z-index: 1000;
     min-width: 160px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.35);
@@ -122,7 +123,7 @@
   .month-filter-bar {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 16px; margin-bottom: 16px;
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 8px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 8px;
     flex-wrap: wrap;
   }
   .month-filter-bar .label {
@@ -174,7 +175,7 @@
   .month-multi-arrow { font-size: 11px; color: #a36c2e; }
   .month-multi-menu {
     position: absolute; top: 100%; left: 0; margin-top: 4px;
-    background: #f7f3ec; border: 1px solid #d3c6b3; border-radius: 6px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 6px;
     padding: 6px; z-index: 1000;
     min-width: 200px; max-height: 360px; overflow-y: auto;
     box-shadow: 0 8px 24px rgba(0,0,0,0.35);
@@ -207,7 +208,7 @@
   .status-filter-bar {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 16px; margin-bottom: 12px;
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 8px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 8px;
     flex-wrap: wrap;
   }
   .status-filter-bar .label {
@@ -231,7 +232,7 @@
   }
   /* MD별 요약 표 */
   #md-summary-section { margin-bottom: 22px; }
-  .md-summary-wrap { overflow-x: auto; background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 12px; padding: 6px 12px; }
+  .md-summary-wrap { overflow-x: auto; background: #ffffff; border: 1px solid #ddceb2; border-radius: 12px; padding: 6px 12px; }
   .md-summary-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
   .md-summary-tbl th { color: #8c5f33; font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 2px solid #cdb38a; white-space: nowrap; }
   .md-summary-tbl th.r, .md-summary-tbl td.r { text-align: right; }
@@ -242,7 +243,8 @@
   /* MD 필터 */
   .md-filter {
     padding: 5px 10px; border-radius: 8px;
-    background: rgba(63,51,42,0.5); border: 1px solid #3f332a;
+    /* 구버전: 어두운 반투명 배경 + 어두운 글자 (다크 테마 잔재) → 흰 배경으로 정정 [v1.9.29] */
+    background: #ffffff; border: 1px solid #cdb38a;
     color: #2a2018; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
   }
   .md-filter:focus { border-color: #a36c2e; }
@@ -295,7 +297,7 @@
   .season-info b { color: #2a2018; font-weight: 600; }
   .season-progress {
     display: inline-block; width: 120px; height: 4px;
-    background: #ffffff; border-radius: 2px; margin: 0 8px;
+    background: #e8e0d0; border-radius: 2px; margin: 0 8px;
     vertical-align: middle; overflow: hidden;
   }
   .season-progress-bar {
@@ -306,7 +308,7 @@
   /* 슬라이더 패널 */
   .sliders { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
   .sl {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     padding: 13px 16px; position: relative;
   }
   .sl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -350,11 +352,11 @@
   /* KPI 카드 */
   /* 카드 입체감 (라이트 테마 구분 강화) */
   .sl, .k, .top3-card, .md-summary-wrap, .tbl {
-    box-shadow: 0 1px 4px rgba(120,80,30,0.08);
+    box-shadow: 0 2px 14px rgba(120,80,30,0.12);
   }
   .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
   .k {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     padding: 18px 20px 18px 24px; position: relative; overflow: hidden;
     cursor: pointer; transition: transform 0.15s, border-color 0.15s;
   }
@@ -390,7 +392,7 @@
   
   /* 빈 상태 */
   .empty {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 12px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 12px;
     padding: 48px 24px; text-align: center;
   }
   .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
@@ -403,7 +405,7 @@
     gap: 14px; margin-bottom: 22px;
   }
   .top3-card {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     padding: 18px 20px;
     display: flex; flex-direction: column;
   }
@@ -473,7 +475,7 @@
   
   /* 리스트 */
   .tbl {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     overflow: hidden; margin-bottom: 22px;
   }
   .tbl .th {
@@ -548,7 +550,7 @@
   
   /* 로딩 */
   .calc-loading {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 10px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 10px;
     padding: 24px; text-align: center;
     color: #a36c2e; font-size: 13px; letter-spacing: 0.1em;
   }
@@ -568,14 +570,14 @@
   }
   .kpi-modal-bg.show { display: flex; }
   .kpi-modal {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 12px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 12px;
     width: 100%; max-width: 1000px; padding: 0;
     animation: bdSlide 0.2s ease-out;
   }
   .kpi-modal .head {
     padding: 20px 26px; border-bottom: 1px solid #cdb38a;
     display: flex; align-items: center; gap: 14px;
-    position: sticky; top: 0; background: #f7f3ec; z-index: 1;
+    position: sticky; top: 0; background: #ffffff; z-index: 1;
     border-radius: 12px 12px 0 0;
   }
   .kpi-modal .head .title {
@@ -630,7 +632,7 @@
   }
   .bd-modal-bg.show { display: flex; }
   .bd-modal {
-    background: #f7f3ec; border: 1px solid #cdb38a; border-radius: 12px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 12px;
     width: 100%; max-width: 900px; padding: 0;
     animation: bdSlide 0.2s ease-out;
   }
@@ -641,7 +643,7 @@
   .bd-head {
     padding: 20px 26px; border-bottom: 1px solid #cdb38a;
     display: flex; align-items: center; gap: 14px;
-    position: sticky; top: 0; background: #f7f3ec; z-index: 1;
+    position: sticky; top: 0; background: #ffffff; z-index: 1;
     border-radius: 12px 12px 0 0;
   }
   .bd-head .bd-name { font-size: 22px; font-weight: 700; color: #7a4ec2; flex: 1; }
@@ -813,7 +815,7 @@
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: #f7f3ec; border: 1px solid #d3c6b3; border-radius: 12px;
+    background: #ffffff; border: 1px solid #ddceb2; border-radius: 12px;
     padding: 28px; width: 100%; max-width: 360px;
   }
   .modal h2 { font-size: 16px; color: #2a2018; margin-bottom: 6px; }
@@ -1277,7 +1279,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 41 · 멀티 시즌 로드 수정 — 시즌별 병렬 조회로 타임아웃 해결 (구 or필터는 500 에러) · v1.9.28
+    Phase 42 · 색 대비 개선 — 베이지 바탕 + 순백 카드 + 그림자 (구분 잘 되게) · v1.9.29
   </div>
 
 </div>
