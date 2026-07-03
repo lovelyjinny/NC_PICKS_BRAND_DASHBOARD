@@ -660,9 +660,9 @@
   .bd-close:hover { border-color: #d3c6b3; color: #2a2018; }
   .bd-body { padding: 22px 26px 26px; }
   
-  /* KPI 4개 가로 박스 */
+  /* KPI 5개 가로 박스 (v1.9.31: TCR 추가) */
   .bd-kpi {
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(5, 1fr);
     gap: 10px; margin-bottom: 22px;
   }
   .bd-k {
@@ -679,6 +679,7 @@
   .bd-k.k2 .v { color: #cc8210; }
   .bd-k.k3 .v { color: #c8474a; }
   .bd-k.k4 .v { color: #2380bf; }
+  .bd-k.k5 .v { color: #8c5f33; }
   
   /* 큰 차트 */
   .bd-section {
@@ -1280,7 +1281,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 43 · 브랜드 리스트에 TCR 컬럼 추가 (주판율 다음, 카테고리 분리·엑셀 포함) · v1.9.30
+    Phase 44 · 상세 모달에 TCR 카드 + 입고월별 표에 실매출·매총율·TCR 추가 · v1.9.31
   </div>
 
 </div>
@@ -1318,6 +1319,11 @@
           <div class="l">판매율</div>
           <div class="v" id="bd-sell">-</div>
           <div class="sub" id="bd-sell-sub">진척도 대비 - · 주판율 -</div>
+        </div>
+        <div class="bd-k k5">
+          <div class="l">TCR</div>
+          <div class="v" id="bd-tcr">-</div>
+          <div class="sub" id="bd-tcr-sub">실매출(발주) - ÷ 입고 -</div>
         </div>
       </div>
       
@@ -3204,6 +3210,11 @@
       ? '주판율 ' + (b.weekly_sell_change >= 0 ? '+' : '') + (b.weekly_sell_change * 100).toFixed(1) + '%p'
       : '주판율 -'
     document.getElementById('bd-sell-sub').textContent = `${ratioText} · ${wkText}`
+
+    // TCR 카드 (v1.9.31) — 숫자 배수, 소수점 1자리
+    document.getElementById('bd-tcr').textContent = (b.tcr !== null && b.tcr !== undefined) ? b.tcr.toFixed(1) : '—'
+    document.getElementById('bd-tcr-sub').textContent =
+      `실매출(발주) ${fmtMoney(b.season_real_sales || 0)} ÷ 입고 ${fmtMoney(b.season_inbound_total || 0)}`
     
     // 큰 차트 그리기
     renderBrandModalChart(b, period)
@@ -3405,11 +3416,13 @@
       const stk = Number(s.total_stock_amount) || 0
       if (inb <= 0) continue
       const month = String(s.first_inbound_date).slice(0, 7)
-      if (!cohorts[month]) cohorts[month] = { count: 0, inbound: 0, stock: 0, daysWeighted: 0 }
+      if (!cohorts[month]) cohorts[month] = { count: 0, inbound: 0, stock: 0, realSales: 0, cogs: 0, daysWeighted: 0 }
       const c = cohorts[month]
       c.count++
       c.inbound += inb
       c.stock += stk
+      c.realSales += Number(s.cum_real_sales) || 0    // 발주 누적실매출 (실매출·매총율·TCR용) [v1.9.31]
+      c.cogs += Number(s.cum_cost_of_goods) || 0      // 발주 누적매출원가 (매총율용)
       const days = Math.max(0, Math.round((today - new Date(s.first_inbound_date)) / 86400000))
       c.daysWeighted += days * inb  // 입고액 가중 평균 경과일용
     }
@@ -3427,8 +3440,11 @@
             <th>입고월</th>
             <th class="r">스타일수</th>
             <th class="r">입고액</th>
+            <th class="r">실매출</th>
             <th class="r">잔여재고</th>
             <th class="r">판매율</th>
+            <th class="r">매총율</th>
+            <th class="r">TCR</th>
             <th class="r">평균경과일</th>
             <th class="r">재고일수</th>
           </tr>
@@ -3447,13 +3463,20 @@
       } else if (c.stock > 0) {
         invDays = 999
       }
+      // 발주 기준 매총율 = (실매출 − 매출원가) ÷ 실매출, TCR = 실매출 ÷ 입고 [v1.9.31]
+      //   실매출 미입력 코호트(realSales 0)는 '-' 처리
+      const gm = c.realSales > 0 ? (c.realSales - c.cogs) / c.realSales : null
+      const tcr = (c.inbound > 0 && c.realSales > 0) ? c.realSales / c.inbound : null
       html += `
         <tr>
           <td>${m}</td>
           <td class="r">${c.count.toLocaleString()}</td>
           <td class="r">${fmtMoney(c.inbound)}</td>
+          <td class="r">${c.realSales > 0 ? fmtMoney(c.realSales) : '-'}</td>
           <td class="r">${fmtMoney(c.stock)}</td>
           <td class="r">${sellRate !== null ? (sellRate*100).toFixed(1) + '%' : '-'}</td>
+          <td class="r">${gm !== null ? (gm*100).toFixed(1) + '%' : '-'}</td>
+          <td class="r">${tcr !== null ? tcr.toFixed(1) : '-'}</td>
           <td class="r">${avgDays}일</td>
           <td class="r">${invDays !== null ? invDays + '일' : '-'}</td>
         </tr>
