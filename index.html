@@ -1277,7 +1277,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 37 · 브랜드 리스트 '카테고리 분리' 토글 — 한 브랜드를 여성/남성/아동/잡화 행으로 쪼개기 · v1.9.24
+    Phase 41 · 멀티 시즌 로드 수정 — 시즌별 병렬 조회로 타임아웃 해결 (구 or필터는 500 에러) · v1.9.28
   </div>
 
 </div>
@@ -1540,20 +1540,53 @@
   // 브랜드 부문이 아니라 '상품(MC) 단위'로 분류 → 한 브랜드가 여러 카테고리/MD로 쪼개짐.
   // MC코드 구조: ①1/2 ②성별(W/M/K) ③④중분류 ⑤⑥소분류  (예: 1WCAHH=여성·캐쥬얼·반팔티)
   const CATEGORY_MD = { '여성': '백서현', '남성': '한정훈', '아동': '조한익', '잡화': '지연홍' }
-  function classifyCategory(mcCode, buyGroupCode) {
-    const c = String(mcCode || '')
-    if (c.substring(2, 4) === 'AC') return '잡화'        // ③④=AC → 액세서리
-    const g = c.charAt(1)                                // ②번째 = 성별
-    if (g === 'L' || g === 'C') return '잡화'            // 자라 의류믹스·바지·니트류 비표준코드
-    if (g === 'W') return '여성'
-    if (g === 'M') return '남성'
-    if (g === 'K') return '아동'
-    // MC 성별 없으면 구매그룹(부문)으로 보정
-    if (buyGroupCode === 'OIA') return '여성'
-    if (buyGroupCode === 'OBA') return '남성'
-    if (buyGroupCode === 'OFA') return '아동'
-    if (buyGroupCode === 'OCA') return '잡화'
-    return null  // 미분류 (스포츠·제화 비표준 극소량)
+  // [v1.9.25] NC PICKS 일매출 규칙과 100% 동일하게 교체 (지니님 확정 2026-06-29).
+  // 신발→성별, 아동 전부 아동, 가방·모자·언더웨어→잡화, LF→여성/오클리→남성.
+  // 상품명(mcName)·브랜드명(brandName)도 받음. 미분류는 null.
+  function classifyCategory(mcCode, buyGroupCode, mcName, brandName) {
+    const c  = String(mcCode || '')
+    const mn = String(mcName || '')
+    const bg = String(buyGroupCode || '')   // 구매그룹 '코드'(OIA/OBA/OFA/OCA…)
+    const br = String(brandName || '')
+    const g2   = c.charAt(1)                 // ②자리 성별(W/M/K/C)
+    const g34  = c.substring(2, 4)           // ③④자리 중분류
+    const pre2 = c.substring(0, 2)
+    // (A) 신발류 → MC코드 앞2자리(MCH2)로 성별 (지니님 확정 2026-06-30). 1W/2W/1L→여,1M/2M→남,1K/1C→아동
+    const SHOES = ['운동화','구두','슬리퍼','쪼리','샌들','샌달','부츠','로퍼','스니커','단화','뮬','블로퍼','펌프스','모카신','워커']
+    if (SHOES.some(k => mn.includes(k))) {
+      if (pre2 === '1W' || pre2 === '2W' || pre2 === '1L') return '여성'
+      if (pre2 === '1M' || pre2 === '2M') return '남성'
+      if (pre2 === '1K' || pre2 === '1C') return '아동'
+      if (g2 === 'W') return '여성'
+      if (g2 === 'M') return '남성'
+      if (g2 === 'K' || g2 === 'C') return '아동'
+      return '남성'
+    }
+    // (B) 아동 먼저 (아동 잡화·언더웨어·의류 모두 아동)
+    if (mn.startsWith('아동') || mn.startsWith('캐릭터') || g2 === 'K' || g2 === 'C'
+        || bg === 'OFA' || bg === 'OFB' || bg === 'OAX') return '아동'
+    // (C) 잡화: 신발·아동 제외한 잡화·언더웨어
+    if (mn.includes('잡화') || mn.includes('언더웨어') || bg === 'OCA') return '잡화'
+    // (D) 성별 → 구매그룹 보정 → MC prefix → 품목 → AC/ACC → 브랜드
+    if (mn.startsWith('남성')) return '남성'
+    if (mn.startsWith('여성')) return '여성'
+    if (bg === 'OBA') return '남성'
+    if (bg === 'OIA') return '여성'
+    if (bg === 'OJA' || bg === 'OJB' || bg === 'OJC' || bg === 'OAY') return '남성'  // 스포츠·제화
+    if (bg === 'ODA') return '여성'                                                  // 명품
+    if (g2 === 'M') return '남성'
+    if (g2 === 'W') return '여성'
+    if (pre2 === '1M' || pre2 === '2M') return '남성'
+    if (pre2 === '1W' || pre2 === '2W' || pre2 === '1L') return '여성'
+    if (pre2 === '1K' || pre2 === '1C') return '아동'
+    if (['가방','지갑','파우치','캐리어'].some(k => mn.includes(k))) return '잡화'
+    if (['원피스','스커트','블라우스','레깅스'].some(k => mn.includes(k))) return '여성'
+    if (['셔츠','정장','넥타이'].some(k => mn.includes(k))) return '남성'
+    if (g34 === 'AC') return '잡화'
+    if (['ACC','악세','모자','머플러','스카프','양말'].some(k => mn.includes(k))) return '잡화'
+    if (br.includes('LF종합관')) return '여성'
+    if (br.includes('오클리') || br.toUpperCase().includes('OAKLEY')) return '남성'
+    return null  // 미분류 (성별·상품정보 없음)
   }
   // 브랜드명 정규화 (괄호 이후 전부 + 공백 제거 → 한글 핵심)
   // DB brand_name이 잘려 닫는 괄호가 없는 경우(예: '아웃도어 프로덕츠(OUTDOOR PR')도
@@ -1674,32 +1707,29 @@
         return all
       }
       
-      // 멀티 시즌 OR 조건: (year=2026 AND type=SS) OR (year=2025 AND type=FW) ...
-      // 단일 시즌은 단순 eq로 (성능/안정성 더 좋음)
-      const isSingleSeason = seasons.length === 1
-      const orFilter = seasons.map(s => `and(season_year.eq.${s.year},season_type.eq.${s.type})`).join(',')
-      
-      // 시즌 필터 헬퍼
-      const applySeasonFilter = (q) => {
-        if (isSingleSeason) {
-          return q.eq('season_year', seasons[0].year).eq('season_type', seasons[0].type)
-        } else {
-          return q.or(orFilter)
-        }
+      // ★v1.9.28 멀티 시즌 = 시즌별 단일 쿼리를 병렬로 돌려 합침.
+      //   (구버전: or=(and(...),and(...)) 필터 → 인덱스를 못 타 statement timeout(57014)로
+      //    500 에러 → 멀티 시즌 선택 시 로드 실패하고 옛 시즌 데이터가 화면에 남았음)
+      //   단일 eq+eq 쿼리는 인덱스를 타서 빠르고 이미 검증된 경로 — 시즌 수만큼 반복.
+      const fetchAllSeasons = async (buildQuery, cursorCol) => {
+        const perSeason = await Promise.all(seasons.map(sn =>
+          fetchAll(() => buildQuery().eq('season_year', sn.year).eq('season_type', sn.type), cursorCol)
+        ))
+        return perSeason.flat()
       }
-      
+
       const [s, i, t, p, pd] = await Promise.all([
-        fetchAll(() => applySeasonFilter(supabase.from('sales_daily')
-          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
-        fetchAll(() => applySeasonFilter(supabase.from('inventory_monthly')
-          .select('id, brand_code, store_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_code, season_month_code, season_month_name')), 'id'),
-        fetchAll(() => applySeasonFilter(supabase.from('sellthrough_daily')
-          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name')), 'id'),
-        // brand_season_summary는 MV라 PK 없음. 작은 표(브랜드×시즌 ~수백 행)라 brand_code 커서로 충분.
-        fetchAll(() => applySeasonFilter(supabase.from('brand_season_summary')
-          .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type')), 'brand_code'),
-        fetchAll(() => applySeasonFilter(supabase.from('purchase_orders')
-          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, cum_cost_of_goods, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type')), 'id')
+        fetchAllSeasons(() => supabase.from('sales_daily')
+          .select('id, brand_code, brand_name, sale_date, gross_sales, net_sales, cost_of_goods, qty_sold, return_amount, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name'), 'id'),
+        fetchAllSeasons(() => supabase.from('inventory_monthly')
+          .select('id, brand_code, store_code, year_month, qty_stock, stock_value_cost, mc_code, mc_name, season_year, season_type, season_code, season_month_code, season_month_name'), 'id'),
+        fetchAllSeasons(() => supabase.from('sellthrough_daily')
+          .select('id, brand_code, trans_date, qty_sold_total, vendor_inbound_with_vat, mc_code, mc_name, season_year, season_type, season_month_code, season_month_name'), 'id'),
+        // brand_season_summary는 MV라 PK 없음. 시즌별 분리 조회라 brand_code가 시즌 내 유일 → 커서 안전.
+        fetchAllSeasons(() => supabase.from('brand_season_summary')
+          .select('brand_code, total_inbound_amount, total_cost_of_goods, total_real_sales, company_cum_sell_rate, season_year, season_type'), 'brand_code'),
+        fetchAllSeasons(() => supabase.from('purchase_orders')
+          .select('id, brand_code, brand_name, buy_group_code, mc_code, cum_inbound_amount, cum_cost_of_goods, total_stock_amount, first_inbound_date, first_outbound_date, season_year, season_type'), 'id')
       ])
 
       // 도착했을 때 이미 더 새로운 로드가 시작됐다면 이 결과는 폐기
@@ -1834,7 +1864,7 @@
         brandMap[key].dailySales[r.sale_date] = (brandMap[key].dailySales[r.sale_date] || 0) + netSales
         brandMap[key].dailyCost[r.sale_date] = (brandMap[key].dailyCost[r.sale_date] || 0) + cog
         // 카테고리별 일별 소진 (MD 요약의 카테고리별 재고일수·주판율용) [v1.9.23]
-        const _cat = classifyCategory(r.mc_code, null)
+        const _cat = classifyCategory(r.mc_code, null, r.mc_name, r.brand_name)
         if (_cat) {
           if (!brandMap[key].dailyCostByCat[_cat]) brandMap[key].dailyCostByCat[_cat] = {}
           brandMap[key].dailyCostByCat[_cat][r.sale_date] = (brandMap[key].dailyCostByCat[_cat][r.sale_date] || 0) + cog
@@ -2054,14 +2084,14 @@
       }
       for (const mk in poMcB) {                 // 발주: 소진·재고·입고 (MC 단위 분류)
         const pm = poMcB[mk]
-        const cat = classifyCategory(mk, pm.buyGroup)
+        const cat = classifyCategory(mk, pm.buyGroup, (b.mcSales[mk] && b.mcSales[mk].mc_name) || '', b.brand_name)
         if (!cat) continue
         const cb = ensureCat(cat)
         cb.cog += pm.cog || 0; cb.stock += pm.stock || 0; cb.inbound += pm.inbound || 0
       }
       for (const mk in b.mcSales) {             // 매출: 외형·실매출·원가·환입 (MC 단위)
         const sm = b.mcSales[mk]
-        const cat = classifyCategory(mk, (poMcB[mk] && poMcB[mk].buyGroup) || '')
+        const cat = classifyCategory(mk, (poMcB[mk] && poMcB[mk].buyGroup) || '', sm.mc_name, b.brand_name)
         if (!cat) continue
         const cb = ensureCat(cat)
         cb.salesGross += sm.total_sales_gross || 0; cb.salesNet += sm.total_sales || 0
