@@ -1281,7 +1281,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 44 · 상세 모달에 TCR 카드 + 입고월별 표에 실매출·매총율·TCR 추가 · v1.9.31
+    Phase 45 · 입고월별 표에 이월·조정 행 + 합계 행 추가 (판매율=회사공식, 전체와 일치) · v1.9.32
   </div>
 
 </div>
@@ -3393,45 +3393,66 @@
   }
 
   // 입고월별 코호트 분석 (발주관리 데이터 기준)
-  // 판매율 = (입고액 − 잔여재고) / 입고액  ← 발주관리 기준 (반품·이고 포함, 메인 리스트와 다를 수 있음)
-  // 재고일수 = 잔여재고 / 일평균소진속도, 일평균 = (입고-재고) / 코호트 평균경과일
-  // ※ 메인 리스트의 판매율(매출 파일 기반)·재고일수(최근30일 매출속도)와는 산정 방식이 달라 값이 다를 수 있음
+  // 판매율 = 소진 ÷ (소진 + 잔여재고)  ← 회사공식(메인 리스트와 동일). [v1.9.32]
+  // ★v1.9.32: 입고월 없는 '이월·조정'(전 시즌 넘어온 재고: 입고액 0, 반품·이고로 잔여 음수 가능)을
+  //   별도 행 + 합계 행으로 추가. 이월을 빼서 잔여재고·판매율이 전체와 안 맞던 문제 해결.
+  //   합계 = 발주관리 전체 기준 = 메인 리스트 판매율과 일치.
   function renderInboundCohorts(brand) {
     const wrap = document.getElementById('bd-cohort-wrap')
     const section = document.getElementById('bd-cohort-section')
     if (!wrap || !section) return
 
-    const styles = (typeof poDetail !== 'undefined' ? poDetail : []).filter(r => r.brand_code === brand.brand_code && r.first_inbound_date)
-    if (styles.length === 0) {
+    const rows = (typeof poDetail !== 'undefined' ? poDetail : []).filter(r => r.brand_code === brand.brand_code)
+    if (rows.length === 0) {
+      section.style.display = 'none'
+      return
+    }
+
+    const today = new Date()
+    const cohorts = {}
+    // 이월·조정: 입고월(입고일) 없거나 입고액 0인 행 (전 시즌 이월 재고)
+    const carry = { count: 0, inbound: 0, stock: 0, realSales: 0, cogs: 0 }
+    let hasCarry = false
+    for (const s of rows) {
+      const inb = Number(s.cum_inbound_amount) || 0
+      const stk = Number(s.total_stock_amount) || 0
+      const rs  = Number(s.cum_real_sales) || 0
+      const cog = Number(s.cum_cost_of_goods) || 0
+      if (s.first_inbound_date && inb > 0) {
+        const month = String(s.first_inbound_date).slice(0, 7)
+        if (!cohorts[month]) cohorts[month] = { count: 0, inbound: 0, stock: 0, realSales: 0, cogs: 0, daysWeighted: 0 }
+        const c = cohorts[month]
+        c.count++; c.inbound += inb; c.stock += stk; c.realSales += rs; c.cogs += cog
+        const days = Math.max(0, Math.round((today - new Date(s.first_inbound_date)) / 86400000))
+        c.daysWeighted += days * inb
+      } else {
+        carry.count++; carry.inbound += inb; carry.stock += stk; carry.realSales += rs; carry.cogs += cog
+        hasCarry = true
+      }
+    }
+
+    const months = Object.keys(cohorts).sort().reverse()  // 최신 입고월부터
+    if (months.length === 0 && !hasCarry) {
       section.style.display = 'none'
       return
     }
     section.style.display = ''
 
-    const today = new Date()
-    // 코호트 그룹: YYYY-MM 입고월
-    const cohorts = {}
-    for (const s of styles) {
-      const inb = Number(s.cum_inbound_amount) || 0
-      const stk = Number(s.total_stock_amount) || 0
-      if (inb <= 0) continue
-      const month = String(s.first_inbound_date).slice(0, 7)
-      if (!cohorts[month]) cohorts[month] = { count: 0, inbound: 0, stock: 0, realSales: 0, cogs: 0, daysWeighted: 0 }
-      const c = cohorts[month]
-      c.count++
-      c.inbound += inb
-      c.stock += stk
-      c.realSales += Number(s.cum_real_sales) || 0    // 발주 누적실매출 (실매출·매총율·TCR용) [v1.9.31]
-      c.cogs += Number(s.cum_cost_of_goods) || 0      // 발주 누적매출원가 (매총율용)
-      const days = Math.max(0, Math.round((today - new Date(s.first_inbound_date)) / 86400000))
-      c.daysWeighted += days * inb  // 입고액 가중 평균 경과일용
+    // 합계 (입고월 + 이월 전부)
+    const tot = { count: 0, inbound: 0, stock: 0, realSales: 0, cogs: 0 }
+    for (const m of months) {
+      const c = cohorts[m]
+      tot.count += c.count; tot.inbound += c.inbound; tot.stock += c.stock; tot.realSales += c.realSales; tot.cogs += c.cogs
+    }
+    if (hasCarry) {
+      tot.count += carry.count; tot.inbound += carry.inbound; tot.stock += carry.stock; tot.realSales += carry.realSales; tot.cogs += carry.cogs
     }
 
-    const months = Object.keys(cohorts).sort().reverse()  // 최신 입고월부터
-    if (months.length === 0) {
-      section.style.display = 'none'
-      return
-    }
+    // 공통 계산 (회사공식)
+    const sellCo = (cog, stk) => (cog + stk) > 0 ? cog / (cog + stk) : null   // 판매율 = 소진 ÷ (소진+잔여)
+    const gmCo   = (rs, cog)  => rs > 0 ? (rs - cog) / rs : null              // 매총율
+    const tcrCo  = (rs, inb)  => (inb > 0 && rs > 0) ? rs / inb : null        // TCR = 실매출 ÷ 입고
+    const pctTd  = (v) => `<td class="r">${v !== null ? (v * 100).toFixed(1) + '%' : '-'}</td>`
 
     let html = `
       <table class="mc-tbl">
@@ -3453,20 +3474,16 @@
     `
     for (const m of months) {
       const c = cohorts[m]
-      const sellRate = c.inbound > 0 ? (1 - c.stock / c.inbound) : null
+      const sellRate = sellCo(c.cogs, c.stock)
       const avgDays = c.inbound > 0 ? Math.round(c.daysWeighted / c.inbound) : 0
       const drained = c.inbound - c.stock
       let invDays = null
       if (drained > 0 && avgDays > 0) {
-        const dailyDrain = drained / avgDays
-        invDays = Math.min(999, Math.round(c.stock / dailyDrain))
+        invDays = Math.min(999, Math.round(c.stock / (drained / avgDays)))
       } else if (c.stock > 0) {
         invDays = 999
       }
-      // 발주 기준 매총율 = (실매출 − 매출원가) ÷ 실매출, TCR = 실매출 ÷ 입고 [v1.9.31]
-      //   실매출 미입력 코호트(realSales 0)는 '-' 처리
-      const gm = c.realSales > 0 ? (c.realSales - c.cogs) / c.realSales : null
-      const tcr = (c.inbound > 0 && c.realSales > 0) ? c.realSales / c.inbound : null
+      const tcr = tcrCo(c.realSales, c.inbound)
       html += `
         <tr>
           <td>${m}</td>
@@ -3474,15 +3491,54 @@
           <td class="r">${fmtMoney(c.inbound)}</td>
           <td class="r">${c.realSales > 0 ? fmtMoney(c.realSales) : '-'}</td>
           <td class="r">${fmtMoney(c.stock)}</td>
-          <td class="r">${sellRate !== null ? (sellRate*100).toFixed(1) + '%' : '-'}</td>
-          <td class="r">${gm !== null ? (gm*100).toFixed(1) + '%' : '-'}</td>
+          ${pctTd(sellRate)}
+          ${pctTd(gmCo(c.realSales, c.cogs))}
           <td class="r">${tcr !== null ? tcr.toFixed(1) : '-'}</td>
           <td class="r">${avgDays}일</td>
           <td class="r">${invDays !== null ? invDays + '일' : '-'}</td>
         </tr>
       `
     }
+    // 이월·조정 행 (입고월 없음)
+    if (hasCarry) {
+      html += `
+        <tr style="color:var(--muted)">
+          <td>이월·조정<br><span style="font-size:11px">(입고월 없음)</span></td>
+          <td class="r">${carry.count.toLocaleString()}</td>
+          <td class="r">-</td>
+          <td class="r">${carry.realSales > 0 ? fmtMoney(carry.realSales) : '-'}</td>
+          <td class="r">${fmtMoney(carry.stock)}</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
+        </tr>
+      `
+    }
+    // 합계 행 (발주관리 전체 = 메인 리스트와 일치)
+    html += `
+        <tr style="font-weight:700;border-top:2px solid var(--line)">
+          <td>합계</td>
+          <td class="r">${tot.count.toLocaleString()}</td>
+          <td class="r">${fmtMoney(tot.inbound)}</td>
+          <td class="r">${tot.realSales > 0 ? fmtMoney(tot.realSales) : '-'}</td>
+          <td class="r">${fmtMoney(tot.stock)}</td>
+          ${pctTd(sellCo(tot.cogs, tot.stock))}
+          ${pctTd(gmCo(tot.realSales, tot.cogs))}
+          <td class="r">${tcrCo(tot.realSales, tot.inbound) !== null ? tcrCo(tot.realSales, tot.inbound).toFixed(1) : '-'}</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
+        </tr>
+    `
     html += '</tbody></table>'
+    html += `
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">
+        · 판매율 = 소진 ÷ (소진 + 잔여재고) — 회사공식(메인 리스트와 동일).<br>
+        · <b>이월·조정</b> = 전 시즌 넘어온 재고(이번 시즌 입고 없음). 반품·이고로 잔여재고가 음수일 수 있음.<br>
+        · <b>합계</b>는 이월 포함 발주관리 전체 기준 → 잔여재고·판매율이 메인 리스트와 일치.
+      </div>
+    `
     wrap.innerHTML = html
   }
 
