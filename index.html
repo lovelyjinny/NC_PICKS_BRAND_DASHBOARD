@@ -1282,7 +1282,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 46 · 브랜드 리스트에 재고액(발주관리 전사재고) 컬럼 추가 · v1.9.33
+    Phase 47 · 카테고리 분류 수정: 글로벌 브랜드(메종키츠네·자라 등) 성인 상품이 아동으로 오분류되던 버그 · v1.9.34
   </div>
 
 </div>
@@ -1561,19 +1561,23 @@
     const g2   = c.charAt(1)                 // ②자리 성별(W/M/K/C)
     const g34  = c.substring(2, 4)           // ③④자리 중분류
     const pre2 = c.substring(0, 2)
+    // ★v1.9.34: ②자리 성별(W/M/K/C)은 국내코드(①=1/2)에서만 유효. 글로벌 브랜드 코드
+    //   (메종키츠네·자라·마시모두띠·띠어리 등 PKHHA1·CCCCA1처럼 첫 글자가 알파벳)는 ②가 성별이
+    //   아닌데 K/C라는 이유로 성인 의류(티셔츠·니트·바지)가 아동으로 오분류됐음 → dom 가드로 방지.
+    const dom = (c.charAt(0) === '1' || c.charAt(0) === '2')
     // (A) 신발류 → MC코드 앞2자리(MCH2)로 성별 (지니님 확정 2026-06-30). 1W/2W/1L→여,1M/2M→남,1K/1C→아동
     const SHOES = ['운동화','구두','슬리퍼','쪼리','샌들','샌달','부츠','로퍼','스니커','단화','뮬','블로퍼','펌프스','모카신','워커']
     if (SHOES.some(k => mn.includes(k))) {
       if (pre2 === '1W' || pre2 === '2W' || pre2 === '1L') return '여성'
       if (pre2 === '1M' || pre2 === '2M') return '남성'
       if (pre2 === '1K' || pre2 === '1C') return '아동'
-      if (g2 === 'W') return '여성'
-      if (g2 === 'M') return '남성'
-      if (g2 === 'K' || g2 === 'C') return '아동'
+      if (dom && g2 === 'W') return '여성'
+      if (dom && g2 === 'M') return '남성'
+      if (dom && (g2 === 'K' || g2 === 'C')) return '아동'
       return '남성'
     }
     // (B) 아동 먼저 (아동 잡화·언더웨어·의류 모두 아동)
-    if (mn.startsWith('아동') || mn.startsWith('캐릭터') || g2 === 'K' || g2 === 'C'
+    if (mn.startsWith('아동') || mn.startsWith('캐릭터') || (dom && (g2 === 'K' || g2 === 'C'))
         || bg === 'OFA' || bg === 'OFB' || bg === 'OAX') return '아동'
     // (C) 잡화: 신발·아동 제외한 잡화·언더웨어
     if (mn.includes('잡화') || mn.includes('언더웨어') || bg === 'OCA') return '잡화'
@@ -1584,8 +1588,8 @@
     if (bg === 'OIA') return '여성'
     if (bg === 'OJA' || bg === 'OJB' || bg === 'OJC' || bg === 'OAY') return '남성'  // 스포츠·제화
     if (bg === 'ODA') return '여성'                                                  // 명품
-    if (g2 === 'M') return '남성'
-    if (g2 === 'W') return '여성'
+    if (dom && g2 === 'M') return '남성'
+    if (dom && g2 === 'W') return '여성'
     if (pre2 === '1M' || pre2 === '2M') return '남성'
     if (pre2 === '1W' || pre2 === '2W' || pre2 === '1L') return '여성'
     if (pre2 === '1K' || pre2 === '1C') return '아동'
