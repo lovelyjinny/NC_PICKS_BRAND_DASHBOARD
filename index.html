@@ -1251,6 +1251,7 @@
               <th class="sortable" data-sort="md">MD<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="total_sales">매출액<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="season_inbound_total">입고액<span class="sort-ind"></span></th>
+              <th class="r sortable" data-sort="po_stock" title="발주관리 전사재고액 (잔여재고)">재고액<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="daily_avg">일평균<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="op_margin">영업이익률<span class="sort-ind"></span></th>
               <th class="r sortable" data-sort="gross_margin">매총율<span class="sort-ind"></span></th>
@@ -1281,7 +1282,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 45 · 입고월별 표에 이월·조정 행 + 합계 행 추가 (판매율=회사공식, 전체와 일치) · v1.9.32
+    Phase 46 · 브랜드 리스트에 재고액(발주관리 전사재고) 컬럼 추가 · v1.9.33
   </div>
 
 </div>
@@ -2704,7 +2705,7 @@
 
     const headers = [
       '순번', '브랜드코드', '브랜드명',
-      '매출액(외형,원)', '입고액(원)', '일평균(원)',
+      '매출액(외형,원)', '입고액(원)', '재고액(원)', '일평균(원)',
       '영업이익률(%)', '매총율(%)',
       '판매기간(일)', '재고일수(일)',
       '목표판매율(%)', '판매율(%)',
@@ -2718,6 +2719,7 @@
       b.brand_name || '',
       numv(b.total_sales_gross || b.total_sales),
       numv(b.season_inbound_total),
+      numv(b.po_stock),
       numv(b.daily_avg),
       pct1v(b.op_margin),
       pct1v(b.gross_margin),
@@ -2739,7 +2741,7 @@
       { wch: 5 },   // 순번
       { wch: 10 },  // 브랜드코드
       { wch: 28 },  // 브랜드명
-      { wch: 16 }, { wch: 14 }, { wch: 12 },  // 매출/입고/일평균
+      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 12 },  // 매출/입고/재고/일평균
       { wch: 12 }, { wch: 12 },                // 영익/매총
       { wch: 11 }, { wch: 11 },                // 판매기간/재고일수
       { wch: 12 }, { wch: 11 },                // 목표판매율/판매율
@@ -2896,6 +2898,7 @@
         <td class="md-cell" title="${b.mds && b.mds.length > 1 ? '담당: ' + b.mds.join(', ') : ''}">${b.md ? b.md + (b.mds && b.mds.length > 1 ? ' 외' : '') : '—'}</td>
         <td class="r sales">${fmtMoney(b.total_sales_gross || b.total_sales)}</td>
         <td class="r">${b.season_inbound_total > 0 ? fmtMoney(b.season_inbound_total) : '-'}</td>
+        <td class="r">${b.po_stock > 0 ? fmtMoney(b.po_stock) : '-'}</td>
         <td class="r">${fmtMoney(b.daily_avg)}</td>
         <td class="r ${opCls}">${fmtPct(b.op_margin)}</td>
         <td class="r">${fmtPct(b.gross_margin)}</td>
