@@ -1282,7 +1282,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 48 · 멀티시즌 순차 로드 (2개 시즌 동시 선택 시 statement timeout 수정) · v1.9.35
+    Phase 48 · 멀티시즌 순차 로드 (2개 시즌 timeout 수정, 대용량 concat 버그 수정) · v1.9.36
   </div>
 
 </div>
@@ -1727,10 +1727,10 @@
       //    statement timeout. 한 시즌은 OK, 두 시즌만 실패했음.)
       //   → 순차 로드로 동시 부하를 '한 시즌 수준'으로 낮춤. 두 시즌은 느리지만 확실히 로드됨.
       const fetchAllSeasons = async (buildQuery, cursorCol) => {
-        const out = []
+        let out = []
         for (const sn of seasons) {
           const rows = await fetchAll(() => buildQuery().eq('season_year', sn.year).eq('season_type', sn.type), cursorCol)
-          out.push(...rows)
+          out = out.concat(rows)   // ★대용량 배열은 push(...스프레드) 금지(스택오버플로) → concat 사용
         }
         return out
       }
