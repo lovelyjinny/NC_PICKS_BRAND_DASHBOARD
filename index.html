@@ -1282,7 +1282,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 47 · 카테고리 분류 수정: 글로벌 브랜드(메종키츠네·자라 등) 성인 상품이 아동으로 오분류되던 버그 · v1.9.34
+    Phase 48 · 멀티시즌 순차 로드 (2개 시즌 동시 선택 시 statement timeout 수정) · v1.9.35
   </div>
 
 </div>
@@ -1721,15 +1721,18 @@
         return all
       }
       
-      // ★v1.9.28 멀티 시즌 = 시즌별 단일 쿼리를 병렬로 돌려 합침.
-      //   (구버전: or=(and(...),and(...)) 필터 → 인덱스를 못 타 statement timeout(57014)로
-      //    500 에러 → 멀티 시즌 선택 시 로드 실패하고 옛 시즌 데이터가 화면에 남았음)
-      //   단일 eq+eq 쿼리는 인덱스를 타서 빠르고 이미 검증된 경로 — 시즌 수만큼 반복.
+      // ★v1.9.35 멀티 시즌 = 시즌별 단일 쿼리를 '순차'로 돌려 합침.
+      //   (v1.9.28은 시즌별 병렬 Promise.all이었으나, 두 시즌 선택 시 5테이블×2시즌=10개 쿼리체인이
+      //    동시에 대량 로드(정판율 22만행+매출 18만행 등) → 프리티어 DB 과부하로 개별 쿼리가
+      //    statement timeout. 한 시즌은 OK, 두 시즌만 실패했음.)
+      //   → 순차 로드로 동시 부하를 '한 시즌 수준'으로 낮춤. 두 시즌은 느리지만 확실히 로드됨.
       const fetchAllSeasons = async (buildQuery, cursorCol) => {
-        const perSeason = await Promise.all(seasons.map(sn =>
-          fetchAll(() => buildQuery().eq('season_year', sn.year).eq('season_type', sn.type), cursorCol)
-        ))
-        return perSeason.flat()
+        const out = []
+        for (const sn of seasons) {
+          const rows = await fetchAll(() => buildQuery().eq('season_year', sn.year).eq('season_type', sn.type), cursorCol)
+          out.push(...rows)
+        }
+        return out
       }
 
       const [s, i, t, p, pd] = await Promise.all([
