@@ -1079,12 +1079,12 @@
     <span class="label">시즌</span>
     <div class="season-multi-wrap">
       <button id="season-multi-btn" class="season-multi-btn" type="button">
-        <span id="season-multi-label">2026 S/S</span>
+        <span id="season-multi-label">2026 F/W</span>
         <span class="season-multi-arrow">▾</span>
       </button>
       <div id="season-multi-menu" class="season-multi-menu" style="display:none;">
-        <label class="season-multi-opt"><input type="checkbox" data-season="2026-SS" checked> 2026 S/S</label>
-        <label class="season-multi-opt"><input type="checkbox" data-season="2026-FW"> 2026 F/W</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2026-SS"> 2026 S/S</label>
+        <label class="season-multi-opt"><input type="checkbox" data-season="2026-FW" checked> 2026 F/W</label>
         <label class="season-multi-opt"><input type="checkbox" data-season="2025-SS"> 2025 S/S</label>
         <label class="season-multi-opt"><input type="checkbox" data-season="2025-FW"> 2025 F/W</label>
         <label class="season-multi-opt"><input type="checkbox" data-season="2024-SS"> 2024 S/S</label>
@@ -1099,7 +1099,7 @@
     </select>
     <select id="sel-season" class="season-select" style="display:none;">
       <option value="SS">S/S</option>
-      <option value="FW">F/W</option>
+      <option value="FW" selected>F/W</option>
     </select>
     <span class="season-info">
       시즌 <b id="info-period">-</b>
@@ -1282,7 +1282,7 @@
 
   <!-- 푸터 -->
   <div class="footer">
-    Phase 48 · 멀티시즌 순차 로드 (2개 시즌 timeout 수정, 대용량 concat 버그 수정) · v1.9.36
+    Phase 48 · 멀티시즌 순차 로드 (2개 시즌 timeout 수정, 대용량 concat 버그 수정) · 기본 시즌 2026 F/W · v1.9.37
   </div>
 
 </div>
@@ -1685,7 +1685,7 @@
       seasons = [{ year: arguments[0], type: arguments[1] }]
     }
     if (!Array.isArray(seasons) || seasons.length === 0) {
-      seasons = [{ year: 2026, type: 'SS' }]
+      seasons = [{ year: 2026, type: 'FW' }]
     }
 
     document.getElementById('state-loading').style.display = 'block'
@@ -3837,7 +3837,7 @@
   
   // ============= 시즌 멀티 선택 =============
   // selectedSeasons: 선택된 시즌 배열 [{year, type}]
-  let selectedSeasons = [{ year: 2026, type: 'SS' }]  // 기본값
+  let selectedSeasons = [{ year: 2026, type: 'FW' }]  // 기본값 (2026-10-20 지니님 요청: S/S → F/W)
   
   function getSelectedSeasons() {
     const checked = document.querySelectorAll('#season-multi-menu input[type="checkbox"]:checked')
@@ -3900,7 +3900,7 @@
   async function reloadSeason() {
     const seasons = getSelectedSeasons()
     if (seasons.length === 0) {
-      seasons.push({ year: 2026, type: 'SS' })
+      seasons.push({ year: 2026, type: 'FW' })
     }
     selectedSeasons = seasons
     // 호환성: hidden select에 첫 시즌 반영 (기존 코드가 sel-year/sel-season 참조)
